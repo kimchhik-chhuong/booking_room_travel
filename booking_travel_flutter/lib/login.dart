@@ -377,7 +377,7 @@ class _LoginScreenState extends State<LoginScreen>
             Navigator.pushNamed(context, '/register');
           },
           child: Text(
-            'Sign Up',
+            'Register',
             style: TextStyle(
               color: Colors.blue.shade700,
               fontSize: 16,
