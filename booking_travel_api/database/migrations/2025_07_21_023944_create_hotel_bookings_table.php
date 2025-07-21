@@ -11,10 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('hotel_bookings', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
+Schema::create('hotel_bookings', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('booking_id')->constrained('bookings')->onDelete('cascade');
+    $table->foreignId('hotel_id')->constrained('hotel_metadata', 'hotel_id')->onDelete('cascade');
+    $table->date('check_in_date');
+    $table->date('check_out_date');
+    $table->string('room_type');
+    $table->integer('num_rooms');
+    $table->integer('num_guests');
+    $table->decimal('price_per_night', 10, 2);
+    $table->decimal('total_hotel_price', 10, 2);
+    $table->string('status');
+    $table->timestamps();
+});
     }
 
     /**

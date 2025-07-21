@@ -11,10 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('hotel_metadata', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
+Schema::create('hotel_metadata', function (Blueprint $table) {
+    $table->id('hotel_id');
+    $table->string('name');
+    $table->text('address')->nullable();
+    $table->float('star_rating')->nullable();
+    $table->text('description')->nullable();
+    $table->string('image_url')->nullable();
+    $table->string('contact_phone')->nullable();
+    $table->string('website_url')->nullable();
+    $table->timestamps();
+});
     }
 
     /**
