@@ -3,24 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Http\Requests\StoreUserRequest;
-use App\Http\Requests\UpdateUserRequest;
-use App\Models\Department;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
-use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Routing\Controller;
+
 
 class UserController extends Controller
 {
     public function __construct()
     {
         $this->middleware('auth');
-        $this->middleware('permission:create-user|edit-user|delete-user', ['only' => ['index','show']]);
-        $this->middleware('permission:create-user', ['only' => ['create','store']]);
-        $this->middleware('permission:edit-user', ['only' => ['edit','update']]);
-        $this->middleware('permission:delete-user', ['only' => ['destroy']]);
+        $this->middleware('role:admin,employee,user', ['only' => ['index','show']]);
+        $this->middleware('role:admin,employee', ['only' => ['create','store']]);
+        $this->middleware('role:admin,employee', ['only' => ['edit','update']]);
+        $this->middleware('role:admin', ['only' => ['destroy']]);
     }
 
     /**
@@ -32,7 +31,7 @@ class UserController extends Controller
         'users' => User::latest()->paginate(6),
         'totalUsers' => User::count(),
         'activeUsers' => User::where('is_active', true)->count(),
-        'adminUsers' => User::role('Admin')->count(),
+        'adminUsers' => User::where('role', 'admin')->count(),
         'newUsers' => User::where('created_at', '>=', now()->subDays(30))->count()
         ]);
     }
@@ -43,25 +42,33 @@ class UserController extends Controller
     public function create(): View
     {
         return view('users.create', [
-            'roles' => Role::pluck('name')->all(),
-            'departments' => Department::pluck('name', 'id')
+            'roles' => ['admin', 'employee', 'user']
         ]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreUserRequest $request): RedirectResponse
+    public function store(Request $request): RedirectResponse
     {
-        $input = $request->validated(); 
-        $input['password'] = Hash::make($request->password);
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+            'role' => 'required|string|in:admin,employee,user',
+            'images' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'is_active' => 'boolean',
+        ]);
+
+        $validatedData['password'] = Hash::make($validatedData['password']);
 
         if ($request->hasFile('images')) {
-            $input['images'] = $request->file('images')->store('users', 'public');
+            $validatedData['images'] = $request->file('images')->store('users', 'public');
         }
 
-        $user = User::create($input);
-        $user->assignRole($request->roles);
+        $user = User::create($validatedData);
+        $user->role = $validatedData['role'];
+        $user->save();
 
         return redirect()->route('users.index')
                 ->withSuccess('New user added successfully.');
@@ -91,23 +98,29 @@ class UserController extends Controller
 
         return view('users.edit', [
             'user' => $user,
-            'roles' => Role::pluck('name')->all(),
-            'userRoles' => $user->roles->pluck('name')->all(),
-            'departments' => Department::pluck('name', 'id')
+            'roles' => ['admin', 'employee', 'user'],
+            'userRole' => $user->role
         ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateUserRequest $request, User $user): RedirectResponse
+    public function update(Request $request, User $user): RedirectResponse
     {
-        $input = $request->validated();
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'password' => 'nullable|string|min:8|confirmed',
+            'role' => 'required|string|in:admin,employee,user',
+            'images' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'is_active' => 'boolean',
+        ]);
 
-        if(!empty($request->password)){
-            $input['password'] = Hash::make($request->password);
-        }else{
-            $input = $request->except('password');
+        if (!empty($validatedData['password'])) {
+            $validatedData['password'] = Hash::make($validatedData['password']);
+        } else {
+            unset($validatedData['password']);
         }
 
         // Handle image upload
@@ -116,11 +129,11 @@ class UserController extends Controller
             if ($user->images && Storage::disk('public')->exists($user->images)) {
                 Storage::disk('public')->delete($user->images);
             }
-            $input['images'] = $request->file('images')->store('users', 'public');
+            $validatedData['images'] = $request->file('images')->store('users', 'public');
         }
 
-        $user->update($input);
-        $user->syncRoles($request->roles);
+        $user->role = $validatedData['role'];
+        $user->update($validatedData);
 
         return redirect()->route('users.index')
                 ->withSuccess('User updated successfully.');

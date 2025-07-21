@@ -12,7 +12,8 @@ class HotelMetadataController extends Controller
      */
     public function index()
     {
-        //
+        $hotels = HotelMetadata::all();
+        return response()->json(['status' => 'success', 'data' => $hotels], 200);
     }
 
     /**
@@ -20,7 +21,15 @@ class HotelMetadataController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'destination_id' => 'required|exists:destinations,id',
+            'hotel_name' => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+        ]);
+
+        $hotel = HotelMetadata::create($validated);
+
+        return response()->json(['status' => 'success', 'message' => 'Hotel metadata created successfully', 'data' => $hotel], 201);
     }
 
     /**
@@ -28,7 +37,7 @@ class HotelMetadataController extends Controller
      */
     public function show(HotelMetadata $hotelMetadata)
     {
-        //
+        return response()->json(['status' => 'success', 'data' => $hotelMetadata], 200);
     }
 
     /**
@@ -36,7 +45,15 @@ class HotelMetadataController extends Controller
      */
     public function update(Request $request, HotelMetadata $hotelMetadata)
     {
-        //
+        $validated = $request->validate([
+            'destination_id' => 'sometimes|exists:destinations,id',
+            'hotel_name' => 'sometimes|string|max:255',
+            'price' => 'sometimes|numeric|min:0',
+        ]);
+
+        $hotelMetadata->update($validated);
+
+        return response()->json(['status' => 'success', 'message' => 'Hotel metadata updated successfully', 'data' => $hotelMetadata], 200);
     }
 
     /**
@@ -44,6 +61,8 @@ class HotelMetadataController extends Controller
      */
     public function destroy(HotelMetadata $hotelMetadata)
     {
-        //
+        $hotelMetadata->delete();
+
+        return response()->json(['status' => 'success', 'message' => 'Hotel metadata deleted successfully'], 200);
     }
 }
