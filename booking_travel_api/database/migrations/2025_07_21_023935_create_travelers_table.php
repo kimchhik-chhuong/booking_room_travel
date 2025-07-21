@@ -11,10 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('travelers', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
+Schema::create('travelers', function (Blueprint $table) {
+    $table->id('traveler_id');
+    $table->foreignId('booking_id')->constrained('bookings')->onDelete('cascade');
+    $table->string('first_name');
+    $table->string('last_name');
+    $table->date('date_of_birth')->nullable();
+    $table->string('gender')->nullable();
+    $table->string('email')->nullable();
+    $table->string('phone_number')->nullable();
+    $table->timestamps();
+});
     }
 
     /**

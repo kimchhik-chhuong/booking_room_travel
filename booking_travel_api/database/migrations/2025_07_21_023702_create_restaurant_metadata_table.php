@@ -11,10 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('restaurant_metadata', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
-        });
+Schema::create('restaurant_metadata', function (Blueprint $table) {
+    $table->id('restaurant_id');
+    $table->string('name');
+    $table->text('address')->nullable();
+    $table->string('cuisine_type')->nullable();
+    $table->text('description')->nullable();
+    $table->string('image_url')->nullable();
+    $table->float('latitude')->nullable();
+    $table->float('longitude')->nullable();
+    $table->string('contact_phone')->nullable();
+    $table->string('website_url')->nullable();
+    $table->string('opening_hours')->nullable();
+    $table->timestamps();
+});
     }
 
     /**
