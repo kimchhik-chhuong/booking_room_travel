@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'login.dart';
-import 'register.dart';
+import 'screens/register.dart';
+import 'screens/login.dart';
+import 'Daskboard/Daskboard.dart';  // Fixed import path
+import 'services/user_service.dart';
 
 void main() {
   runApp(TravelBookingApp());
@@ -27,6 +29,7 @@ class TravelBookingApp extends StatelessWidget {
       routes: {
         '/login': (context) => LoginScreen(),
         '/register': (context) => RegisterScreen(),
+        '/dashboard': (context) => AdminDashboard(),
       },
     );
   }
@@ -115,9 +118,15 @@ class _SplashScreenState extends State<SplashScreen>
     _textController.forward();
     
     await Future.delayed(Duration(milliseconds: 2500));
-    Navigator.pushReplacementNamed(context, '/login');
+    
+    // Check if user is already logged in
+    bool isLoggedIn = await UserService.isLoggedIn();
+    if (isLoggedIn) {
+      Navigator.pushReplacementNamed(context, '/dashboard');
+    } else {
+      Navigator.pushReplacementNamed(context, '/login');
+    }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
