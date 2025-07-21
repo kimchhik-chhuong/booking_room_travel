@@ -242,7 +242,7 @@ class _RegisterScreenState extends State<RegisterScreen>
       ),
     );
   }
-
+// app
   Widget _buildHeader() {
     return Column(
       children: [
@@ -252,7 +252,7 @@ class _RegisterScreenState extends State<RegisterScreen>
             padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.blue.shade600, Colors.cyan.shade400],
+                colors: [Colors.blue.shade600, Colors.cyan.shade300],
               ),
               shape: BoxShape.circle,
               boxShadow: [
@@ -265,16 +265,16 @@ class _RegisterScreenState extends State<RegisterScreen>
             ),
             child: Icon(
               Icons.person_add,
-              size: 50,
+              size: 30,
               color: Colors.white,
             ),
           ),
         ),
-        SizedBox(height: 24),
+        SizedBox(height: 15),
         Text(
           'Create Account',
           style: TextStyle(
-            fontSize: 32,
+            fontSize: 25,
             fontWeight: FontWeight.bold,
             color: Colors.grey.shade800,
             letterSpacing: 1,
@@ -561,7 +561,7 @@ class _RegisterScreenState extends State<RegisterScreen>
             Navigator.pop(context);
           },
           child: Text(
-            'Sign In',
+            'Login',
             style: TextStyle(
               color: Colors.blue.shade700,
               fontSize: 16,

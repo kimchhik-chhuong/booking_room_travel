@@ -164,9 +164,9 @@ class _LoginScreenState extends State<LoginScreen>
         ),
         SizedBox(height: 24),
         Text(
-          'Welcome Back',
+          'Welcome Back to Travel Booking',
           style: TextStyle(
-            fontSize: 32,
+            fontSize: 25,
             fontWeight: FontWeight.bold,
             color: Colors.grey.shade800,
             letterSpacing: 1,
@@ -174,9 +174,9 @@ class _LoginScreenState extends State<LoginScreen>
         ),
         SizedBox(height: 8),
         Text(
-          'Sign in to continue your journey',
+          'Login to continue your journey',
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 18,
             color: Colors.grey.shade600,
           ),
         ),
@@ -340,7 +340,7 @@ class _LoginScreenState extends State<LoginScreen>
           ),
           child: _isLoading
               ? SizedBox(
-                  width: 24,
+                  width: 18,
                   height: 24,
                   child: CircularProgressIndicator(
                     color: Colors.white,
@@ -348,7 +348,7 @@ class _LoginScreenState extends State<LoginScreen>
                   ),
                 )
               : Text(
-                  'Sign In',
+                  'Login',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -377,7 +377,7 @@ class _LoginScreenState extends State<LoginScreen>
             Navigator.pushNamed(context, '/register');
           },
           child: Text(
-            'Sign Up',
+            'Register',
             style: TextStyle(
               color: Colors.blue.shade700,
               fontSize: 16,
@@ -410,16 +410,16 @@ class _LoginScreenState extends State<LoginScreen>
     _buttonController.reverse();
     
     // Show success animation
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Login Successful!'),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-    );
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   SnackBar(
+    //     content: Text('Login Successful!'),
+    //     backgroundColor: Colors.green,
+    //     behavior: SnackBarBehavior.floating,
+    //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+    //   ),
+    // );
     
-    Navigator.pushReplacementNamed(context, '/home');
+    // Navigator.pushReplacementNamed(context, '/home');
   }
 
   @override
