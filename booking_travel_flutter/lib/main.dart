@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'screens/register.dart';
 import 'screens/login.dart';
-import 'Daskboard/Daskboard.dart';  // Fixed import path
 import 'services/user_service.dart';
 
 void main() {
@@ -29,7 +28,7 @@ class TravelBookingApp extends StatelessWidget {
       routes: {
         '/login': (context) => LoginScreen(),
         '/register': (context) => RegisterScreen(),
-        '/dashboard': (context) => AdminDashboard(),
+        // Removed '/dashboard' route as dashboard is handled in Laravel Blade
       },
     );
   }
@@ -122,7 +121,10 @@ class _SplashScreenState extends State<SplashScreen>
     // Check if user is already logged in
     bool isLoggedIn = await UserService.isLoggedIn();
     if (isLoggedIn) {
-      Navigator.pushReplacementNamed(context, '/dashboard');
+      // Redirect to Laravel Blade dashboard, so no Flutter dashboard route
+      // You may want to open a webview or external browser here if needed
+      // For now, redirect to login screen or show message
+      Navigator.pushReplacementNamed(context, '/login');
     } else {
       Navigator.pushReplacementNamed(context, '/login');
     }

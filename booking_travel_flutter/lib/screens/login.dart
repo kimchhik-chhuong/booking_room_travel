@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/user_service.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -397,29 +398,52 @@ class _LoginScreenState extends State<LoginScreen>
     setState(() {
       _isLoading = true;
     });
-    
+
     _buttonController.forward();
-    
-    // Simulate API call
-    await Future.delayed(Duration(seconds: 2));
-    
-    setState(() {
-      _isLoading = false;
-    });
-    
-    _buttonController.reverse();
-    
-    // Show success animation
-    // ScaffoldMessenger.of(context).showSnackBar(
-    //   SnackBar(
-    //     content: Text('Login Successful!'),
-    //     backgroundColor: Colors.green,
-    //     behavior: SnackBarBehavior.floating,
-    //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-    //   ),
-    // );
-    
-    // Navigator.pushReplacementNamed(context, '/home');
+
+    try {
+      final user = await UserService.loginUser(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      if (user != null) {
+        // Login successful
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Login Successful!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+        Navigator.pushReplacementNamed(context, '/home');
+      } else {
+        // Login failed or role not allowed
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Login failed or access denied.'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('An error occurred during login.'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+      _buttonController.reverse();
+    }
   }
 
   @override
