@@ -12,7 +12,9 @@ class BookingController extends Controller
      */
     public function index()
     {
-        //
+        // Get all bookings with related user and payment
+        $bookings = Booking::with(['user', 'payment', 'hotelBookings'])->get();
+        return response()->json(['status' => 'success', 'data' => $bookings], 200);
     }
 
     /**
@@ -20,7 +22,16 @@ class BookingController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // Validate request
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'booking_date' => 'required|date',
+        ]);
+
+        // Create booking
+        $booking = Booking::create($request->only(['user_id', 'booking_date']));
+
+        return response()->json(['status' => 'success', 'data' => $booking], 201);
     }
 
     /**
@@ -28,7 +39,9 @@ class BookingController extends Controller
      */
     public function show(Booking $booking)
     {
-        //
+        // Load relationships
+        $booking->load(['user', 'payment', 'hotelBookings']);
+        return response()->json(['status' => 'success', 'data' => $booking], 200);
     }
 
     /**
@@ -36,7 +49,16 @@ class BookingController extends Controller
      */
     public function update(Request $request, Booking $booking)
     {
-        //
+        // Validate request
+        $request->validate([
+            'user_id' => 'sometimes|exists:users,id',
+            'booking_date' => 'sometimes|date',
+        ]);
+
+        // Update booking with validated data
+        $booking->update($request->only(['user_id', 'booking_date']));
+
+        return response()->json(['status' => 'success', 'data' => $booking], 200);
     }
 
     /**
@@ -44,6 +66,7 @@ class BookingController extends Controller
      */
     public function destroy(Booking $booking)
     {
-        //
+        $booking->delete();
+        return response()->json(['status' => 'success', 'message' => 'Booking deleted'], 200);
     }
 }
