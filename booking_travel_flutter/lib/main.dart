@@ -110,7 +110,8 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
     bool isLoggedIn = await UserService.isLoggedIn();
     if (isLoggedIn) {
-      Navigator.pushReplacementNamed(context, '/dashboard');
+      // Redirect to home screen if logged in
+      Navigator.pushReplacementNamed(context, '/home');
     } else {
       Navigator.pushReplacementNamed(context, '/onboarding');
     }

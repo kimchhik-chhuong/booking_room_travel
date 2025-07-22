@@ -1,43 +1,64 @@
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserService {
-  static const String _usersKey = 'registered_users';
   static const String _currentUserKey = 'current_user';
+  static const String _accessTokenKey = 'access_token';
+
+  static const String baseUrl = 'http://localhost:8000/api'; // Change to your API base URL
 
   // Register a new user
   static Future<bool> registerUser({
     required String name,
     required String email,
     required String password,
+    String role = 'user',
   }) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      
-      // Get existing users
-      List<Map<String, dynamic>> users = await getRegisteredUsers();
-      
-      // Check if user already exists
-      bool userExists = users.any((user) => user['email'] == email);
-      if (userExists) {
-        return false; // User already exists
+      final response = await http.post(
+        Uri.parse("$baseUrl/register"),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
+          'name': name,
+          'email': email,
+          'password': password,
+          'password_confirmation': password,
+          'role': role,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        // Registration successful
+        return true;
+      } else if (response.statusCode == 409) {
+        // User already exists
+        print('User already exists. Please login instead.');
+        return false;
+      } else {
+        // Try to parse validation errors from response body
+        try {
+          final Map<String, dynamic> errorData = jsonDecode(response.body);
+          if (errorData.containsKey('errors')) {
+            final errors = errorData['errors'] as Map<String, dynamic>;
+            final errorMessages = errors.values
+                .map((e) => (e as List).join(', '))
+                .join('\\n');
+            print('Registration validation errors: $errorMessages');
+          } else if (errorData.containsKey('message')) {
+            print('Registration error message: ${errorData['message']}');
+          } else {
+            print('Registration failed: ${response.body}');
+          }
+        } catch (e) {
+          print('Error parsing registration error response: $e');
+          print('Raw response: ${response.body}');
+        }
+        return false;
       }
-      
-      // Add new user
-      Map<String, dynamic> newUser = {
-        'name': name,
-        'email': email,
-        'password': password, // In real app, hash this password
-        'registeredAt': DateTime.now().toIso8601String(),
-      };
-      
-      users.add(newUser);
-      
-      // Save users
-      String usersJson = jsonEncode(users);
-      await prefs.setString(_usersKey, usersJson);
-      
-      return true;
     } catch (e) {
       print('Registration error: $e');
       return false;
@@ -50,40 +71,38 @@ class UserService {
     required String password,
   }) async {
     try {
-      List<Map<String, dynamic>> users = await getRegisteredUsers();
-      
-      // Find user with matching email and password
-      for (Map<String, dynamic> user in users) {
-        if (user['email'] == email && user['password'] == password) {
-          // Save current user
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString(_currentUserKey, jsonEncode(user));
-          return user;
+      final response = await http.post(
+        Uri.parse("$baseUrl/login"),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final user = data['user'];
+        final token = data['access_token'];
+
+        if (user['role'] != 'user') {
+          // Only allow users with role 'user' to login in Flutter app
+          print('Access denied for role: ${user["role"]}');
+          return null;
         }
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_currentUserKey, jsonEncode(user));
+        await prefs.setString(_accessTokenKey, token);
+
+        return user;
+      } else {
+        print('Login failed: ${response.body}');
+        return null;
       }
-      
-      return null; // Login failed
     } catch (e) {
       print('Login error: $e');
       return null;
-    }
-  }
-
-  // Get all registered users
-  static Future<List<Map<String, dynamic>>> getRegisteredUsers() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      String? usersJson = prefs.getString(_usersKey);
-      
-      if (usersJson != null) {
-        List<dynamic> usersList = jsonDecode(usersJson);
-        return usersList.cast<Map<String, dynamic>>();
-      }
-      
-      return [];
-    } catch (e) {
-      print('Get users error: $e');
-      return [];
     }
   }
 
@@ -92,11 +111,11 @@ class UserService {
     try {
       final prefs = await SharedPreferences.getInstance();
       String? userJson = prefs.getString(_currentUserKey);
-      
+
       if (userJson != null) {
         return jsonDecode(userJson);
       }
-      
+
       return null;
     } catch (e) {
       print('Get current user error: $e');
@@ -109,6 +128,7 @@ class UserService {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_currentUserKey);
+      await prefs.remove(_accessTokenKey);
     } catch (e) {
       print('Logout error: $e');
     }
