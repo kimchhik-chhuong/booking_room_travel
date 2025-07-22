@@ -1,92 +1,164 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Routing\Controller;
+
 
 class UserController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+        $this->middleware('role:admin,employee,user', ['only' => ['index','show']]);
+        $this->middleware('role:admin,employee', ['only' => ['create','store']]);
+        $this->middleware('role:admin,employee', ['only' => ['edit','update']]);
+        $this->middleware('role:admin', ['only' => ['destroy']]);
+    }
+
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): View
     {
-        return response()->json(User::all(), 200);
+        return view('users.index', [
+        'users' => User::latest()->paginate(6),
+        'totalUsers' => User::count(),
+        'activeUsers' => User::where('is_active', true)->count(),
+        'adminUsers' => User::where('role', 'admin')->count(),
+        'newUsers' => User::where('created_at', '>=', now()->subDays(30))->count()
+        ]);
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create(): View
+    {
+        return view('users.create', [
+            'roles' => ['admin', 'employee', 'user']
+        ]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
+        $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|unique:users,email',
-            'password' => 'required|string|min:6',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+            'role' => 'required|string|in:admin,employee,user',
+            'images' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'is_active' => 'boolean',
         ]);
 
-        $validated['password'] = Hash::make($validated['password']);
+        $validatedData['password'] = Hash::make($validatedData['password']);
 
-        $user = User::create($validated);
+        if ($request->hasFile('images')) {
+            $validatedData['images'] = $request->file('images')->store('users', 'public');
+        }
 
-        return response()->json(['message' => 'User created successfully', 'data' => $user], 201);
+        $user = User::create($validatedData);
+        $user->role = $validatedData['role'];
+        $user->save();
+
+        return redirect()->route('users.index')
+                ->withSuccess('New user added successfully.');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(User $user): View
     {
-        $user = User::find($id);
+        return view('users.show', [
+            'user' => $user
+        ]);
+    }
 
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(User $user): View
+    {
+        // Check Only Super Admin can update his own Profile
+        if ($user->hasRole('Super Admin')){
+            if($user->id != auth()->user()->id){
+                abort(403, 'USER DOES NOT HAVE THE RIGHT PERMISSIONS');
+            }
         }
 
-        return response()->json($user, 200);
+        return view('users.edit', [
+            'user' => $user,
+            'roles' => ['admin', 'employee', 'user'],
+            'userRole' => $user->role
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, User $user): RedirectResponse
     {
-        $user = User::find($id);
-
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
-        }
-
-        $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|string|email|unique:users,email,' . $id,
-            'password' => 'sometimes|string|min:6',
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'password' => 'nullable|string|min:8|confirmed',
+            'role' => 'required|string|in:admin,employee,user',
+            'images' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'is_active' => 'boolean',
         ]);
 
-        if (isset($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
+        if (!empty($validatedData['password'])) {
+            $validatedData['password'] = Hash::make($validatedData['password']);
+        } else {
+            unset($validatedData['password']);
         }
 
-        $user->update($validated);
+        // Handle image upload
+        if ($request->hasFile('images')) {
+            // Delete old image if exists
+            if ($user->images && Storage::disk('public')->exists($user->images)) {
+                Storage::disk('public')->delete($user->images);
+            }
+            $validatedData['images'] = $request->file('images')->store('users', 'public');
+        }
 
-        return response()->json(['message' => 'User updated successfully', 'data' => $user], 200);
+        $user->role = $validatedData['role'];
+        $user->update($validatedData);
+
+        return redirect()->route('users.index')
+                ->withSuccess('User updated successfully.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(User $user): RedirectResponse
     {
-        $user = User::find($id);
-
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
+        // About if user is Super Admin or user is deleting himself
+        if ($user->hasRole('Super Admin') || $user->id == auth()->user()->id)
+        {
+            abort(403, 'USER DOES NOT HAVE THE RIGHT PERMISSIONS');
         }
 
+        // Delete user image if exists
+        if ($user->images) {
+            Storage::disk('public')->delete($user->images);
+        }
+
+        $user->syncRoles([]);
         $user->delete();
 
-        return response()->json(['message' => 'User deleted successfully'], 200);
+        return redirect()->route('users.index')
+                ->withSuccess('User deleted successfully.');
     }
 }

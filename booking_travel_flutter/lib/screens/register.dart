@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/user_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -593,29 +594,69 @@ class _RegisterScreenState extends State<RegisterScreen>
     setState(() {
       _isLoading = true;
     });
-    
+
     _buttonController.forward();
-    
-    // Simulate API call
-    await Future.delayed(Duration(seconds: 2));
-    
-    setState(() {
-      _isLoading = false;
-    });
-    
-    _buttonController.reverse();
-    
-    // Show success animation
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Account Created Successfully!'),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
-    );
-    
-    Navigator.pushReplacementNamed(context, '/home');
+
+    try {
+      final success = await UserService.registerUser(
+        name: _nameController.text.trim(),
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      if (success) {
+        // After successful registration, automatically log in the user
+        final user = await UserService.loginUser(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
+
+        if (user != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Account Created Successfully!'),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          );
+          Navigator.pushReplacementNamed(context, '/home');
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Login failed after registration.'),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          );
+        }
+      } else {
+        // Registration failed, check if user already exists
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('User already exists. Please login instead.'),
+            backgroundColor: Colors.orange,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('An error occurred during registration.'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+      _buttonController.reverse();
+    }
   }
 
   @override

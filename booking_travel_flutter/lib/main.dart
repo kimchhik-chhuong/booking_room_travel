@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'screens/register.dart';
 import 'screens/login.dart';
-import 'Daskboard/Daskboard.dart';  // Fixed import path
+import 'screens/home.dart';
 import 'services/user_service.dart';
 
 void main() {
@@ -29,7 +29,8 @@ class TravelBookingApp extends StatelessWidget {
       routes: {
         '/login': (context) => LoginScreen(),
         '/register': (context) => RegisterScreen(),
-        '/dashboard': (context) => AdminDashboard(),
+        '/home': (context) => HomeScreen(),
+        // Removed '/dashboard' route as dashboard is handled in Laravel Blade
       },
     );
   }
@@ -122,7 +123,8 @@ class _SplashScreenState extends State<SplashScreen>
     // Check if user is already logged in
     bool isLoggedIn = await UserService.isLoggedIn();
     if (isLoggedIn) {
-      Navigator.pushReplacementNamed(context, '/dashboard');
+      // Redirect to home screen if logged in
+      Navigator.pushReplacementNamed(context, '/home');
     } else {
       Navigator.pushReplacementNamed(context, '/login');
     }
