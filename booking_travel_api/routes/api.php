@@ -1,9 +1,13 @@
 <?php
-
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\BookingController;
+use App\Http\Controllers\DestinationController;
+use App\Http\Controllers\TravelerController;
+use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\TravelerController;
+
 
 Route::post('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
