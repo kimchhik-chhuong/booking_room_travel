@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'screens/register.dart';
 import 'screens/login.dart';
 import 'screens/onboarding.dart';
-import 'Daskboard/Daskboard.dart'; // Dashboard screen
 import 'services/user_service.dart'; // User login check service
 
 void main() {
@@ -31,7 +30,6 @@ class TravelBookingApp extends StatelessWidget {
       routes: {
         '/login': (context) => LoginScreen(),
         '/register': (context) => RegisterScreen(),
-        '/dashboard': (context) => AdminDashboard(),
         '/onboarding': (context) => OnboardingScreen(),
       },
     );
@@ -110,8 +108,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
     bool isLoggedIn = await UserService.isLoggedIn();
     if (isLoggedIn) {
-      // Redirect to home screen if logged in
-      Navigator.pushReplacementNamed(context, '/home');
+      Navigator.pushReplacementNamed(context, '/dashboard');
     } else {
       Navigator.pushReplacementNamed(context, '/onboarding');
     }
