@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
-import '../services/user_service.dart';
+import 'package:flutter/material.dart'; 
+import '../services/user_service.dart';  
 
 class RegisterScreen extends StatefulWidget {
   @override

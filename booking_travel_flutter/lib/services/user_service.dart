@@ -5,8 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 class UserService {
   static const String _currentUserKey = 'current_user';
   static const String _accessTokenKey = 'access_token';
-
-  static const String baseUrl = 'http://localhost:8000/api'; // Change to your API base URL
+ 
+   static const String baseUrl = 'http://localhost:8000/api'; // Change to your API base URL 
 
   // Register a new user
   static Future<bool> registerUser({
