@@ -12,7 +12,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Widget> _pages = [
     HomePageContent(),
     SearchScreen(),
-    Center(child: Text('Trips Page')),
+    Center(child: Text('Historys Page')),
     Center(child: Text('Profile Page')),
   ];
 
@@ -33,7 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(icon: Icon(Icons.card_travel), label: 'Trips'),
+          BottomNavigationBarItem(icon: Icon(Icons.card_travel), label: 'Historys'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),

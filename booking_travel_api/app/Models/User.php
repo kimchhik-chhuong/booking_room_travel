@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
@@ -11,12 +10,16 @@ use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
+
+    /**
+     * Relationships
+     */
     public function bookings()
     {
         return $this->hasMany(Booking::class);
     }
+
     public function notifications()
     {
         return $this->hasMany(Notification::class);
@@ -33,9 +36,9 @@ class User extends Authenticatable
     }
 
     /**
-     * The attributes that are mass assignable.
+     * Mass assignable attributes
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $fillable = [
         'name',
@@ -51,33 +54,9 @@ class User extends Authenticatable
     ];
 
     /**
-     * Check if user has 'user' role
-     */
-    public function isUser()
-    {
-        return $this->role === 'user';
-    }
-
-    /**
-     * Check if user has 'admin' role
-     */
-    public function isAdmin()
-    {
-        return $this->role === 'admin';
-    }
-
-    /**
-     * Check if user has 'employer' role
-     */
-    public function isEmployer()
-    {
-        return $this->role === 'employer';
-    }
-
-    /**
-     * The attributes that should be hidden for serialization.
+     * Hidden attributes for serialization
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $hidden = [
         'password',
@@ -85,30 +64,72 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * Attribute casting
      *
-     * @return array<string, string>
+     * @var array<string, string>
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-        'last_login' => 'datetime',
-        'is_active' => 'boolean'
+        'password'          => 'hashed',
+        'last_login'        => 'datetime',
+        'is_active'         => 'boolean',
     ];
 
-    public function getImageUrlAttribute()
+    /**
+     * Accessor for profile image URL
+     */
+    public function getImageUrlAttribute(): string
     {
         return $this->profile_picture_url
             ? asset('storage/' . $this->profile_picture_url)
             : asset('images/default-avatar.png');
     }
 
+    /**
+     * Booted method to delete profile picture on user deletion
+     */
     protected static function booted()
     {
         static::deleted(function ($user) {
-            if ($user->profile_picture_url) {
+            if ($user->profile_picture_url && Storage::disk('public')->exists($user->profile_picture_url)) {
                 Storage::disk('public')->delete($user->profile_picture_url);
             }
         });
+    }
+
+    /**
+     * Role checks
+     */
+    public function isUser(): bool
+    {
+        return $this->role === 'user';
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isEmployer(): bool
+    {
+        return $this->role === 'employer';
+    }
+
+    /**
+     * Query scopes for roles
+     */
+    public function scopeAdmins($query)
+    {
+        return $query->where('role', 'admin');
+    }
+
+    public function scopeEmployers($query)
+    {
+        return $query->where('role', 'employer');
+    }
+
+    public function scopeUsers($query)
+    {
+        return $query->where('role', 'user');
     }
 }

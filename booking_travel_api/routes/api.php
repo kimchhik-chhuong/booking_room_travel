@@ -24,5 +24,3 @@ Route::get('/travelers/{id}', [TravelerController::class, 'show']);
 Route::post('/travelers', [TravelerController::class, 'store']);
 Route::put('/travelers/{id}', [TravelerController::class, 'update']);
 Route::delete('/travelers/{id}', [TravelerController::class, 'destroy']);
-
-//
