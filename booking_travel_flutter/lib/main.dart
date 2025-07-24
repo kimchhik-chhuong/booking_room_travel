@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'screens/register.dart';
 import 'screens/login.dart';
 import 'screens/onboarding.dart';
+import 'screens/home_screen.dart';
+import 'screens/search_screen.dart'; // ✅ Add this line
 import 'services/user_service.dart'; // User login check service
 
 void main() {
@@ -31,6 +33,8 @@ class TravelBookingApp extends StatelessWidget {
         '/login': (context) => LoginScreen(),
         '/register': (context) => RegisterScreen(),
         '/onboarding': (context) => OnboardingScreen(),
+        '/home': (context) => HomeScreen(),
+        '/search': (context) => SearchScreen(),
       },
     );
   }
@@ -108,7 +112,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
     bool isLoggedIn = await UserService.isLoggedIn();
     if (isLoggedIn) {
-      Navigator.pushReplacementNamed(context, '/dashboard');
+      Navigator.pushReplacementNamed(context, '/home');
     } else {
       Navigator.pushReplacementNamed(context, '/onboarding');
     }
