@@ -136,4 +136,8 @@ class UserService {
     Map<String, dynamic>? user = await getCurrentUser();
     return user != null;
   }
+
+  static Future updateUserProfile({required name, required email, required profileImageUrl, required followingCount}) async {}
+
+  static Future<void> updateUser(Map<String, dynamic>? currentUser) async {}
 }

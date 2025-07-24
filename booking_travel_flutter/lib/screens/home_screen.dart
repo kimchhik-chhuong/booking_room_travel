@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'payment_screen.dart';
 import 'search_screen.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -11,9 +13,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _pages = [
     HomePageContent(),
+    PaymentScreen(),
     SearchScreen(),
     Center(child: Text('Historys Page')),
-    Center(child: Text('Profile Page')),
+    ProfileScreen(), // Updated to use the new ProfileScreen
   ];
 
   @override
@@ -32,8 +35,10 @@ class _HomeScreenState extends State<HomeScreen> {
         type: BottomNavigationBarType.fixed,
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.payment), label: 'Payment'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(icon: Icon(Icons.card_travel), label: 'Historys'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.card_travel), label: 'Historys'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
@@ -97,7 +102,12 @@ class HomePageContent extends StatelessWidget {
 
   Widget _buildOptions() {
     final options = ['Trips', 'Hotels', 'Flights', 'Offers'];
-    final colors = [Colors.purple, Colors.pink, Colors.orange, Colors.blueAccent];
+    final colors = [
+      Colors.purple,
+      Colors.pink,
+      Colors.orange,
+      Colors.blueAccent
+    ];
     final icons = [
       Icons.airplanemode_active,
       Icons.hotel,
@@ -209,7 +219,8 @@ class HomePageContent extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(hotelName,
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   Text(price, style: TextStyle(color: Colors.blue)),
                 ],
               ),
