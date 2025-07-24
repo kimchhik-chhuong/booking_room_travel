@@ -7,7 +7,7 @@ use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-
+use App\Http\Controllers\RoleController;
 
 Route::post('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
@@ -26,3 +26,8 @@ Route::put('/travelers/{id}', [TravelerController::class, 'update']);
 Route::delete('/travelers/{id}', [TravelerController::class, 'destroy']);
 
 //
+Route::middleware(['auth'])->group(function () {
+    Route::resource('users', UserController::class);
+    Route::resource('roles', RoleController::class);
+});
+

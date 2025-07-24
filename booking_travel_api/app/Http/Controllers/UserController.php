@@ -77,31 +77,28 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(User $user): View
-    {
-        return view('users.show', [
-            'user' => $user
-        ]);
-    }
+    public function show(User $user)
+{
+    return response()->json($user);
+}
+
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(User $user): View
-    {
-        // Check Only Super Admin can update his own Profile
-        if ($user->hasRole('Super Admin')){
-            if($user->id != auth()->user()->id){
-                abort(403, 'USER DOES NOT HAVE THE RIGHT PERMISSIONS');
-            }
-        }
-
-        return view('users.edit', [
-            'user' => $user,
-            'roles' => ['admin', 'employee', 'user'],
-            'userRole' => $user->role
-        ]);
+    public function edit(User $user)
+{
+    if ($user->hasRole('Super Admin') && $user->id != auth()->id()) {
+        return response()->json(['message' => 'Unauthorized'], 403);
     }
+
+    return response()->json([
+        'user' => $user,
+        'roles' => ['admin', 'employee', 'user'],
+        'userRole' => $user->role,
+    ]);
+}
+
 
     /**
      * Update the specified resource in storage.
