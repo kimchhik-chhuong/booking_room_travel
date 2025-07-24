@@ -46,7 +46,7 @@ class UserService {
             final errors = errorData['errors'] as Map<String, dynamic>;
             final errorMessages = errors.values
                 .map((e) => (e as List).join(', '))
-                .join('\\n');
+                .join('\n');
             print('Registration validation errors: $errorMessages');
           } else if (errorData.containsKey('message')) {
             print('Registration error message: ${errorData['message']}');
@@ -67,38 +67,41 @@ class UserService {
 
   // Login user
   static Future<Map<String, dynamic>?> loginUser({
-  required String email,
-  required String password,
-}) async {
-  try {
-    final response = await http.post(
-      Uri.parse("$baseUrl/login"),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email, 'password': password}),
-    );
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse("$baseUrl/login"),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+        }),
+      );
 
-    print('Login response status: ${response.statusCode}');
-    print('Login response body: ${response.body}');
+      print('Login response status: ${response.statusCode}');
+      print('Login response body: ${response.body}');
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final user = data['user'];
-      final token = data['access_token'];
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final user = data['user'];
+        final token = data['access_token'];
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_currentUserKey, jsonEncode(user));
-      await prefs.setString(_accessTokenKey, token);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_currentUserKey, jsonEncode(user));
+        await prefs.setString(_accessTokenKey, token);
 
-      return user;
-    } else {
-      print('Login failed: ${response.body}');
+        return user;
+      } else {
+        print('Login failed: ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      print('Login error: $e');
       return null;
     }
-  } catch (e) {
-    print('Login error: $e');
-    return null;
   }
-}
 
   // Get current logged in user
   static Future<Map<String, dynamic>?> getCurrentUser() async {

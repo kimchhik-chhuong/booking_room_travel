@@ -430,7 +430,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
           ),
         );
 
-        Navigator.pushReplacementNamed(context, '/dashboard');
+        Navigator.pushReplacementNamed(context, '/home');
       } else {
         setState(() {
           _errorMessage = 'Login failed or access denied.';
