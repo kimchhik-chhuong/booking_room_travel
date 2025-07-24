@@ -1,56 +1,53 @@
 import 'package:flutter/material.dart';
-import '../services/user_service.dart';
+import '../services/user_service.dart'; 
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
-
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin {
+class _LoginScreenState extends State<LoginScreen>
+    with TickerProviderStateMixin {
   late AnimationController _animationController;
   late AnimationController _buttonController;
   late AnimationController _formController;
-
+  
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _scaleAnimation;
   late Animation<double> _formAnimation;
-
+  
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-
   bool _isLoading = false;
   bool _obscurePassword = true;
-  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-
+    
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+      duration: Duration(milliseconds: 1500),
       vsync: this,
     );
-
+    
     _buttonController = AnimationController(
-      duration: const Duration(milliseconds: 300),
+      duration: Duration(milliseconds: 300),
       vsync: this,
     );
-
+    
     _formController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: Duration(milliseconds: 800),
       vsync: this,
     );
-
+    
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-
+    
     _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
+      begin: Offset(0, 0.3),
       end: Offset.zero,
     ).animate(CurvedAnimation(
       parent: _animationController,
@@ -66,7 +63,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     );
 
     _animationController.forward();
-    Future.delayed(const Duration(milliseconds: 500), () {
+    Future.delayed(Duration(milliseconds: 500), () {
       _formController.forward();
     });
   }
@@ -89,7 +86,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.all(24),
               child: FadeTransition(
                 opacity: _fadeAnimation,
                 child: SlideTransition(
@@ -101,7 +98,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                       borderRadius: BorderRadius.circular(25),
                     ),
                     child: Container(
-                      padding: const EdgeInsets.all(32),
+                      padding: EdgeInsets.all(32),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(25),
                         gradient: LinearGradient(
@@ -119,20 +116,10 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             _buildHeader(),
-                            const SizedBox(height: 40),
+                            SizedBox(height: 40),
                             _buildForm(),
-                            const SizedBox(height: 30),
+                            SizedBox(height: 30),
                             _buildLoginButton(),
-                            if (_errorMessage != null) ...[
-                              SizedBox(height: 20),
-                              Text(
-                                _errorMessage!,
-                                style: TextStyle(
-                                  color: Colors.red.shade700,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
                             SizedBox(height: 20),
                             _buildSignUpLink(),
                           ],
@@ -155,7 +142,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
         Hero(
           tag: 'app_logo',
           child: Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [Colors.blue.shade600, Colors.cyan.shade400],
@@ -169,14 +156,14 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                 ),
               ],
             ),
-            child: const Icon(
+            child: Icon(
               Icons.flight_takeoff,
               size: 50,
               color: Colors.white,
             ),
           ),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: 24),
         Text(
           'Welcome Back to Travel Booking',
           style: TextStyle(
@@ -186,7 +173,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
             letterSpacing: 1,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         Text(
           'Login to continue your journey',
           style: TextStyle(
@@ -214,37 +201,37 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                   icon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
+                    if (value?.isEmpty ?? true) {
                       return 'Please enter your email';
                     }
-                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value!)) {
                       return 'Please enter a valid email';
                     }
                     return null;
                   },
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: 20),
                 _buildAnimatedTextField(
                   controller: _passwordController,
                   label: 'Password',
                   icon: Icons.lock_outline,
                   isPassword: true,
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
+                    if (value?.isEmpty ?? true) {
                       return 'Please enter your password';
                     }
-                    if (value.length < 6) {
+                    if (value!.length < 6) {
                       return 'Password must be at least 6 characters';
                     }
                     return null;
                   },
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () {
-                      // TODO: Handle forgot password
+                      // Handle forgot password
                     },
                     child: Text(
                       'Forgot Password?',
@@ -317,7 +304,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
             borderRadius: BorderRadius.circular(15),
             borderSide: BorderSide(color: Colors.red.shade400, width: 2),
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         ),
       ),
     );
@@ -339,7 +326,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
               color: Colors.blue.withOpacity(0.3),
               blurRadius: 15,
               spreadRadius: 1,
-              offset: const Offset(0, 5),
+              offset: Offset(0, 5),
             ),
           ],
         ),
@@ -353,7 +340,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
             ),
           ),
           child: _isLoading
-              ? const SizedBox(
+              ? SizedBox(
                   width: 18,
                   height: 24,
                   child: CircularProgressIndicator(
@@ -361,7 +348,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                     strokeWidth: 2,
                   ),
                 )
-              : const Text(
+              : Text(
                   'Login',
                   style: TextStyle(
                     fontSize: 18,
@@ -410,7 +397,6 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
 
     setState(() {
       _isLoading = true;
-      _errorMessage = null;
     });
 
     _buttonController.forward();
@@ -425,22 +411,18 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
         // Login successful
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Login Successful!'),
+            content: Text('Login Successful!'),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
-
         Navigator.pushReplacementNamed(context, '/home');
       } else {
-        setState(() {
-          _errorMessage = 'Login failed or access denied.';
-        });
-
+        // Login failed or role not allowed
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_errorMessage!),
+            content: Text('Login failed or access denied.'),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -448,13 +430,9 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
         );
       }
     } catch (e) {
-      setState(() {
-        _errorMessage = 'An error occurred during login.';
-      });
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_errorMessage!),
+          content: Text('An error occurred during login.'),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

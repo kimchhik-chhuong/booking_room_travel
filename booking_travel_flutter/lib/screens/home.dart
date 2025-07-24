@@ -13,7 +13,7 @@ class _HomeScreenState extends State<HomeScreen> {
   static const List<Widget> _widgetOptions = <Widget>[
     Center(child: Text('Home Screen', style: TextStyle(fontSize: 24))),
     Center(child: Text('Search Screen', style: TextStyle(fontSize: 24))),
-    Center(child: Text('Historys Screen', style: TextStyle(fontSize: 24))),
+    Center(child: Text('Trips Screen', style: TextStyle(fontSize: 24))),
     Center(child: Text('Profile Screen', style: TextStyle(fontSize: 24))),
   ];
 
@@ -69,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.flight_land),
-            label: 'Historys',
+            label: 'Trips',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),

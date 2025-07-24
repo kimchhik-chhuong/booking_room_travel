@@ -1,9 +1,7 @@
-import 'package:flutter/material.dart';
-import '../services/user_service.dart';
+import 'package:flutter/material.dart'; 
+import '../services/user_service.dart';  
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
-
   @override
   _RegisterScreenState createState() => _RegisterScreenState();
 }
@@ -13,18 +11,18 @@ class _RegisterScreenState extends State<RegisterScreen>
   late AnimationController _animationController;
   late AnimationController _buttonController;
   late AnimationController _formController;
-
+  
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _scaleAnimation;
   late Animation<double> _formAnimation;
-
+  
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-
+  
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -33,28 +31,28 @@ class _RegisterScreenState extends State<RegisterScreen>
   @override
   void initState() {
     super.initState();
-
+    
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+      duration: Duration(milliseconds: 1500),
       vsync: this,
     );
-
+    
     _buttonController = AnimationController(
-      duration: const Duration(milliseconds: 300),
+      duration: Duration(milliseconds: 300),
       vsync: this,
     );
-
+    
     _formController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: Duration(milliseconds: 800),
       vsync: this,
     );
-
+    
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-
+    
     _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
+      begin: Offset(0, 0.3),
       end: Offset.zero,
     ).animate(CurvedAnimation(
       parent: _animationController,
@@ -70,7 +68,7 @@ class _RegisterScreenState extends State<RegisterScreen>
     );
 
     _animationController.forward();
-    Future.delayed(const Duration(milliseconds: 500), () {
+    Future.delayed(Duration(milliseconds: 500), () {
       _formController.forward();
     });
   }
@@ -102,7 +100,7 @@ class _RegisterScreenState extends State<RegisterScreen>
               // Main content
               Center(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
+                  padding: EdgeInsets.all(24),
                   child: FadeTransition(
                     opacity: _fadeAnimation,
                     child: SlideTransition(
@@ -114,7 +112,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                           borderRadius: BorderRadius.circular(25),
                         ),
                         child: Container(
-                          padding: const EdgeInsets.all(32),
+                          padding: EdgeInsets.all(32),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(25),
                             gradient: LinearGradient(
@@ -132,13 +130,13 @@ class _RegisterScreenState extends State<RegisterScreen>
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 _buildHeader(),
-                                const SizedBox(height: 40),
+                                SizedBox(height: 40),
                                 _buildForm(),
-                                const SizedBox(height: 20),
+                                SizedBox(height: 20),
                                 _buildTermsCheckbox(),
-                                const SizedBox(height: 30),
+                                SizedBox(height: 30),
                                 _buildRegisterButton(),
-                                const SizedBox(height: 20),
+                                SizedBox(height: 20),
                                 _buildSignInLink(),
                               ],
                             ),
@@ -173,12 +171,12 @@ class _RegisterScreenState extends State<RegisterScreen>
         onPressed: () {
           _showLocationDialog();
         },
-        icon: const Icon(
+        icon: Icon(
           Icons.location_on,
           color: Colors.white,
           size: 24,
         ),
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.all(12),
       ),
     );
   }
@@ -194,8 +192,8 @@ class _RegisterScreenState extends State<RegisterScreen>
           title: Row(
             children: [
               Icon(Icons.location_on, color: Colors.blue.shade600),
-              const SizedBox(width: 8),
-              const Text('Select Location'),
+              SizedBox(width: 8),
+              Text('Select Location'),
             ],
           ),
           content: Column(
@@ -203,7 +201,7 @@ class _RegisterScreenState extends State<RegisterScreen>
             children: [
               ListTile(
                 leading: Icon(Icons.my_location, color: Colors.blue.shade600),
-                title: const Text('Use Current Location'),
+                title: Text('Use Current Location'),
                 onTap: () {
                   Navigator.pop(context);
                   _getCurrentLocation();
@@ -211,7 +209,7 @@ class _RegisterScreenState extends State<RegisterScreen>
               ),
               ListTile(
                 leading: Icon(Icons.search, color: Colors.blue.shade600),
-                title: const Text('Search Location'),
+                title: Text('Search Location'),
                 onTap: () {
                   Navigator.pop(context);
                   _searchLocation();
@@ -227,7 +225,7 @@ class _RegisterScreenState extends State<RegisterScreen>
   void _getCurrentLocation() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Getting current location...'),
+        content: Text('Getting current location...'),
         backgroundColor: Colors.blue.shade600,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -238,21 +236,21 @@ class _RegisterScreenState extends State<RegisterScreen>
   void _searchLocation() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Opening location search...'),
+        content: Text('Opening location search...'),
         backgroundColor: Colors.blue.shade600,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
-
+// app
   Widget _buildHeader() {
     return Column(
       children: [
         Hero(
           tag: 'app_logo',
           child: Container(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [Colors.blue.shade600, Colors.cyan.shade300],
@@ -266,14 +264,14 @@ class _RegisterScreenState extends State<RegisterScreen>
                 ),
               ],
             ),
-            child: const Icon(
+            child: Icon(
               Icons.person_add,
               size: 30,
               color: Colors.white,
             ),
           ),
         ),
-        const SizedBox(height: 15),
+        SizedBox(height: 15),
         Text(
           'Create Account',
           style: TextStyle(
@@ -283,7 +281,7 @@ class _RegisterScreenState extends State<RegisterScreen>
             letterSpacing: 1,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         Text(
           'Join us and start your adventure',
           style: TextStyle(
@@ -316,7 +314,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                     return null;
                   },
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: 20),
                 _buildAnimatedTextField(
                   controller: _emailController,
                   label: 'Email Address',
@@ -332,7 +330,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                     return null;
                   },
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: 20),
                 _buildAnimatedTextField(
                   controller: _passwordController,
                   label: 'Password',
@@ -348,7 +346,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                     return null;
                   },
                 ),
-                const SizedBox(height: 20),
+                SizedBox(height: 20),
                 _buildAnimatedTextField(
                   controller: _confirmPasswordController,
                   label: 'Confirm Password',
@@ -382,8 +380,8 @@ class _RegisterScreenState extends State<RegisterScreen>
     TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) {
-    bool obscureText = isPassword
-        ? (isConfirmPassword ? _obscureConfirmPassword : _obscurePassword)
+    bool obscureText = isPassword 
+        ? (isConfirmPassword ? _obscureConfirmPassword : _obscurePassword) 
         : false;
 
     return Container(
@@ -436,7 +434,7 @@ class _RegisterScreenState extends State<RegisterScreen>
             borderRadius: BorderRadius.circular(15),
             borderSide: BorderSide(color: Colors.red.shade400, width: 2),
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         ),
       ),
     );
@@ -471,7 +469,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                   fontSize: 14,
                 ),
                 children: [
-                  const TextSpan(text: 'I agree to the '),
+                  TextSpan(text: 'I agree to the '),
                   TextSpan(
                     text: 'Terms of Service',
                     style: TextStyle(
@@ -479,7 +477,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const TextSpan(text: ' and '),
+                  TextSpan(text: ' and '),
                   TextSpan(
                     text: 'Privacy Policy',
                     style: TextStyle(
@@ -512,7 +510,7 @@ class _RegisterScreenState extends State<RegisterScreen>
               color: Colors.blue.withOpacity(0.3),
               blurRadius: 15,
               spreadRadius: 1,
-              offset: const Offset(0, 5),
+              offset: Offset(0, 5),
             ),
           ],
         ),
@@ -526,7 +524,7 @@ class _RegisterScreenState extends State<RegisterScreen>
             ),
           ),
           child: _isLoading
-              ? const SizedBox(
+              ? SizedBox(
                   width: 24,
                   height: 24,
                   child: CircularProgressIndicator(
@@ -534,7 +532,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                     strokeWidth: 2,
                   ),
                 )
-              : const Text(
+              : Text(
                   'Create Account',
                   style: TextStyle(
                     fontSize: 18,
@@ -584,7 +582,7 @@ class _RegisterScreenState extends State<RegisterScreen>
     if (!_agreeToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Please agree to the Terms of Service'),
+          content: Text('Please agree to the Terms of Service'),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -616,7 +614,7 @@ class _RegisterScreenState extends State<RegisterScreen>
         if (user != null) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Account Created Successfully!'),
+              content: Text('Account Created Successfully!'),
               backgroundColor: Colors.green,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -626,7 +624,7 @@ class _RegisterScreenState extends State<RegisterScreen>
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Login failed after registration.'),
+              content: Text('Login failed after registration.'),
               backgroundColor: Colors.red,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -634,9 +632,10 @@ class _RegisterScreenState extends State<RegisterScreen>
           );
         }
       } else {
+        // Registration failed, check if user already exists
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('User already exists. Please login instead.'),
+            content: Text('User already exists. Please login instead.'),
             backgroundColor: Colors.orange,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -646,7 +645,7 @@ class _RegisterScreenState extends State<RegisterScreen>
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('An error occurred during registration.'),
+          content: Text('An error occurred during registration.'),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

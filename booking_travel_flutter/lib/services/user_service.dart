@@ -5,8 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 class UserService {
   static const String _currentUserKey = 'current_user';
   static const String _accessTokenKey = 'access_token';
-
-  static const String baseUrl = 'http://localhost:8000/api'; // Change to your API base URL
+ 
+   static const String baseUrl = 'http://localhost:8000/api'; // Change to your API base URL 
 
   // Register a new user
   static Future<bool> registerUser({
@@ -46,7 +46,7 @@ class UserService {
             final errors = errorData['errors'] as Map<String, dynamic>;
             final errorMessages = errors.values
                 .map((e) => (e as List).join(', '))
-                .join('\n');
+                .join('\\n');
             print('Registration validation errors: $errorMessages');
           } else if (errorData.containsKey('message')) {
             print('Registration error message: ${errorData['message']}');
@@ -80,13 +80,16 @@ class UserService {
         }),
       );
 
-      print('Login response status: ${response.statusCode}');
-      print('Login response body: ${response.body}');
-
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final user = data['user'];
         final token = data['access_token'];
+
+        if (user['role'] != 'user') {
+          // Only allow users with role 'user' to login in Flutter app
+          print('Access denied for role: ${user["role"]}');
+          return null;
+        }
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(_currentUserKey, jsonEncode(user));
