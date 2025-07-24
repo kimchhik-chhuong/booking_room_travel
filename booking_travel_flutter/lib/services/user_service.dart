@@ -67,44 +67,38 @@ class UserService {
 
   // Login user
   static Future<Map<String, dynamic>?> loginUser({
-    required String email,
-    required String password,
-  }) async {
-    try {
-      final response = await http.post(
-        Uri.parse("$baseUrl/login"),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'email': email,
-          'password': password,
-        }),
-      );
+  required String email,
+  required String password,
+}) async {
+  try {
+    final response = await http.post(
+      Uri.parse("$baseUrl/login"),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email, 'password': password}),
+    );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final user = data['user'];
-        final token = data['access_token'];
+    print('Login response status: ${response.statusCode}');
+    print('Login response body: ${response.body}');
 
-        if (user['role'] != 'user') {
-          // Only allow users with role 'user' to login in Flutter app
-          print('Access denied for role: ${user["role"]}');
-          return null;
-        }
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final user = data['user'];
+      final token = data['access_token'];
 
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString(_currentUserKey, jsonEncode(user));
-        await prefs.setString(_accessTokenKey, token);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_currentUserKey, jsonEncode(user));
+      await prefs.setString(_accessTokenKey, token);
 
-        return user;
-      } else {
-        print('Login failed: ${response.body}');
-        return null;
-      }
-    } catch (e) {
-      print('Login error: $e');
+      return user;
+    } else {
+      print('Login failed: ${response.body}');
       return null;
     }
+  } catch (e) {
+    print('Login error: $e');
+    return null;
   }
+}
 
   // Get current logged in user
   static Future<Map<String, dynamic>?> getCurrentUser() async {
