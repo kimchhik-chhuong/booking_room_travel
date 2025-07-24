@@ -33,8 +33,8 @@ class TravelBookingApp extends StatelessWidget {
         '/login': (context) => LoginScreen(),
         '/register': (context) => RegisterScreen(),
         '/onboarding': (context) => OnboardingScreen(),
-        '/dashboard': (context) => HomeScreen(), // ✅ Add dashboard/home
-        '/search': (context) => SearchScreen(),   // ✅ Add search screen route
+        '/home': (context) => HomeScreen(),
+        '/search': (context) => SearchScreen(),
       },
     );
   }
@@ -112,7 +112,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
     bool isLoggedIn = await UserService.isLoggedIn();
     if (isLoggedIn) {
-      Navigator.pushReplacementNamed(context, '/dashboard');
+      Navigator.pushReplacementNamed(context, '/home');
     } else {
       Navigator.pushReplacementNamed(context, '/onboarding');
     }
