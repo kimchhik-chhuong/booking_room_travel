@@ -13,11 +13,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Widget> _pages = [
     HomePageContent(),
     SearchScreen(),
-<<<<<<< HEAD
-    TripScreen(), // Ensure TripScreen is used here
-=======
     Center(child: Text('Historys Page')),
->>>>>>> 7287b528c54cafe31eb2cb9121a2bceeab027e23
     Center(child: Text('Profile Page')),
   ];
 
