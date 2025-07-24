@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'search_screen.dart';
+import 'trip_screen.dart'; // Ensure this import is present and correct
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -12,7 +13,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<Widget> _pages = [
     HomePageContent(),
     SearchScreen(),
-    Center(child: Text('Trips Page')),
+    TripScreen(), // Ensure TripScreen is used here
     Center(child: Text('Profile Page')),
   ];
 
