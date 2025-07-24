@@ -13,18 +13,18 @@ class _RegisterScreenState extends State<RegisterScreen>
   late AnimationController _animationController;
   late AnimationController _buttonController;
   late AnimationController _formController;
-  
+
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _scaleAnimation;
   late Animation<double> _formAnimation;
-  
+
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  
+
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -33,26 +33,26 @@ class _RegisterScreenState extends State<RegisterScreen>
   @override
   void initState() {
     super.initState();
-    
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    
+
     _buttonController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    
+
     _formController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-    
+
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
@@ -245,7 +245,7 @@ class _RegisterScreenState extends State<RegisterScreen>
       ),
     );
   }
-// app
+
   Widget _buildHeader() {
     return Column(
       children: [
@@ -382,8 +382,8 @@ class _RegisterScreenState extends State<RegisterScreen>
     TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) {
-    bool obscureText = isPassword 
-        ? (isConfirmPassword ? _obscureConfirmPassword : _obscurePassword) 
+    bool obscureText = isPassword
+        ? (isConfirmPassword ? _obscureConfirmPassword : _obscurePassword)
         : false;
 
     return Container(
@@ -634,7 +634,6 @@ class _RegisterScreenState extends State<RegisterScreen>
           );
         }
       } else {
-        // Registration failed, check if user already exists
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('User already exists. Please login instead.'),

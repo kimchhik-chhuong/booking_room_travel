@@ -1,9 +1,12 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'; 
 import 'package:flutter/services.dart';
+
 import 'screens/register.dart';
 import 'screens/login.dart';
-import 'screens/home.dart';
-import 'services/user_service.dart';
+import 'screens/onboarding.dart';
+import 'screens/home_screen.dart';
+import 'screens/search_screen.dart'; // ✅ Add this line
+import 'services/user_service.dart'; // User login check service
 
 void main() {
   runApp(TravelBookingApp());
@@ -15,7 +18,7 @@ class TravelBookingApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Travel Booking',
+      title: 'Booking Travel',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
@@ -31,8 +34,9 @@ class TravelBookingApp extends StatelessWidget {
       routes: {
         '/login': (context) => LoginScreen(),
         '/register': (context) => RegisterScreen(),
+        '/onboarding': (context) => OnboardingScreen(),
         '/home': (context) => HomeScreen(),
-        // Removed '/dashboard' route as dashboard is handled in Laravel Blade
+        '/search': (context) => SearchScreen(),
       },
     );
   }
@@ -45,12 +49,11 @@ class SplashScreen extends StatefulWidget {
   _SplashScreenState createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
-    with TickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
   late AnimationController _logoController;
   late AnimationController _textController;
   late AnimationController _backgroundController;
-  
+
   late Animation<double> _logoScaleAnimation;
   late Animation<double> _logoRotationAnimation;
   late Animation<double> _textFadeAnimation;
@@ -60,79 +63,65 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
-    
+
     _logoController = AnimationController(
       duration: const Duration(milliseconds: 2000),
       vsync: this,
     );
-    
+
     _textController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    
+
     _backgroundController = AnimationController(
       duration: const Duration(milliseconds: 3000),
       vsync: this,
     );
 
     _logoScaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _logoController,
-        curve: Curves.elasticOut,
-      ),
+      CurvedAnimation(parent: _logoController, curve: Curves.elasticOut),
     );
 
     _logoRotationAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _logoController,
-        curve: Curves.easeInOut,
-      ),
+      CurvedAnimation(parent: _logoController, curve: Curves.easeInOut),
     );
 
     _textFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _textController,
-        curve: Curves.easeIn,
-      ),
+      CurvedAnimation(parent: _textController, curve: Curves.easeIn),
     );
 
     _textSlideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.5),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _textController,
-      curve: Curves.easeOutCubic,
-    ));
+    ).animate(
+      CurvedAnimation(parent: _textController, curve: Curves.easeOutCubic),
+    );
 
     _backgroundAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _backgroundController,
-        curve: Curves.easeInOut,
-      ),
+      CurvedAnimation(parent: _backgroundController, curve: Curves.easeInOut),
     );
 
     _startAnimations();
   }
 
-  void _startAnimations() async {
+  Future<void> _startAnimations() async {
     _backgroundController.forward();
     await Future.delayed(const Duration(milliseconds: 500));
     _logoController.forward();
     await Future.delayed(const Duration(milliseconds: 800));
     _textController.forward();
-    
-    await Future.delayed(const Duration(milliseconds: 2500));
-    
-    // Check if user is already logged in
+
+    await Future.delayed(Duration(milliseconds: 2500));
+
     bool isLoggedIn = await UserService.isLoggedIn();
     if (isLoggedIn) {
-      // Redirect to home screen if logged in
       Navigator.pushReplacementNamed(context, '/home');
     } else {
-      Navigator.pushReplacementNamed(context, '/login');
+      Navigator.pushReplacementNamed(context, '/onboarding');
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

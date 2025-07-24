@@ -8,46 +8,47 @@ class LoginScreen extends StatefulWidget {
   _LoginScreenState createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen>
-    with TickerProviderStateMixin {
+class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin {
   late AnimationController _animationController;
   late AnimationController _buttonController;
   late AnimationController _formController;
-  
+
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _scaleAnimation;
   late Animation<double> _formAnimation;
-  
+
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+
   bool _isLoading = false;
   bool _obscurePassword = true;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    
+
     _buttonController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    
+
     _formController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-    
+
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
@@ -122,7 +123,17 @@ class _LoginScreenState extends State<LoginScreen>
                             _buildForm(),
                             const SizedBox(height: 30),
                             _buildLoginButton(),
-                            const SizedBox(height: 20),
+                            if (_errorMessage != null) ...[
+                              SizedBox(height: 20),
+                              Text(
+                                _errorMessage!,
+                                style: TextStyle(
+                                  color: Colors.red.shade700,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                            SizedBox(height: 20),
                             _buildSignUpLink(),
                           ],
                         ),
@@ -203,10 +214,10 @@ class _LoginScreenState extends State<LoginScreen>
                   icon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
-                    if (value?.isEmpty ?? true) {
+                    if (value == null || value.isEmpty) {
                       return 'Please enter your email';
                     }
-                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value!)) {
+                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
                       return 'Please enter a valid email';
                     }
                     return null;
@@ -219,10 +230,10 @@ class _LoginScreenState extends State<LoginScreen>
                   icon: Icons.lock_outline,
                   isPassword: true,
                   validator: (value) {
-                    if (value?.isEmpty ?? true) {
+                    if (value == null || value.isEmpty) {
                       return 'Please enter your password';
                     }
-                    if (value!.length < 6) {
+                    if (value.length < 6) {
                       return 'Password must be at least 6 characters';
                     }
                     return null;
@@ -233,7 +244,7 @@ class _LoginScreenState extends State<LoginScreen>
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () {
-                      // Handle forgot password
+                      // TODO: Handle forgot password
                     },
                     child: Text(
                       'Forgot Password?',
@@ -399,6 +410,7 @@ class _LoginScreenState extends State<LoginScreen>
 
     setState(() {
       _isLoading = true;
+      _errorMessage = null;
     });
 
     _buttonController.forward();
@@ -419,12 +431,16 @@ class _LoginScreenState extends State<LoginScreen>
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
+
         Navigator.pushReplacementNamed(context, '/home');
       } else {
-        // Login failed or role not allowed
+        setState(() {
+          _errorMessage = 'Login failed or access denied.';
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Login failed or access denied.'),
+            content: Text(_errorMessage!),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -432,9 +448,13 @@ class _LoginScreenState extends State<LoginScreen>
         );
       }
     } catch (e) {
+      setState(() {
+        _errorMessage = 'An error occurred during login.';
+      });
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('An error occurred during login.'),
+          content: Text(_errorMessage!),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
