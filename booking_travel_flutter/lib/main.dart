@@ -10,6 +10,8 @@ void main() {
 }
 
 class TravelBookingApp extends StatelessWidget {
+  const TravelBookingApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -19,7 +21,7 @@ class TravelBookingApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         fontFamily: 'Roboto',
         visualDensity: VisualDensity.adaptivePlatformDensity,
-        appBarTheme: AppBarTheme(
+        appBarTheme: const AppBarTheme(
           elevation: 0,
           backgroundColor: Colors.transparent,
           systemOverlayStyle: SystemUiOverlayStyle.light,
@@ -37,6 +39,8 @@ class TravelBookingApp extends StatelessWidget {
 }
 
 class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
@@ -58,17 +62,17 @@ class _SplashScreenState extends State<SplashScreen>
     super.initState();
     
     _logoController = AnimationController(
-      duration: Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 2000),
       vsync: this,
     );
     
     _textController = AnimationController(
-      duration: Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
     
     _backgroundController = AnimationController(
-      duration: Duration(milliseconds: 3000),
+      duration: const Duration(milliseconds: 3000),
       vsync: this,
     );
 
@@ -94,7 +98,7 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     _textSlideAnimation = Tween<Offset>(
-      begin: Offset(0, 0.5),
+      begin: const Offset(0, 0.5),
       end: Offset.zero,
     ).animate(CurvedAnimation(
       parent: _textController,
@@ -113,12 +117,12 @@ class _SplashScreenState extends State<SplashScreen>
 
   void _startAnimations() async {
     _backgroundController.forward();
-    await Future.delayed(Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 500));
     _logoController.forward();
-    await Future.delayed(Duration(milliseconds: 800));
+    await Future.delayed(const Duration(milliseconds: 800));
     _textController.forward();
     
-    await Future.delayed(Duration(milliseconds: 2500));
+    await Future.delayed(const Duration(milliseconds: 2500));
     
     // Check if user is already logged in
     bool isLoggedIn = await UserService.isLoggedIn();
@@ -145,7 +149,7 @@ class _SplashScreenState extends State<SplashScreen>
                   Color.lerp(Colors.blue.shade600, Colors.pink.shade600, _backgroundAnimation.value)!,
                   Color.lerp(Colors.cyan.shade400, Colors.orange.shade400, _backgroundAnimation.value)!,
                 ],
-                stops: [0.0, 0.5, 1.0],
+                stops: const [0.0, 0.5, 1.0],
               ),
             ),
             child: Center(
@@ -160,7 +164,7 @@ class _SplashScreenState extends State<SplashScreen>
                         child: Transform.rotate(
                           angle: _logoRotationAnimation.value * 0.5,
                           child: Container(
-                            padding: EdgeInsets.all(20),
+                            padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.2),
                               shape: BoxShape.circle,
@@ -172,7 +176,7 @@ class _SplashScreenState extends State<SplashScreen>
                                 ),
                               ],
                             ),
-                            child: Icon(
+                            child: const Icon(
                               Icons.flight_takeoff,
                               size: 80,
                               color: Colors.white,
@@ -182,14 +186,14 @@ class _SplashScreenState extends State<SplashScreen>
                       );
                     },
                   ),
-                  SizedBox(height: 40),
+                  const SizedBox(height: 40),
                   SlideTransition(
                     position: _textSlideAnimation,
                     child: FadeTransition(
                       opacity: _textFadeAnimation,
                       child: Column(
                         children: [
-                          Text(
+                          const Text(
                             'Travel Booking',
                             style: TextStyle(
                               fontSize: 36,
@@ -198,8 +202,8 @@ class _SplashScreenState extends State<SplashScreen>
                               letterSpacing: 2,
                             ),
                           ),
-                          SizedBox(height: 10),
-                          Text(
+                          const SizedBox(height: 10),
+                          const Text(
                             'Discover Amazing Places',
                             style: TextStyle(
                               fontSize: 18,
@@ -207,7 +211,7 @@ class _SplashScreenState extends State<SplashScreen>
                               letterSpacing: 1,
                             ),
                           ),
-                          SizedBox(height: 30),
+                          const SizedBox(height: 30),
                           Container(
                             width: 50,
                             height: 3,

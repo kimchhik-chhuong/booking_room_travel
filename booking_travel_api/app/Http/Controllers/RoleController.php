@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreRoleRequest;
-use App\Http\Requests\UpdateRoleRequest;
+use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
-use DB;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class RoleController extends Controller
 {
@@ -43,12 +44,18 @@ class RoleController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreRoleRequest $request): RedirectResponse
+    public function store(Request $request): RedirectResponse
     {
+        $request->validate([
+            'name' => 'required|string|max:255|unique:roles,name',
+            'permissions' => 'required|array',
+            'permissions.*' => 'exists:permissions,id',
+        ]);
+
         $role = Role::create(['name' => $request->name]);
 
-        $permissions = Permission::whereIn('id', $request->permissions)->get(['name'])->toArray();
-        
+        $permissions = Permission::whereIn('id', $request->permissions)->pluck('name')->toArray();
+
         $role->syncPermissions($permissions);
 
         return redirect()->route('roles.index')
@@ -60,9 +67,9 @@ class RoleController extends Controller
      */
     public function show(Role $role): View
     {
-        $rolePermissions = Permission::join("role_has_permissions","permission_id","=","id")
-            ->where("role_id",$role->id)
-            ->select('name')
+        $rolePermissions = Permission::join("role_has_permissions","permissions.id","=","role_has_permissions.permission_id")
+            ->where("role_has_permissions.role_id",$role->id)
+            ->select('permissions.name')
             ->get();
         return view('roles.show', [
             'role' => $role,
@@ -93,16 +100,22 @@ class RoleController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateRoleRequest $request, Role $role): RedirectResponse
+    public function update(Request $request, Role $role): RedirectResponse
     {
+        $request->validate([
+            'name' => 'required|string|max:255|unique:roles,name,' . $role->id,
+            'permissions' => 'required|array',
+            'permissions.*' => 'exists:permissions,id',
+        ]);
+
         $input = $request->only('name');
 
         $role->update($input);
 
-        $permissions = Permission::whereIn('id', $request->permissions)->get(['name'])->toArray();
+        $permissions = Permission::whereIn('id', $request->permissions)->pluck('name')->toArray();
 
-        $role->syncPermissions($permissions);    
-        
+        $role->syncPermissions($permissions);
+
         return redirect()->route("roles.index")
                 ->withSuccess('Role is updated successfully.');
     }
@@ -115,7 +128,8 @@ class RoleController extends Controller
         if($role->name=='Super Admin'){
             abort(403, 'SUPER ADMIN ROLE CAN NOT BE DELETED');
         }
-        if(auth()->user()->hasRole($role->name)){
+
+        if(Gate::denies('delete-role', $role) || !Auth::check()){
             abort(403, 'CAN NOT DELETE SELF ASSIGNED ROLE');
         }
         $role->delete();
