@@ -6,90 +6,117 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Routing\Controller;
-
 
 class UserController extends Controller
 {
     public function __construct()
     {
         $this->middleware('auth');
-        $this->middleware('role:admin,employee,user', ['only' => ['index','show']]);
-        $this->middleware('role:admin,employee', ['only' => ['create','store']]);
-        $this->middleware('role:admin,employee', ['only' => ['edit','update']]);
+        $this->middleware('role:admin,employer,user', ['only' => ['index', 'show']]);
+        $this->middleware('role:admin,employer', ['only' => ['create', 'store']]);
+        $this->middleware('role:admin,employer', ['only' => ['edit', 'update']]);
         $this->middleware('role:admin', ['only' => ['destroy']]);
     }
 
     /**
-     * Display a listing of the resource.
+     * Display a listing of the users.
      */
     public function index(): View
     {
         return view('users.index', [
-        'users' => User::latest()->paginate(6),
-        'totalUsers' => User::count(),
-        'activeUsers' => User::where('is_active', true)->count(),
-        'adminUsers' => User::where('role', 'admin')->count(),
-        'newUsers' => User::where('created_at', '>=', now()->subDays(30))->count()
+            'users'       => User::latest()->paginate(6),
+            'totalUsers'  => User::count(),
+            'activeUsers' => User::where('is_active', true)->count(),
+            'adminUsers'  => User::admins()->count(),
+            'newUsers'    => User::where('created_at', '>=', now()->subDays(30))->count(),
         ]);
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Show the form for creating a new user.
      */
     public function create(): View
     {
         return view('users.create', [
-            'roles' => ['admin', 'employee', 'user']
+            'roles' => ['admin', 'employer', 'user'],
         ]);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created user.
      */
     public function store(Request $request): RedirectResponse
     {
         $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|string|in:admin,employee,user',
-            'images' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'is_active' => 'boolean',
+            'name'                => 'required|string|max:255',
+            'email'               => 'required|email|unique:users,email',
+            'password'            => 'required|string|min:8|confirmed',
+            'role'                => 'required|string|in:admin,employer,user',
+            'profile_picture_url' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'is_active'           => 'boolean',
         ]);
 
+        // Hash password
         $validatedData['password'] = Hash::make($validatedData['password']);
 
-        if ($request->hasFile('images')) {
-            $validatedData['images'] = $request->file('images')->store('users', 'public');
+        // Handle profile image upload
+        if ($request->hasFile('profile_picture_url')) {
+            $validatedData['profile_picture_url'] = $request
+                ->file('profile_picture_url')
+                ->store('users', 'public');
         }
 
-        $user = User::create($validatedData);
-        $user->role = $validatedData['role'];
-        $user->save();
+        User::create($validatedData);
 
-        return redirect()->route('users.index')
-                ->withSuccess('New user added successfully.');
+        return redirect()
+            ->route('users.index')
+            ->withSuccess('New user added successfully.');
     }
 
     /**
-     * Display the specified resource.
+     * Display a specific user.
      */
+<<<<<<< HEAD
     public function show(User $user)
 {
     return response()->json($user);
 }
 
+=======
+    public function show(User $user): View
+    {
+        return view('users.show', compact('user'));
+    }
+>>>>>>> main
 
     /**
-     * Show the form for editing the specified resource.
+     * Show the form for editing a user.
      */
+<<<<<<< HEAD
     public function edit(User $user)
 {
     if ($user->hasRole('Super Admin') && $user->id != auth()->id()) {
         return response()->json(['message' => 'Unauthorized'], 403);
+=======
+    public function edit(User $user): View
+    {
+        // Only Super Admin can edit their own profile
+        if ($user->role === 'Super Admin') {
+            $authUser = Auth::user();
+            if (!$authUser || $user->id !== $authUser->id) { // Changed getKey() to id
+                abort(403, 'USER DOES NOT HAVE THE RIGHT PERMISSIONS');
+            }
+        }
+
+        return view('users.edit', [
+            'user'     => $user,
+            'roles'    => ['admin', 'employer', 'user'],
+            'userRole' => $user->role,
+        ]);
+>>>>>>> main
     }
 
     return response()->json([
@@ -101,61 +128,64 @@ class UserController extends Controller
 
 
     /**
-     * Update the specified resource in storage.
+     * Update a user.
      */
     public function update(Request $request, User $user): RedirectResponse
     {
         $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'password' => 'nullable|string|min:8|confirmed',
-            'role' => 'required|string|in:admin,employee,user',
-            'images' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'is_active' => 'boolean',
+            'name'                => 'required|string|max:255',
+            'email'               => 'required|email|unique:users,email,' . $user->id,
+            'password'            => 'nullable|string|min:8|confirmed',
+            'role'                => 'required|string|in:admin,employer,user',
+            'profile_picture_url' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'is_active'           => 'boolean',
         ]);
 
+        // Update password if provided
         if (!empty($validatedData['password'])) {
             $validatedData['password'] = Hash::make($validatedData['password']);
         } else {
             unset($validatedData['password']);
         }
 
-        // Handle image upload
-        if ($request->hasFile('images')) {
-            // Delete old image if exists
-            if ($user->images && Storage::disk('public')->exists($user->images)) {
-                Storage::disk('public')->delete($user->images);
+        // Handle image upload and delete old image
+        if ($request->hasFile('profile_picture_url')) {
+            if ($user->profile_picture_url && Storage::disk('public')->exists($user->profile_picture_url)) {
+                Storage::disk('public')->delete($user->profile_picture_url);
             }
-            $validatedData['images'] = $request->file('images')->store('users', 'public');
+            $validatedData['profile_picture_url'] = $request
+                ->file('profile_picture_url')
+                ->store('users', 'public');
         }
 
-        $user->role = $validatedData['role'];
         $user->update($validatedData);
 
-        return redirect()->route('users.index')
-                ->withSuccess('User updated successfully.');
+        return redirect()
+            ->route('users.index')
+            ->withSuccess('User updated successfully.');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Delete a user.
      */
     public function destroy(User $user): RedirectResponse
     {
-        // About if user is Super Admin or user is deleting himself
-        if ($user->hasRole('Super Admin') || $user->id == auth()->user()->id)
-        {
+        $authUser = Auth::user();
+
+        // Prevent deletion of Super Admin or self-deletion
+        if ($user->role === 'Super Admin' || ($authUser && $user->id == $authUser->id)) { // Changed getKey() to id
             abort(403, 'USER DOES NOT HAVE THE RIGHT PERMISSIONS');
         }
 
-        // Delete user image if exists
-        if ($user->images) {
-            Storage::disk('public')->delete($user->images);
+        // Delete profile image if exists
+        if ($user->profile_picture_url && Storage::disk('public')->exists($user->profile_picture_url)) {
+            Storage::disk('public')->delete($user->profile_picture_url);
         }
 
-        $user->syncRoles([]);
         $user->delete();
 
-        return redirect()->route('users.index')
-                ->withSuccess('User deleted successfully.');
+        return redirect()
+            ->route('users.index')
+            ->withSuccess('User deleted successfully.');
     }
 }

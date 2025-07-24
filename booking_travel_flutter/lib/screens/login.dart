@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../services/user_service.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -30,17 +32,17 @@ class _LoginScreenState extends State<LoginScreen>
     super.initState();
 
     _animationController = AnimationController(
-      duration: Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
 
     _buttonController = AnimationController(
-      duration: Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 300),
       vsync: this,
     );
 
     _formController = AnimationController(
-      duration: Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 800),
       vsync: this,
     );
 
@@ -49,7 +51,7 @@ class _LoginScreenState extends State<LoginScreen>
     );
 
     _slideAnimation = Tween<Offset>(
-      begin: Offset(0, 0.3),
+      begin: const Offset(0, 0.3),
       end: Offset.zero,
     ).animate(CurvedAnimation(
       parent: _animationController,
@@ -65,7 +67,7 @@ class _LoginScreenState extends State<LoginScreen>
     );
 
     _animationController.forward();
-    Future.delayed(Duration(milliseconds: 500), () {
+    Future.delayed(const Duration(milliseconds: 500), () {
       _formController.forward();
     });
   }
@@ -88,7 +90,7 @@ class _LoginScreenState extends State<LoginScreen>
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: EdgeInsets.all(24),
+              padding: const EdgeInsets.all(24),
               child: FadeTransition(
                 opacity: _fadeAnimation,
                 child: SlideTransition(
@@ -100,7 +102,7 @@ class _LoginScreenState extends State<LoginScreen>
                       borderRadius: BorderRadius.circular(25),
                     ),
                     child: Container(
-                      padding: EdgeInsets.all(32),
+                      padding: const EdgeInsets.all(32),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(25),
                         gradient: LinearGradient(
@@ -118,9 +120,9 @@ class _LoginScreenState extends State<LoginScreen>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             _buildHeader(),
-                            SizedBox(height: 40),
+                            const SizedBox(height: 40),
                             _buildForm(),
-                            SizedBox(height: 30),
+                            const SizedBox(height: 30),
                             _buildLoginButton(),
                             if (_errorMessage != null) ...[
                               SizedBox(height: 20),
@@ -154,7 +156,7 @@ class _LoginScreenState extends State<LoginScreen>
         Hero(
           tag: 'app_logo',
           child: Container(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [Colors.blue.shade600, Colors.cyan.shade400],
@@ -168,14 +170,14 @@ class _LoginScreenState extends State<LoginScreen>
                 ),
               ],
             ),
-            child: Icon(
+            child: const Icon(
               Icons.flight_takeoff,
               size: 50,
               color: Colors.white,
             ),
           ),
         ),
-        SizedBox(height: 24),
+        const SizedBox(height: 24),
         Text(
           'Welcome Back to Travel Booking',
           style: TextStyle(
@@ -185,7 +187,7 @@ class _LoginScreenState extends State<LoginScreen>
             letterSpacing: 1,
           ),
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         Text(
           'Login to continue your journey',
           style: TextStyle(
@@ -223,7 +225,7 @@ class _LoginScreenState extends State<LoginScreen>
                     return null;
                   },
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 _buildAnimatedTextField(
                   controller: _passwordController,
                   label: 'Password',
@@ -239,7 +241,7 @@ class _LoginScreenState extends State<LoginScreen>
                     return null;
                   },
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
@@ -317,7 +319,7 @@ class _LoginScreenState extends State<LoginScreen>
             borderRadius: BorderRadius.circular(15),
             borderSide: BorderSide(color: Colors.red.shade400, width: 2),
           ),
-          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         ),
       ),
     );
@@ -339,7 +341,7 @@ class _LoginScreenState extends State<LoginScreen>
               color: Colors.blue.withOpacity(0.3),
               blurRadius: 15,
               spreadRadius: 1,
-              offset: Offset(0, 5),
+              offset: const Offset(0, 5),
             ),
           ],
         ),
@@ -353,7 +355,7 @@ class _LoginScreenState extends State<LoginScreen>
             ),
           ),
           child: _isLoading
-              ? SizedBox(
+              ? const SizedBox(
                   width: 18,
                   height: 24,
                   child: CircularProgressIndicator(
@@ -361,7 +363,7 @@ class _LoginScreenState extends State<LoginScreen>
                     strokeWidth: 2,
                   ),
                 )
-              : Text(
+              : const Text(
                   'Login',
                   style: TextStyle(
                     fontSize: 18,
@@ -425,7 +427,7 @@ class _LoginScreenState extends State<LoginScreen>
         // Login successful
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Login Successful!'),
+            content: const Text('Login Successful!'),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
             shape:
