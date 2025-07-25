@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
+import 'page/trips_page.dart';
+import 'page/hotels_page.dart';
+import 'page/flights_page.dart';
+import 'page/offers_page.dart';
+import 'payment_screen.dart';
 import 'search_screen.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -11,9 +17,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _pages = [
     HomePageContent(),
+    PaymentScreen(),
     SearchScreen(),
     Center(child: Text('Historys Page')),
-    Center(child: Text('Profile Page')),
+    ProfileScreen(), // Updated to use the new ProfileScreen
   ];
 
   @override
@@ -30,10 +37,12 @@ class _HomeScreenState extends State<HomeScreen> {
           });
         },
         type: BottomNavigationBarType.fixed,
-        items: [
+        items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.payment), label: 'Payment'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(icon: Icon(Icons.card_travel), label: 'Historys'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.card_travel), label: 'Historys'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
@@ -48,12 +57,12 @@ class HomePageContent extends StatelessWidget {
       padding: EdgeInsets.zero,
       children: [
         _buildHeader(),
-        SizedBox(height: 10),
-        _buildOptions(),
-        SizedBox(height: 20),
+        const SizedBox(height: 10),
+        _buildOptions(context),
+        const SizedBox(height: 20),
         _buildSectionTitle('Popular Offer'),
         _buildPopularOffers(),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         _buildSectionTitle('Hotel Near You'),
         _buildHotelCard(
           context,
@@ -68,24 +77,24 @@ class HomePageContent extends StatelessWidget {
           imageUrl:
               'https://images.unsplash.com/photo-1505691723518-36a5ac3be353?w=800&q=80',
         ),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
       ],
     );
   }
 
   Widget _buildHeader() {
     return Padding(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Flexible(
+          const Flexible(
             child: Text(
               "Let's Explore The World!",
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
           ),
-          CircleAvatar(
+          const CircleAvatar(
             backgroundImage: NetworkImage(
               'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&q=80',
             ),
@@ -95,34 +104,53 @@ class HomePageContent extends StatelessWidget {
     );
   }
 
-  Widget _buildOptions() {
+  Widget _buildOptions(BuildContext context) {
     final options = ['Trips', 'Hotels', 'Flights', 'Offers'];
-    final colors = [Colors.purple, Colors.pink, Colors.orange, Colors.blueAccent];
+    final colors = [
+      Colors.purple,
+      Colors.pink,
+      Colors.orange,
+      Colors.blueAccent
+    ];
     final icons = [
       Icons.airplanemode_active,
       Icons.hotel,
       Icons.flight,
       Icons.local_offer,
     ];
+    final pages = [
+      const TripsPage(),
+      const HotelsPage(),
+      const FlightsPage(),
+      const OffersPage(),
+    ];
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: List.generate(options.length, (index) {
-          return Column(
-            children: [
-              CircleAvatar(
-                backgroundColor: colors[index],
-                radius: 30,
-                child: Icon(icons[index], color: Colors.white, size: 28),
-              ),
-              SizedBox(height: 8),
-              Text(
-                options[index],
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ],
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => pages[index]),
+              );
+            },
+            child: Column(
+              children: [
+                CircleAvatar(
+                  backgroundColor: colors[index],
+                  radius: 30,
+                  child: Icon(icons[index], color: Colors.white, size: 28),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  options[index],
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
           );
         }),
       ),
@@ -131,10 +159,10 @@ class HomePageContent extends StatelessWidget {
 
   Widget _buildSectionTitle(String title) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Text(
         title,
-        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -149,28 +177,36 @@ class HomePageContent extends StatelessWidget {
 
     return Container(
       height: 180,
-      padding: EdgeInsets.only(left: 16),
+      padding: const EdgeInsets.only(left: 16),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: offers.length,
-        separatorBuilder: (context, index) => SizedBox(width: 12),
+        separatorBuilder: (context, index) => const SizedBox(width: 12),
         itemBuilder: (context, index) {
+          final url = offers[index];
           return ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              offers[index],
-              width: 280,
-              height: 180,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  width: 280,
-                  height: 180,
-                  color: Colors.grey[300],
-                  child: Icon(Icons.broken_image, size: 40),
-                );
-              },
-            ),
+            child: url.startsWith('http')
+                ? Image.network(
+                    url,
+                    width: 280,
+                    height: 180,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: 280,
+                        height: 180,
+                        color: Colors.grey[300],
+                        child: const Icon(Icons.broken_image, size: 40),
+                      );
+                    },
+                  )
+                : Image.asset(
+                    url,
+                    width: 280,
+                    height: 180,
+                    fit: BoxFit.cover,
+                  ),
           );
         },
       ),
@@ -181,8 +217,9 @@ class HomePageContent extends StatelessWidget {
       {required String hotelName,
       required String price,
       required String imageUrl}) {
+    final isNetwork = imageUrl.startsWith('http');
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Card(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         clipBehavior: Clip.antiAlias,
@@ -190,26 +227,34 @@ class HomePageContent extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.network(
-              imageUrl,
-              height: 180,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  height: 180,
-                  color: Colors.grey[300],
-                  child: Icon(Icons.broken_image, size: 40),
-                );
-              },
-            ),
+            isNetwork
+                ? Image.network(
+                    imageUrl,
+                    height: 180,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        height: 180,
+                        color: Colors.grey[300],
+                        child: const Icon(Icons.broken_image, size: 40),
+                      );
+                    },
+                  )
+                : Image.asset(
+                    imageUrl,
+                    height: 180,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
             Padding(
-              padding: EdgeInsets.all(12),
+              padding: const EdgeInsets.all(12),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(hotelName,
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   Text(price, style: TextStyle(color: Colors.blue)),
                 ],
               ),
