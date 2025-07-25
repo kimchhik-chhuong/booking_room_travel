@@ -1,25 +1,31 @@
-import 'package:flutter/material.dart';
+import 'package:booking_travel_flutter/screens/profile_screen.dart';
+import 'package:flutter/material.dart'; 
 import 'package:flutter/services.dart';
+
 import 'screens/register.dart';
 import 'screens/login.dart';
-import 'screens/home.dart';
-import 'services/user_service.dart';
+import 'screens/onboarding.dart';
+import 'screens/home_screen.dart';
+import 'screens/search_screen.dart'; // ✅ Add this line
+import 'services/user_service.dart'; // User login check service
 
 void main() {
   runApp(TravelBookingApp());
 }
 
 class TravelBookingApp extends StatelessWidget {
+  const TravelBookingApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Travel Booking',
+      title: 'Booking Travel',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
         fontFamily: 'Roboto',
         visualDensity: VisualDensity.adaptivePlatformDensity,
-        appBarTheme: AppBarTheme(
+        appBarTheme: const AppBarTheme(
           elevation: 0,
           backgroundColor: Colors.transparent,
           systemOverlayStyle: SystemUiOverlayStyle.light,
@@ -29,24 +35,27 @@ class TravelBookingApp extends StatelessWidget {
       routes: {
         '/login': (context) => LoginScreen(),
         '/register': (context) => RegisterScreen(),
+        '/onboarding': (context) => OnboardingScreen(),
         '/home': (context) => HomeScreen(),
-        // Removed '/dashboard' route as dashboard is handled in Laravel Blade
+        '/search': (context) => SearchScreen(),
+        '/profile': (context) => ProfileScreen(),
       },
     );
   }
 }
 
 class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
-    with TickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
   late AnimationController _logoController;
   late AnimationController _textController;
   late AnimationController _backgroundController;
-  
+
   late Animation<double> _logoScaleAnimation;
   late Animation<double> _logoRotationAnimation;
   late Animation<double> _textFadeAnimation;
@@ -56,79 +65,65 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
-    
+
     _logoController = AnimationController(
-      duration: Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 2000),
       vsync: this,
     );
-    
+
     _textController = AnimationController(
-      duration: Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    
+
     _backgroundController = AnimationController(
-      duration: Duration(milliseconds: 3000),
+      duration: const Duration(milliseconds: 3000),
       vsync: this,
     );
 
     _logoScaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _logoController,
-        curve: Curves.elasticOut,
-      ),
+      CurvedAnimation(parent: _logoController, curve: Curves.elasticOut),
     );
 
     _logoRotationAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _logoController,
-        curve: Curves.easeInOut,
-      ),
+      CurvedAnimation(parent: _logoController, curve: Curves.easeInOut),
     );
 
     _textFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _textController,
-        curve: Curves.easeIn,
-      ),
+      CurvedAnimation(parent: _textController, curve: Curves.easeIn),
     );
 
     _textSlideAnimation = Tween<Offset>(
-      begin: Offset(0, 0.5),
+      begin: const Offset(0, 0.5),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _textController,
-      curve: Curves.easeOutCubic,
-    ));
+    ).animate(
+      CurvedAnimation(parent: _textController, curve: Curves.easeOutCubic),
+    );
 
     _backgroundAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _backgroundController,
-        curve: Curves.easeInOut,
-      ),
+      CurvedAnimation(parent: _backgroundController, curve: Curves.easeInOut),
     );
 
     _startAnimations();
   }
 
-  void _startAnimations() async {
+  Future<void> _startAnimations() async {
     _backgroundController.forward();
-    await Future.delayed(Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 500));
     _logoController.forward();
-    await Future.delayed(Duration(milliseconds: 800));
+    await Future.delayed(const Duration(milliseconds: 800));
     _textController.forward();
-    
+
     await Future.delayed(Duration(milliseconds: 2500));
-    
-    // Check if user is already logged in
+
     bool isLoggedIn = await UserService.isLoggedIn();
     if (isLoggedIn) {
-      // Redirect to home screen if logged in
       Navigator.pushReplacementNamed(context, '/home');
     } else {
-      Navigator.pushReplacementNamed(context, '/login');
+      Navigator.pushReplacementNamed(context, '/onboarding');
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -145,7 +140,7 @@ class _SplashScreenState extends State<SplashScreen>
                   Color.lerp(Colors.blue.shade600, Colors.pink.shade600, _backgroundAnimation.value)!,
                   Color.lerp(Colors.cyan.shade400, Colors.orange.shade400, _backgroundAnimation.value)!,
                 ],
-                stops: [0.0, 0.5, 1.0],
+                stops: const [0.0, 0.5, 1.0],
               ),
             ),
             child: Center(
@@ -160,7 +155,7 @@ class _SplashScreenState extends State<SplashScreen>
                         child: Transform.rotate(
                           angle: _logoRotationAnimation.value * 0.5,
                           child: Container(
-                            padding: EdgeInsets.all(20),
+                            padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.2),
                               shape: BoxShape.circle,
@@ -172,7 +167,7 @@ class _SplashScreenState extends State<SplashScreen>
                                 ),
                               ],
                             ),
-                            child: Icon(
+                            child: const Icon(
                               Icons.flight_takeoff,
                               size: 80,
                               color: Colors.white,
@@ -182,14 +177,14 @@ class _SplashScreenState extends State<SplashScreen>
                       );
                     },
                   ),
-                  SizedBox(height: 40),
+                  const SizedBox(height: 40),
                   SlideTransition(
                     position: _textSlideAnimation,
                     child: FadeTransition(
                       opacity: _textFadeAnimation,
                       child: Column(
                         children: [
-                          Text(
+                          const Text(
                             'Travel Booking',
                             style: TextStyle(
                               fontSize: 36,
@@ -198,8 +193,8 @@ class _SplashScreenState extends State<SplashScreen>
                               letterSpacing: 2,
                             ),
                           ),
-                          SizedBox(height: 10),
-                          Text(
+                          const SizedBox(height: 10),
+                          const Text(
                             'Discover Amazing Places',
                             style: TextStyle(
                               fontSize: 18,
@@ -207,7 +202,7 @@ class _SplashScreenState extends State<SplashScreen>
                               letterSpacing: 1,
                             ),
                           ),
-                          SizedBox(height: 30),
+                          const SizedBox(height: 30),
                           Container(
                             width: 50,
                             height: 3,

@@ -46,7 +46,7 @@ class UserService {
             final errors = errorData['errors'] as Map<String, dynamic>;
             final errorMessages = errors.values
                 .map((e) => (e as List).join(', '))
-                .join('\\n');
+                .join('\n');
             print('Registration validation errors: $errorMessages');
           } else if (errorData.containsKey('message')) {
             print('Registration error message: ${errorData['message']}');
@@ -80,16 +80,13 @@ class UserService {
         }),
       );
 
+      print('Login response status: ${response.statusCode}');
+      print('Login response body: ${response.body}');
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final user = data['user'];
         final token = data['access_token'];
-
-        if (user['role'] != 'user') {
-          // Only allow users with role 'user' to login in Flutter app
-          print('Access denied for role: ${user["role"]}');
-          return null;
-        }
 
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(_currentUserKey, jsonEncode(user));
@@ -139,4 +136,8 @@ class UserService {
     Map<String, dynamic>? user = await getCurrentUser();
     return user != null;
   }
+
+  static Future updateUserProfile({required name, required email, required profileImageUrl, required followingCount}) async {}
+
+  static Future<void> updateUser(Map<String, dynamic>? currentUser) async {}
 }
