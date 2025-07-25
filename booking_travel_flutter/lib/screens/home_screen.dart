@@ -14,13 +14,14 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
+  int _notificationCount = 3; // Added notification count
 
   final List<Widget> _pages = [
     HomePageContent(),
     PaymentScreen(),
     SearchScreen(),
     Center(child: Text('Historys Page')),
-    ProfileScreen(), // Updated to use the new ProfileScreen
+    ProfileScreen(),
   ];
 
   @override
@@ -56,7 +57,7 @@ class HomePageContent extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.zero,
       children: [
-        _buildHeader(),
+        _buildHeader(context),
         const SizedBox(height: 10),
         _buildOptions(context),
         const SizedBox(height: 20),
@@ -95,7 +96,7 @@ class HomePageContent extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Row(
@@ -107,68 +108,140 @@ class HomePageContent extends StatelessWidget {
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
           ),
-          const CircleAvatar(
-            backgroundImage: NetworkImage(
-              'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&q=80',
-            ),
+          Stack(
+            children: [
+              IconButton(
+                icon: Icon(Icons.notifications),
+                onPressed: () {
+                  _showNotificationAlert(context);
+                },
+              ),
+              Positioned(
+                right: 8,
+                top: 8,
+                child: Container(
+                  padding: EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  constraints: BoxConstraints(
+                    minWidth: 14,
+                    minHeight: 14,
+                  ),
+                  child: Text(
+                    '3',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 8,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildOptions(BuildContext context) {
-  final options = ['Trips', 'Hotels', 'Flights', 'Offers'];
-  final colors = [
-    Colors.purple,
-    Colors.pink,
-    Colors.orange,
-    Colors.blueAccent
-  ];
-  final icons = [
-    Icons.airplanemode_active,
-    Icons.hotel,
-    Icons.flight,
-    Icons.local_offer,
-  ];
-  final pages = [
-    const TripScreen(),
-    const HotelsPage(),
-    const FlightsPage(),
-    const OffersPage(),
-  ];
-
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: List.generate(options.length, (index) {
-        return GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => pages[index]),
-            );
-          },
-          child: Column(
+  void _showNotificationAlert(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Notifications'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              CircleAvatar(
-                backgroundColor: colors[index],
-                radius: 30,
-                child: Icon(icons[index], color: Colors.white, size: 28),
+              ListTile(
+                leading: CircleAvatar(
+                  backgroundImage: NetworkImage(
+                    'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&q=80',
+                  ),
+                ),
+                title: Text('New message'),
+                subtitle: Text('You have 3 new notifications'),
               ),
-              const SizedBox(height: 8),
-              Text(
-                options[index],
-                style: const TextStyle(fontWeight: FontWeight.bold),
+              Divider(),
+              ListTile(
+                leading: Icon(Icons.flight, color: Colors.blue),
+                title: Text('Flight booking confirmed'),
+                subtitle: Text('Your flight to Paris is confirmed'),
+              ),
+              ListTile(
+                leading: Icon(Icons.hotel, color: Colors.green),
+                title: Text('Hotel reservation'),
+                subtitle: Text('Pan Pacific Hotel - 2 nights'),
               ),
             ],
           ),
+          actions: [
+            TextButton(
+              child: Text('Close'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
         );
-      }),
-    ),
-  );
-}
+      },
+    );
+  }
+
+  Widget _buildOptions(BuildContext context) {
+    final options = ['Trips', 'Hotels', 'Flights', 'Offers'];
+    final colors = [
+      Colors.purple,
+      Colors.pink,
+      Colors.orange,
+      Colors.blueAccent
+    ];
+    final icons = [
+      Icons.airplanemode_active,
+      Icons.hotel,
+      Icons.flight,
+      Icons.local_offer,
+    ];
+    final pages = [
+      const TripScreen(),
+      const HotelsPage(),
+      const FlightsPage(),
+      const OffersPage(),
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: List.generate(options.length, (index) {
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => pages[index]),
+              );
+            },
+            child: Column(
+              children: [
+                CircleAvatar(
+                  backgroundColor: colors[index],
+                  radius: 30,
+                  child: Icon(icons[index], color: Colors.white, size: 28),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  options[index],
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          );
+        }),
+      ),
+    );
+  }
 
   Widget _buildPopularOffers() {
     final offers = [
