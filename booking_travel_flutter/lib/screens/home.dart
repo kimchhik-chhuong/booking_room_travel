@@ -12,6 +12,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // List of screens for each navigation item
   static const List<Widget> _widgetOptions = <Widget>[
     Center(child: Text('Home Screen', style: TextStyle(fontSize: 24))),
+    Center(child: Text('Payment Screen', style: TextStyle(fontSize: 24))),
     Center(child: Text('Search Screen', style: TextStyle(fontSize: 24))),
     Center(child: Text('Historys Screen', style: TextStyle(fontSize: 24))),
     Center(child: Text('Profile Screen', style: TextStyle(fontSize: 24))),
@@ -31,7 +32,8 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Icon(Icons.flight_takeoff, color: Colors.white, size: 28),
             SizedBox(width: 8),
-            Text('Booking Travel', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            Text('Booking Travel',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
           ],
         ),
         actions: [
@@ -62,6 +64,10 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.payment),
+            label: 'Payment',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.search),

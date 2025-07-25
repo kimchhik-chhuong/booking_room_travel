@@ -1,3 +1,5 @@
+// import 'package:booking_travel_flutter/screens/payment_screen.dart';
+// import 'package:booking_travel_flutter/screens/profile_screen.dart';
 import 'package:flutter/material.dart'; 
 import 'package:flutter/services.dart';
 
@@ -5,8 +7,11 @@ import 'screens/register.dart';
 import 'screens/login.dart';
 import 'screens/onboarding.dart';
 import 'screens/home_screen.dart';
+import 'screens/payment_screen.dart';
 import 'screens/search_screen.dart'; // ✅ Add this line
+import 'screens/profile_screen.dart'; // User login check service
 import 'services/user_service.dart'; // User login check service
+
 
 void main() {
   runApp(TravelBookingApp());
@@ -36,7 +41,9 @@ class TravelBookingApp extends StatelessWidget {
         '/register': (context) => RegisterScreen(),
         '/onboarding': (context) => OnboardingScreen(),
         '/home': (context) => HomeScreen(),
+        '/payment': (context) => PaymentScreen(),
         '/search': (context) => SearchScreen(),
+        '/profile': (context) => ProfileScreen(),
       },
     );
   }
