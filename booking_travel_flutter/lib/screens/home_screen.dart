@@ -82,6 +82,19 @@ class HomePageContent extends StatelessWidget {
     );
   }
 
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
   Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -105,67 +118,57 @@ class HomePageContent extends StatelessWidget {
   }
 
   Widget _buildOptions(BuildContext context) {
-    final options = ['Trips', 'Hotels', 'Flights', 'Offers'];
-    final colors = [
-      Colors.purple,
-      Colors.pink,
-      Colors.orange,
-      Colors.blueAccent
-    ];
-    final icons = [
-      Icons.airplanemode_active,
-      Icons.hotel,
-      Icons.flight,
-      Icons.local_offer,
-    ];
-    final pages = [
-      const TripsPage(),
-      const HotelsPage(),
-      const FlightsPage(),
-      const OffersPage(),
-    ];
+  final options = ['Trips', 'Hotels', 'Flights', 'Offers'];
+  final colors = [
+    Colors.purple,
+    Colors.pink,
+    Colors.orange,
+    Colors.blueAccent
+  ];
+  final icons = [
+    Icons.airplanemode_active,
+    Icons.hotel,
+    Icons.flight,
+    Icons.local_offer,
+  ];
+  final pages = [
+    const TripScreen(),
+    const HotelsPage(),
+    const FlightsPage(),
+    const OffersPage(),
+  ];
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: List.generate(options.length, (index) {
-          return GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => pages[index]),
-              );
-            },
-            child: Column(
-              children: [
-                CircleAvatar(
-                  backgroundColor: colors[index],
-                  radius: 30,
-                  child: Icon(icons[index], color: Colors.white, size: 28),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  options[index],
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          );
-        }),
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Text(
-        title,
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: List.generate(options.length, (index) {
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => pages[index]),
+            );
+          },
+          child: Column(
+            children: [
+              CircleAvatar(
+                backgroundColor: colors[index],
+                radius: 30,
+                child: Icon(icons[index], color: Colors.white, size: 28),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                options[index],
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        );
+      }),
+    ),
+  );
+}
 
   Widget _buildPopularOffers() {
     final offers = [
