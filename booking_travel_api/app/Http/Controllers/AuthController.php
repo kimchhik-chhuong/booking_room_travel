@@ -5,49 +5,38 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
 use Illuminate\Support\Facades\Log;
+use App\Models\User;
 
 class AuthController extends Controller
 {
     /**
-     * Handle user registration
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * Handle user registration.
      */
     public function register(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255',
+        $validatedData = $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|string|in:user,admin,employer',
+            'role'     => 'required|string|in:user,admin,employee',
         ]);
 
         try {
-            $existingUser = User::where('email', $request->email)->first();
-            if ($existingUser) {
-                return response()->json([
-                    'message' => 'User already exists. Please login instead.',
-                    'user' => $existingUser,
-                ], 409);
-            }
-
             $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'role' => $request->role,
+                'name'     => $validatedData['name'],
+                'email'    => $validatedData['email'],
+                'password' => Hash::make($validatedData['password']),
+                'role'     => $validatedData['role'],
             ]);
 
             $token = $user->createToken('auth_token')->plainTextToken;
 
             return response()->json([
-                'message' => 'Registration successful',
+                'message'      => 'Registration successful',
                 'access_token' => $token,
-                'token_type' => 'Bearer',
-                'user' => $user,
+                'token_type'   => 'Bearer',
+                'user'         => $user,
             ], 201);
         } catch (\Exception $e) {
             Log::error('Registration error: ' . $e->getMessage());
@@ -58,52 +47,74 @@ class AuthController extends Controller
     }
 
     /**
-     * Handle user login
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * Handle user login (web + API).
      */
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'email' => 'required|string|email',
+            'email'    => 'required|string|email',
             'password' => 'required|string',
         ]);
 
         if (!Auth::attempt($credentials)) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+            return $request->wantsJson()
+                ? response()->json(['message' => 'Invalid credentials'], 401)
+                : back()->withErrors(['email' => 'Invalid credentials'])->withInput();
         }
 
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
 
-        // Update last_login timestamp
+        // Allow all roles to login for API requests
+        if ($request->wantsJson()) {
+            // No role restriction for API login (Flutter app)
+            // Just proceed
+        } else {
+            // For web login, allow only admin and employee roles
+            if (!in_array($user->role, ['admin', 'employee'])) {
+                Auth::logout();
+                return back()->withErrors(['email' => 'Unauthorized role for login'])->withInput();
+            }
+        }
+
+        // Update last login time
         $user->last_login = now();
         $user->save();
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        // Return API response
+        if ($request->wantsJson()) {
+            $token = $user->createToken('auth_token')->plainTextToken;
+            return response()->json([
+                'message'      => 'Login successful',
+                'access_token' => $token,
+                'token_type'   => 'Bearer',
+                'user'         => $user,
+            ], 200);
+        }
 
-        return response()->json([
-            'message' => 'Login successful',
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-            'user' => $user,
-        ], 200);
+        // Return web redirect
+        return redirect()->route('dashboard');
     }
 
     /**
-     * Handle user logout
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * Handle user logout (web + API).
      */
     public function logout(Request $request)
     {
-        $token = $request->user()->currentAccessToken();
-        if ($token) {
-            $token->delete();
+        if (Auth::check()) {
+            // For API tokens
+            if ($request->user() && $request->user()->currentAccessToken()) {
+                $request->user()->currentAccessToken()->delete();
+            }
+
+            // Logout from web session
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
         }
 
-        return response()->json(['message' => 'Logged out successfully'], 200);
+        return $request->wantsJson()
+            ? response()->json(['message' => 'Logged out successfully'], 200)
+            : redirect()->route('login');
     }
 }

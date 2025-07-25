@@ -6,9 +6,11 @@ class UserService {
   static const String _currentUserKey = 'current_user';
   static const String _accessTokenKey = 'access_token';
 
-  static const String baseUrl = 'http://localhost:8000/api'; // Change to your API base URL
+  // Base URL for your Laravel API
+  // Replace with your actual IP if testing on device/emulator
+  static String baseUrl = 'http://127.0.0.1:8000/api';
 
-  // Register a new user
+  /// Register a new user
   static Future<bool> registerUser({
     required String name,
     required String email,
@@ -34,12 +36,8 @@ class UserService {
       if (response.statusCode == 201) {
         // Registration successful
         return true;
-      } else if (response.statusCode == 409) {
-        // User already exists
-        print('User already exists. Please login instead.');
-        return false;
       } else {
-        // Try to parse validation errors from response body
+        // Parse error messages if any
         try {
           final Map<String, dynamic> errorData = jsonDecode(response.body);
           if (errorData.containsKey('errors')) {
@@ -49,7 +47,7 @@ class UserService {
                 .join('\n');
             print('Registration validation errors: $errorMessages');
           } else if (errorData.containsKey('message')) {
-            print('Registration error message: ${errorData['message']}');
+            print('Registration error message: ${errorData["message"].toString()}');
           } else {
             print('Registration failed: ${response.body}');
           }
@@ -65,7 +63,7 @@ class UserService {
     }
   }
 
-  // Login user
+  /// Login user
   static Future<Map<String, dynamic>?> loginUser({
     required String email,
     required String password,
@@ -73,7 +71,10 @@ class UserService {
     try {
       final response = await http.post(
         Uri.parse("$baseUrl/login"),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
         body: jsonEncode({
           'email': email,
           'password': password,
@@ -94,7 +95,17 @@ class UserService {
 
         return user;
       } else {
-        print('Login failed: ${response.body}');
+        try {
+          final Map<String, dynamic> errorData = jsonDecode(response.body);
+          if (errorData.containsKey('message')) {
+            print('Login error message: ${errorData["message"].toString()}');
+          } else {
+            print('Login failed: ${response.body}');
+          }
+        } catch (e) {
+          print('Error parsing login error response: $e');
+          print('Raw response: ${response.body}');
+        }
         return null;
       }
     } catch (e) {
@@ -103,7 +114,7 @@ class UserService {
     }
   }
 
-  // Get current logged in user
+  /// Get current logged in user info from local storage
   static Future<Map<String, dynamic>?> getCurrentUser() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -120,7 +131,18 @@ class UserService {
     }
   }
 
-  // Logout user
+  /// Get stored access token for authorized requests
+  static Future<String?> getAccessToken() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(_accessTokenKey);
+    } catch (e) {
+      print('Get access token error: $e');
+      return null;
+    }
+  }
+
+  /// Logout user by clearing saved data
   static Future<void> logoutUser() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -131,7 +153,7 @@ class UserService {
     }
   }
 
-  // Check if user is logged in
+  /// Check if user is logged in
   static Future<bool> isLoggedIn() async {
     Map<String, dynamic>? user = await getCurrentUser();
     return user != null;
