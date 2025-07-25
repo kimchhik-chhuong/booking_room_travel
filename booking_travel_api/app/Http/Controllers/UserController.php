@@ -79,14 +79,28 @@ class UserController extends Controller
     /**
      * Display a specific user.
      */
+<<<<<<< HEAD
+    public function show(User $user)
+{
+    return response()->json($user);
+}
+
+=======
     public function show(User $user): View
     {
         return view('users.show', compact('user'));
     }
+>>>>>>> main
 
     /**
      * Show the form for editing a user.
      */
+<<<<<<< HEAD
+    public function edit(User $user)
+{
+    if ($user->hasRole('Super Admin') && $user->id != auth()->id()) {
+        return response()->json(['message' => 'Unauthorized'], 403);
+=======
     public function edit(User $user): View
     {
         // Only Super Admin can edit their own profile
@@ -102,7 +116,16 @@ class UserController extends Controller
             'roles'    => ['admin', 'employer', 'user'],
             'userRole' => $user->role,
         ]);
+>>>>>>> main
     }
+
+    return response()->json([
+        'user' => $user,
+        'roles' => ['admin', 'employee', 'user'],
+        'userRole' => $user->role,
+    ]);
+}
+
 
     /**
      * Update a user.
