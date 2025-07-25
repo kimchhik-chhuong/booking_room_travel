@@ -21,7 +21,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadUserData() async {
     try {
       Map<String, dynamic>? user = await UserService.getCurrentUser();
-      
+
       setState(() {
         _currentUser = user;
         _originalUser = Map.from(user ?? {});
@@ -59,7 +59,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         body: Container(
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: NetworkImage('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80'),
+              image: NetworkImage(
+                  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80'),
               fit: BoxFit.cover,
             ),
           ),
@@ -88,7 +89,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         body: Container(
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: NetworkImage('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80'),
+              image: NetworkImage(
+                  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80'),
               fit: BoxFit.cover,
             ),
           ),
@@ -136,7 +138,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: NetworkImage('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80'),
+            image: NetworkImage(
+                'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80'),
             fit: BoxFit.cover,
           ),
         ),
@@ -171,11 +174,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       ),
                                       child: ClipOval(
                                         child: Image.network(
-                                          _currentUser!['profile_image_url'] ?? 
-                                          _currentUser!['avatar'] ?? 
-                                          '',
+                                          _currentUser!['profile_image_url'] ??
+                                              _currentUser!['avatar'] ??
+                                              '',
                                           fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stackTrace) {
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
                                             return Container(
                                               color: Colors.grey[300],
                                               child: Icon(
@@ -232,7 +236,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                             SizedBox(height: 16),
                             Container(
-                              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 6),
                               decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(0.3),
                                 borderRadius: BorderRadius.circular(20),
@@ -283,7 +288,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
                                     'About',
@@ -317,7 +323,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   onTap: () {
                                     _showEditNameDialog(context);
                                   },
-                                  child: _buildInfoField('Full Name:', _currentUser!['name'] ?? 'Not set'),
+                                  child: _buildInfoField('Full Name:',
+                                      _currentUser!['name'] ?? 'Not set'),
                                 ),
                               ),
                               SizedBox(height: 16),
@@ -327,14 +334,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   onTap: () {
                                     _showEditEmailDialog(context);
                                   },
-                                  child: _buildInfoField('Email:', _currentUser!['email'] ?? 'Not set'),
+                                  child: _buildInfoField('Email:',
+                                      _currentUser!['email'] ?? 'Not set'),
                                 ),
                               ),
                               SizedBox(height: 16),
-                              _buildInfoField('User ID:', _currentUser!['id']?.toString() ?? 'Unknown'),
+                              _buildInfoField('User ID:',
+                                  _currentUser!['id']?.toString() ?? 'Unknown'),
                               SizedBox(height: 16),
                               if (_currentUser!['created_at'] != null) ...[
-                                _buildInfoField('Member Since:', _formatDate(_currentUser!['created_at'])),
+                                _buildInfoField('Member Since:',
+                                    _formatDate(_currentUser!['created_at'])),
                                 SizedBox(height: 16),
                               ],
                               SizedBox(height: 8),
@@ -361,7 +371,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   onPressed: _hasChanges
                       ? () async {
                           try {
-                            await UserService.updateUser(_currentUser); // Call to save changes
+                            await UserService.updateUser(
+                                _currentUser); // Call to save changes
                             setState(() {
                               _originalUser = Map.from(_currentUser!);
                               _hasChanges = false;
@@ -478,7 +489,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     TextEditingController urlController = TextEditingController(
       text: _currentUser!['profile_image_url'] ?? _currentUser!['avatar'] ?? '',
     );
-    
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -540,7 +551,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     TextEditingController nameController = TextEditingController(
       text: _currentUser!['name'] ?? '',
     );
-    
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -601,7 +612,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     TextEditingController emailController = TextEditingController(
       text: _currentUser!['email'] ?? '',
     );
-    
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -707,6 +718,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           title: Text('Logout'),
           content: Text('Are you sure you want to logout?'),
           actions: [
+            // Cancel Button (unchanged)
             MouseRegion(
               cursor: SystemMouseCursors.click,
               child: TextButton(
@@ -716,9 +728,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Text('Cancel'),
               ),
             ),
+            // Logout Button (now in red)
             MouseRegion(
               cursor: SystemMouseCursors.click,
               child: TextButton(
+                style: ButtonStyle(
+                  foregroundColor: WidgetStateProperty.all(Colors.red),
+                ),
                 onPressed: () async {
                   await UserService.logoutUser();
                   Navigator.of(context).pop();
