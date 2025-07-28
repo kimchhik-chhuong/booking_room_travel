@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Destination extends Model
 {
-     protected $fillable = ['name', 'description'];
+    protected $fillable = ['name', 'country', 'description', 'image_url'];
 
     public function hotelMetadata()
     {
