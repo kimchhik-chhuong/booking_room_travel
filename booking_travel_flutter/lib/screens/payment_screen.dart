@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 
+void main() {
+  runApp(MaterialApp(
+    home: PaymentScreen(),
+    debugShowCheckedModeBanner: false,
+  ));
+}
+
 class PaymentScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -30,9 +37,10 @@ class PaymentScreen extends StatelessWidget {
             Spacer(),
             ElevatedButton(
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text('Payment Processed!'),
-                ));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ReceiptScreen()),
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
@@ -80,12 +88,75 @@ class PaymentScreen extends StatelessWidget {
 
   Widget _buildPaymentOption(IconData icon, String method) {
     return ListTile(
-      leading: Icon(icon, color: Colors.blue),
+      leading: Icon(icon, color: const Color.fromARGB(255, 243, 101, 19)),
       title: Text(method),
       trailing: Icon(Icons.arrow_forward_ios, size: 16),
       onTap: () {
         // Optional: Handle selection or open detail screen
       },
+    );
+  }
+}
+
+// ✅ Receipt Screen
+class ReceiptScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Receipt'),
+        backgroundColor: Colors.blue,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Icon(Icons.check_circle, color: Colors.green, size: 80),
+            ),
+            SizedBox(height: 20),
+            Center(
+              child: Text(
+                'Payment',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+            ),
+            SizedBox(height: 30),
+            _buildReceiptRow('Hotel:', 'Pan Pacific'),
+            _buildReceiptRow('Nights:', '3'),
+            _buildReceiptRow('Guests:', '2'),
+            _buildReceiptRow('Total Paid:', '\$360'),
+            SizedBox(height: 30),
+            Divider(),
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context); // Go back to payment screen
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  minimumSize: Size(double.infinity, 50),
+                ),
+                child: Text('Back to Home'),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReceiptRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(fontSize: 16)),
+          Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+        ],
+      ),
     );
   }
 }
