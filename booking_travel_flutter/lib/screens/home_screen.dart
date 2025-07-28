@@ -246,9 +246,9 @@ class HomePageContent extends StatelessWidget {
   Widget _buildPopularOffers() {
     final offers = [
       'https://images.unsplash.com/photo-1560347876-aeef00ee58a1?w=800&q=80',
-      '../lib/assets/room1.png',
+      // '../lib/assets/room1.png',
       'https://images.unsplash.com/photo-1505691723518-36a5ac3be353?w=800&q=80',
-      '../lib/assets/room2.jpg',
+      // '../lib/assets/room2.jpg',
     ];
 
     return Container(
