@@ -30,6 +30,9 @@ class _RegisterScreenState extends State<RegisterScreen>
   bool _obscureConfirmPassword = true;
   bool _agreeToTerms = false;
 
+  // Remove role selection, always use 'user' role for registration
+  // String _selectedRole = 'user'; // default role
+
   @override
   void initState() {
     super.initState();
@@ -365,12 +368,19 @@ class _RegisterScreenState extends State<RegisterScreen>
                     return null;
                   },
                 ),
+                const SizedBox(height: 20),
+                _buildRoleDropdown(),
               ],
             ),
           ),
         );
       },
     );
+  }
+
+  // Remove role dropdown widget as role is fixed to 'user'
+  Widget _buildRoleDropdown() {
+    return SizedBox.shrink();
   }
 
   Widget _buildAnimatedTextField({
@@ -597,47 +607,29 @@ class _RegisterScreenState extends State<RegisterScreen>
       _isLoading = true;
     });
 
-    _buttonController.forward();
-
     try {
       final success = await UserService.registerUser(
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
         password: _passwordController.text,
+        role: 'user',
       );
 
       if (success) {
-        // After successful registration, automatically log in the user
-        final user = await UserService.loginUser(
-          email: _emailController.text.trim(),
-          password: _passwordController.text,
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Account Created Successfully!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
         );
-
-        if (user != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Account Created Successfully!'),
-              backgroundColor: Colors.green,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-          );
-          Navigator.pushReplacementNamed(context, '/home');
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Login failed after registration.'),
-              backgroundColor: Colors.red,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-          );
-        }
+        Navigator.pushReplacementNamed(context, '/home');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('User already exists. Please login instead.'),
-            backgroundColor: Colors.orange,
+            content: const Text('Registration failed. Please try again.'),
+            backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
@@ -656,7 +648,6 @@ class _RegisterScreenState extends State<RegisterScreen>
       setState(() {
         _isLoading = false;
       });
-      _buttonController.reverse();
     }
   }
 

@@ -11,15 +11,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<Map<String, String>> _pages = [
     {
-      'image': '../lib/assets/1.png',
+      'image': '../lib/assets/f1.png',
       'title': 'Plan trip to more than 90 countries',
     },
     {
-      'image': '../lib/assets/2.png',
+      'image': '../lib/assets/f2.png',
       'title': 'Hassle free and quick flight booking',
     },
     {
-      'image': '../lib/assets/3.png',
+      'image': '../lib/assets/f3.png',
       'title': 'Realtime flight status to keep you informed',
     },
   ];
