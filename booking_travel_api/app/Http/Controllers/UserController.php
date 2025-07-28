@@ -77,12 +77,12 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
-<<<<<<< HEAD
     public function show(User $user)
 {
     return response()->json($user);
 }
 
+<<<<<<< HEAD
 =======
     public function show(User $user): View
     {
@@ -91,15 +91,17 @@ class UserController extends Controller
         ]);
     }
 >>>>>>> main
+=======
+>>>>>>> be0c5c291ad3a4ca5f63c8a05175f7504c7bcf6b
 
     /**
      * Show the form for editing the specified resource.
      */
-<<<<<<< HEAD
     public function edit(User $user)
 {
     if ($user->hasRole('Super Admin') && $user->id != auth()->id()) {
         return response()->json(['message' => 'Unauthorized'], 403);
+<<<<<<< HEAD
 =======
     public function edit(User $user): View
     {
@@ -116,6 +118,8 @@ class UserController extends Controller
             'userRole' => $user->role
         ]);
 >>>>>>> main
+=======
+>>>>>>> be0c5c291ad3a4ca5f63c8a05175f7504c7bcf6b
     }
 
     return response()->json([

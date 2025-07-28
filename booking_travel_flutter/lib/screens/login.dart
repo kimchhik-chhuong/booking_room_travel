@@ -381,23 +381,29 @@ class _LoginScreenState extends State<LoginScreen>
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(
-          'Don\'t have an account? ',
-          style: TextStyle(
-            color: Colors.grey.shade600,
-            fontSize: 16,
+        Flexible(
+          child: Text(
+            'Don\'t have an account? ',
+            style: TextStyle(
+              color: Colors.grey.shade600,
+              fontSize: 16,
+            ),
+            overflow: TextOverflow.ellipsis,
           ),
         ),
-        GestureDetector(
-          onTap: () {
-            Navigator.pushNamed(context, '/register');
-          },
-          child: Text(
-            'Register',
-            style: TextStyle(
-              color: Colors.blue.shade700,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+        Flexible(
+          child: GestureDetector(
+            onTap: () {
+              Navigator.pushNamed(context, '/register');
+            },
+            child: Text(
+              'Register',
+              style: TextStyle(
+                color: Colors.blue.shade700,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ),
@@ -424,18 +430,33 @@ class _LoginScreenState extends State<LoginScreen>
       );
 
       if (user != null) {
-        // Login successful
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Login Successful!'),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-        );
+        // Check user role
+        if (user['role'] == 'user' || user['role'] == 'admin' || user['role'] == 'employee') {
+          // Login successful for allowed roles
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Login Successful!'),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          );
 
-        Navigator.pushReplacementNamed(context, '/home');
+          Navigator.pushReplacementNamed(context, '/home');
+        } else {
+          setState(() {
+            _errorMessage = 'Access denied: Unauthorized role.';
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(_errorMessage!),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          );
+        }
       } else {
         setState(() {
           _errorMessage = 'Login failed or access denied.';
