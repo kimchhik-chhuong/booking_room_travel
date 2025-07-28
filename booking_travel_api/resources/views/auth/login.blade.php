@@ -12,7 +12,7 @@
     @if(session('error'))
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
-    <form method="POST" action="{{ route('login') }}">
+    <form method="POST" action="{{ route('login.post') }}">
         @csrf
         <div class="mb-3">
             <label for="email" class="form-label">Email address</label>
