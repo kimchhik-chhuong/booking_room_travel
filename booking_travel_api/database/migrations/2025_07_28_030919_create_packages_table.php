@@ -8,18 +8,18 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('destinations', function (Blueprint $table) {
-            $table->id();  // 'id' column as primary key
-            $table->string('name');
-            $table->string('country')->nullable();
+        Schema::create('packages', function (Blueprint $table) {
+            $table->id();
+            $table->string('title');
             $table->text('description')->nullable();
-            $table->string('image_url')->nullable();
+            $table->decimal('price', 10, 2);
+            $table->foreignId('destination_id')->constrained()->onDelete('cascade');  // references destinations(id)
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('destinations');
+        Schema::dropIfExists('packages');
     }
 };

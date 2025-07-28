@@ -252,6 +252,14 @@ class DetailScreen extends StatelessWidget {
       ),
     );
   }
+  
+  Future<bool> canLaunchUrl(Uri parse) async {
+    // TODO: Implement actual URL checking logic or use url_launcher package's canLaunchUrl
+    return false;
+  }
+}
+
+Future<void> launchUrl(Uri parse) async {
 }
 
 // --- TripScreen Widget ---
