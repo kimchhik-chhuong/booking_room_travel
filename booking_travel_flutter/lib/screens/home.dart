@@ -32,7 +32,8 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Icon(Icons.flight_takeoff, color: Colors.white, size: 28),
             SizedBox(width: 8),
-            Text('Booking Travel', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            Text('Booking Travel',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
           ],
         ),
         actions: [
