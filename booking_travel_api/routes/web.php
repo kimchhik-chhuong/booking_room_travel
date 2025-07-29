@@ -9,92 +9,94 @@ use Illuminate\Support\Facades\Auth;
 |--------------------------------------------------------------------------
 |
 | Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
+| routes are loaded by the RouteServiceProvider within the "web" middleware group.
 |
 */
 
-// Authentication Routes (Login, Register, etc.)
+// Laravel authentication routes (login, register, etc.)
 Auth::routes();
 
-// Routes that require authentication
+// Root URL: redirect based on authentication status
+Route::get('/', function () {
+    return auth()->check()
+        ? redirect()->route('dashboard')
+        : view('auth.login');
+});
+
+// Authenticated routes group
 Route::middleware(['auth'])->group(function () {
 
-    // Dashboard Route
+    // Dashboard
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
 
-    // Default redirect after login
-    Route::get('/', function () {
-        return redirect()->route('dashboard');
-    });
-
-    // Packages Routes
+    // Packages
     Route::prefix('packages')->name('packages.')->group(function () {
         Route::get('/', function () {
             return view('packages.index');
         })->name('index');
-        // More routes: create, store, show, edit, update, destroy
+        // More package routes (create, store, edit, etc.) can be added here
     });
 
-    // Bookings Routes
+    // Bookings
     Route::prefix('bookings')->name('bookings.')->group(function () {
         Route::get('/', function () {
             return view('bookings.index');
         })->name('index');
-        // More routes
+        // More booking routes
     });
 
-    // Calendar Route
+    // Calendar
     Route::get('/calendar', function () {
         return view('calendar');
     })->name('calendar');
 
-    // Travelers Routes
+    // Travelers
     Route::prefix('travelers')->name('travelers.')->group(function () {
         Route::get('/', function () {
             return view('travelers.index');
         })->name('index');
+        // More traveler routes
     });
 
-    // Guides Routes
+    // Guides
     Route::prefix('guides')->name('guides.')->group(function () {
         Route::get('/', function () {
             return view('guides.index');
         })->name('index');
+        // More guide routes
     });
 
-    // Gallery Routes
+    // Gallery
     Route::prefix('gallery')->name('gallery.')->group(function () {
         Route::get('/', function () {
             return view('gallery.index');
         })->name('index');
+        // More gallery routes
     });
 
-    // Messages Routes
+    // Messages
     Route::prefix('messages')->name('messages.')->group(function () {
         Route::get('/', function () {
             return view('messages.index');
         })->name('index');
+        // More message routes
     });
 
-    // Deals Routes
+    // Deals
     Route::prefix('deals')->name('deals.')->group(function () {
         Route::get('/', function () {
             return view('deals.index');
         })->name('index');
+        // More deal routes
     });
 
-    // Feedback Routes
+    // Feedback
     Route::prefix('feedback')->name('feedback.')->group(function () {
         Route::get('/', function () {
             return view('feedback.index');
         })->name('index');
+        // More feedback routes
     });
-});
-
-// Redirect unauthenticated users to login page
-Route::get('/', function () {
-    return view('auth.login');
 });
