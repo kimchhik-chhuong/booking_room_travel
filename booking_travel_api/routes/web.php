@@ -7,96 +7,69 @@ use Illuminate\Support\Facades\Auth;
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
 */
 
 // Authentication Routes
 Auth::routes();
 
-// Root URL – redirect based on authentication status
+// Default Route
 Route::get('/', function () {
-    return Auth::check() ? redirect()->route('dashboard') : view('auth.login');
+    return auth()->check()
+        ? redirect()->route('dashboard')
+        : view('auth.login');
 });
 
-// Routes that require authentication
+// Authenticated Routes
 Route::middleware(['auth'])->group(function () {
 
     // Dashboard Route
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::view('/dashboard', 'dashboard')->name('dashboard');
 
-    // Packages Routes
+    // Packages
     Route::prefix('packages')->name('packages.')->group(function () {
-        Route::get('/', function () {
-            return view('packages.index');
-        })->name('index');
-        // Add more package-related routes here
-        // Route::get('/create', ...); etc.
+        Route::view('/', 'packages.index')->name('index');
     });
 
-    // Bookings Routes
+    // Bookings
     Route::prefix('bookings')->name('bookings.')->group(function () {
-        Route::get('/', function () {
-            return view('bookings.index');
-        })->name('index');
-        // Add more booking-related routes here
+        Route::view('/', 'bookings.index')->name('index');
     });
 
-    // Calendar Route
-    Route::get('/calendar', function () {
-        return view('calendar');
-    })->name('calendar');
+    // Calendar
+    Route::view('/calendar', 'calendar')->name('calendar');
 
-    // Travelers Routes
+    // Travelers
     Route::prefix('travelers')->name('travelers.')->group(function () {
-        Route::get('/', function () {
-            return view('travelers.index');
-        })->name('index');
-        // Add more traveler-related routes here
+        Route::view('/', 'travelers.index')->name('index');
     });
 
-    // Guides Routes
+    // Guides
     Route::prefix('guides')->name('guides.')->group(function () {
-        Route::get('/', function () {
-            return view('guides.index');
-        })->name('index');
-        // Add more guide-related routes here
+        Route::view('/', 'guides.index')->name('index');
     });
 
-    // Gallery Routes
+    // Gallery
     Route::prefix('gallery')->name('gallery.')->group(function () {
-        Route::get('/', function () {
-            return view('gallery.index');
-        })->name('index');
-        // Add more gallery-related routes here
+        Route::view('/', 'gallery.index')->name('index');
     });
 
-    // Messages Routes
+    // Messages
     Route::prefix('messages')->name('messages.')->group(function () {
-        Route::get('/', function () {
-            return view('messages.index');
-        })->name('index');
-        // Add more message-related routes here
+        Route::view('/', 'messages.index')->name('index');
     });
 
-    // Deals Routes
+    // Deals
     Route::prefix('deals')->name('deals.')->group(function () {
-        Route::get('/', function () {
-            return view('deals.index');
-        })->name('index');
-        // Add more deal-related routes here
+        Route::view('/', 'deals.index')->name('index');
     });
 
-    // Feedback Routes
+    // Feedback
     Route::prefix('feedback')->name('feedback.')->group(function () {
-        Route::get('/', function () {
-            return view('feedback.index');
-        })->name('index');
-        // Add more feedback-related routes here
+        Route::view('/', 'feedback.index')->name('index');
     });
+});
+
+// Optional: Fallback route for unknown URLs
+Route::fallback(function () {
+    return view('errors.404'); // Make sure you have resources/views/errors/404.blade.php
 });
