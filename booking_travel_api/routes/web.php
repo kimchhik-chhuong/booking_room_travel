@@ -100,3 +100,8 @@ Route::middleware(['auth'])->group(function () {
         // More feedback routes
     });
 });
+
+// Optional: Fallback route for unknown URLs
+Route::fallback(function () {
+    return view('errors.404'); // Make sure you have resources/views/errors/404.blade.php
+});
