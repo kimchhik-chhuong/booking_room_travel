@@ -67,16 +67,15 @@ class HomePageContent extends StatelessWidget {
         _buildSectionTitle('Hotel Near You'),
         _buildHotelCard(
           context,
-          hotelName: 'Pan Pacific Hotel',
-          price: '\$1200/night',
+          hotelName: 'Grand Hyatt Resort',
+          price: '\$1300/night',
           imageUrl: '../lib/assets/room2.jpg',
         ),
         _buildHotelCard(
           context,
-          hotelName: 'Prestige Proga Inn',
-          price: '\$100/night',
-          imageUrl:
-              'https://images.unsplash.com/photo-1505691723518-36a5ac3be353?w=800&q=80',
+          hotelName: 'Luxury Haven Inn',
+          price: '\$150/night',
+          imageUrl: '../lib/assets/room1.png',
         ),
         const SizedBox(height: 20),
       ],
@@ -173,7 +172,7 @@ class HomePageContent extends StatelessWidget {
               ListTile(
                 leading: Icon(Icons.hotel, color: Colors.green),
                 title: Text('Hotel reservation'),
-                subtitle: Text('Pan Pacific Hotel - 2 nights'),
+                subtitle: Text('Grand Hyatt Resort - 2 nights'),
               ),
             ],
           ),
@@ -245,44 +244,119 @@ class HomePageContent extends StatelessWidget {
 
   Widget _buildPopularOffers() {
     final offers = [
-      'https://images.unsplash.com/photo-1560347876-aeef00ee58a1?w=800&q=80',
-      // '../lib/assets/room1.png',
-      'https://images.unsplash.com/photo-1505691723518-36a5ac3be353?w=800&q=80',
-      // '../lib/assets/room2.jpg',
+      {
+        'url': 'https://images.unsplash.com/photo-1560347876-aeef00ee58a1?w=800&q=80',
+        'name': 'Offer 1',
+        'price': '\$150/night',
+        'rating': 3.5,
+      },
+      {
+        'url': 'https://images.unsplash.com/photo-1505691723518-36a5ac3be353?w=800&q=80',
+        'name': 'Offer 2',
+        'price': '\$200/night',
+        'rating': 4.0,
+      },
     ];
 
     return Container(
-      height: 180,
+      height: 220, // Height adjusted to fit name, price, and stars
       padding: const EdgeInsets.only(left: 16),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: offers.length,
         separatorBuilder: (context, index) => const SizedBox(width: 12),
         itemBuilder: (context, index) {
-          final url = offers[index];
+          final offer = offers[index];
+          final url = offer['url'] as String;
+          final name = offer['name'] as String;
+          final price = offer['price'] as String;
+          final rating = offer['rating'] as double;
           return ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: url.startsWith('http')
-                ? Image.network(
-                    url,
-                    width: 280,
-                    height: 180,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
+            child: Stack(
+              children: [
+                url.startsWith('http')
+                    ? Image.network(
+                        url,
                         width: 280,
-                        height: 180,
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.broken_image, size: 40),
-                      );
-                    },
-                  )
-                : Image.asset(
-                    url,
-                    width: 280,
-                    height: 180,
-                    fit: BoxFit.cover,
+                        height: 220,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            width: 280,
+                            height: 220,
+                            color: Colors.grey[300],
+                            child: const Icon(Icons.broken_image, size: 40),
+                          );
+                        },
+                      )
+                    : Image.asset(
+                        url,
+                        width: 280,
+                        height: 220,
+                        fit: BoxFit.cover,
+                      ),
+                if (url.startsWith('http'))
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Positioned(
+                        top: 12,
+                        left: 12,
+                        child: Text(
+                          name,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black.withOpacity(0.5),
+                                offset: Offset(2, 2),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 12,
+                        left: 12,
+                        child: Row(
+                          children: [
+                            Text(
+                              price,
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.white,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black.withOpacity(0.5),
+                                    offset: Offset(2, 2),
+                                    blurRadius: 4,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Row(
+                              children: List.generate(
+                                5,
+                                (index) => Icon(
+                                  index < (rating * 1).floor()
+                                      ? Icons.star
+                                      : Icons.star_border,
+                                  size: 16,
+                                  color: Colors.amber,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
+              ],
+            ),
           );
         },
       ),
