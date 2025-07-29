@@ -94,12 +94,6 @@ class UserController extends Controller
         return response()->json(['message' => 'Unauthorized'], 403);
     }
 
-    return response()->json([
-        'user' => $user,
-        'roles' => ['admin', 'employee', 'user'],
-        'userRole' => $user->role,
-    ]);
-}
 
 
     /**
