@@ -204,10 +204,10 @@ class HomePageContent extends StatelessWidget {
       Icons.local_offer,
     ];
     final pages = [
-      const TripScreen(),
-      const HotelsPage(),
-      const FlightsPage(),
-      const OffersPage(),
+      TripsPage(),  // Changed from TripScreen() to TripsPage()
+      HotelsPage(),
+      FlightsPage(),
+      OffersPage(),
     ];
 
     return Padding(
@@ -367,7 +367,6 @@ class HomePageContent extends StatelessWidget {
       {required String hotelName,
       required String price,
       required String imageUrl}) {
-    final isNetwork = imageUrl.startsWith('http');
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Card(
@@ -377,26 +376,19 @@ class HomePageContent extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            isNetwork
-                ? Image.network(
-                    imageUrl,
-                    height: 180,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        height: 180,
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.broken_image, size: 40),
-                      );
-                    },
-                  )
-                : Image.asset(
-                    imageUrl,
-                    height: 180,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
+            Image.network(
+              imageUrl,
+              height: 180,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  height: 180,
+                  color: Colors.grey[300],
+                  child: const Icon(Icons.broken_image, size: 40),
+                );
+              },
+            ),
             Padding(
               padding: const EdgeInsets.all(12),
               child: Row(
