@@ -14,13 +14,8 @@ use Illuminate\Support\Facades\Auth;
 |
 */
 
-// Authentication Routes
+// Authentication Routes (Login, Register, etc.)
 Auth::routes();
-
-// Root URL – redirect based on authentication status
-Route::get('/', function () {
-    return Auth::check() ? redirect()->route('dashboard') : view('auth.login');
-});
 
 // Routes that require authentication
 Route::middleware(['auth'])->group(function () {
@@ -30,13 +25,17 @@ Route::middleware(['auth'])->group(function () {
         return view('dashboard');
     })->name('dashboard');
 
+    // Default redirect after login
+    Route::get('/', function () {
+        return redirect()->route('dashboard');
+    });
+
     // Packages Routes
     Route::prefix('packages')->name('packages.')->group(function () {
         Route::get('/', function () {
             return view('packages.index');
         })->name('index');
-        // Add more package-related routes here
-        // Route::get('/create', ...); etc.
+        // More routes: create, store, show, edit, update, destroy
     });
 
     // Bookings Routes
@@ -44,7 +43,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', function () {
             return view('bookings.index');
         })->name('index');
-        // Add more booking-related routes here
+        // More routes
     });
 
     // Calendar Route
@@ -57,7 +56,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', function () {
             return view('travelers.index');
         })->name('index');
-        // Add more traveler-related routes here
     });
 
     // Guides Routes
@@ -65,7 +63,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', function () {
             return view('guides.index');
         })->name('index');
-        // Add more guide-related routes here
     });
 
     // Gallery Routes
@@ -73,7 +70,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', function () {
             return view('gallery.index');
         })->name('index');
-        // Add more gallery-related routes here
     });
 
     // Messages Routes
@@ -81,7 +77,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', function () {
             return view('messages.index');
         })->name('index');
-        // Add more message-related routes here
     });
 
     // Deals Routes
@@ -89,7 +84,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', function () {
             return view('deals.index');
         })->name('index');
-        // Add more deal-related routes here
     });
 
     // Feedback Routes
@@ -97,6 +91,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', function () {
             return view('feedback.index');
         })->name('index');
-        // Add more feedback-related routes here
     });
+});
+
+// Redirect unauthenticated users to login page
+Route::get('/', function () {
+    return view('auth.login');
 });
