@@ -8,14 +8,16 @@ class Adventure {
   final int id;
   final String name;
   final String description;
+  final String imageUrl;
 
-  Adventure({required this.id, required this.name, required this.description});
+  Adventure({required this.id, required this.name, required this.description, required this.imageUrl});
 
   factory Adventure.fromJson(Map<String, dynamic> json) {
     return Adventure(
       id: json['id'],
       name: json['name'],
       description: json['description'] ?? '',
+      imageUrl: json['image_url'] ?? '',
     );
   }
 }
@@ -75,6 +77,19 @@ class _AdventuresPageState extends State<AdventuresPage> {
               itemBuilder: (context, index) {
                 final adventure = adventures[index];
                 return ListTile(
+                  leading: adventure.imageUrl.isNotEmpty
+                      ? Image.network(
+                          adventure.imageUrl,
+                          width: 60,
+                          height: 60,
+                          fit: BoxFit.cover,
+                        )
+                      : Container(
+                          width: 60,
+                          height: 60,
+                          color: Colors.grey[300],
+                          child: const Icon(Icons.image_not_supported),
+                        ),
                   title: Text(adventure.name),
                   subtitle: Text(adventure.description),
                   trailing: const Icon(Icons.arrow_forward),

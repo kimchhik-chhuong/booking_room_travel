@@ -11,11 +11,11 @@ class FakeDataController extends Controller
         // Return hardcoded adventures data for testing
         $fakeAdventures = [
             1 => [
-                ['id' => 1, 'name' => 'Fake Adventure 1', 'description' => 'Description for Fake Adventure 1'],
-                ['id' => 2, 'name' => 'Fake Adventure 2', 'description' => 'Description for Fake Adventure 2'],
+                ['id' => 1, 'name' => 'Fake Adventure 1', 'description' => 'Description for Fake Adventure 1', 'image_url' => 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=60&q=80'],
+                ['id' => 2, 'name' => 'Fake Adventure 2', 'description' => 'Description for Fake Adventure 2', 'image_url' => 'https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=60&q=80'],
             ],
             2 => [
-                ['id' => 3, 'name' => 'Fake Adventure 3', 'description' => 'Description for Fake Adventure 3'],
+                ['id' => 3, 'name' => 'Fake Adventure 3', 'description' => 'Description for Fake Adventure 3', 'image_url' => 'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=60&q=80'],
             ],
         ];
 
