@@ -41,6 +41,7 @@ flutter:
     - lib/assets/images/kampongspue.jpg
     - lib/assets/images/kampot.jpg
     - lib/assets/images/kep.jpg
+    - lib/assets/images/siemreap.jpg
     - lib/assets/images/kohkong.jpg
     - lib/assets/images/kompong-thom.jpg
     - lib/assets/images/kompongcham.jpg
@@ -53,4 +54,7 @@ flutter:
     - lib/assets/images/svayrieng.jpg
     - lib/assets/images/syhanus.jpg
     - lib/assets/images/takeo.jpg
-    # - lib/assets/images/tbumkmum.jpg
+    - lib/assets/images/mundoulkiri.jpg
+    - lib/assets/images/ratanakiri.jpg
+    - lib/assets/images/steangtreang.jpg
+    # - lib/assets/images/tboungkhmum.jpg

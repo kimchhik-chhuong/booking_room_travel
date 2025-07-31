@@ -35,17 +35,17 @@ class TripsPage extends StatefulWidget {
 class _TripsPageState extends State<TripsPage> {
   List<Map<String, dynamic>> provinces = [
     {
-      'name': 'Phnom Penh',
+      'name': 'PhnomPenh',
       'page': const PhnompenhPage(),
       'image': 'lib/assets/images/phnompenh.jpg'
     },
     {
-      'name': 'Siem Reap',
+      'name': 'SiemReap',
       'page': const SiemReapPage(),
       'image': 'lib/assets/images/siemreap.jpg'
     },
     {
-      'name': 'Banteay Meanchey',
+      'name': 'BanteayMeanchey',
       'page': const BanteayMeancheyPage(),
       'image': 'lib/assets/images/bantaymeanchey.jpg'
     },
@@ -55,24 +55,24 @@ class _TripsPageState extends State<TripsPage> {
       'image': 'lib/assets/images/batambong.jpg'
     },
     {
-      'name': 'Kampong Cham',
+      'name': 'K.Cham',
       'page': const KampongChamPage(),
-      'image': 'lib/assets/images/kampongcham.jpg'
+      'image': 'lib/assets/images/kompongcham.jpg'
     },
     {
-      'name': 'Kampong Chhnang',
+      'name': 'K.Chhnang',
       'page': const KampongChhnangPage(),
       'image': 'lib/assets/images/kampongchhnang.jpg'
     },
     {
-      'name': 'Kampong Speu',
+      'name': 'K.Speu',
       'page': const KampongSpeuPage(),
-      'image': 'lib/assets/images/kampongspeu.jpg'
+      'image': 'lib/assets/images/kampongspue.jpg'
     },
     {
-      'name': 'Kampong Thom',
+      'name': 'K.Thom',
       'page': const KampongThomPage(),
-      'image': 'lib/assets/images/kampongthom.jpg'
+      'image': 'lib/assets/images/kompong-thom.jpg'
     },
     {
       'name': 'Kampot',
@@ -82,7 +82,7 @@ class _TripsPageState extends State<TripsPage> {
     {
       'name': 'Kandal',
       'page': const KandalPage(),
-      'image': 'lib/assets/images/kandal.jpg'
+      'image': 'lib/assets/images/kaldal.jpg'
     },
     {
       'name': 'Kep',
@@ -90,19 +90,19 @@ class _TripsPageState extends State<TripsPage> {
       'image': 'lib/assets/images/kep.jpg'
     },
     {
-      'name': 'Koh Kong',
+      'name': 'KohKong',
       'page': const KohKongPage(),
       'image': 'lib/assets/images/kohkong.jpg'
     },
     {
       'name': 'Mondulkiri',
       'page': const MondulkiriPage(),
-      'image': 'lib/assets/images/mondulkiri.jpg'
+      'image': 'lib/assets/images/mundoulkiri.jpg'
     },
     {
-      'name': 'Oddar Meanchey',
+      'name': 'OddarMeanchey',
       'page': const OddarMeancheyPage(),
-      'image': 'lib/assets/images/oddarmeanchey.jpg'
+      'image': 'lib/assets/images/oddar-Meanchey.jpg'
     },
     {
       'name': 'Pailin',
@@ -110,9 +110,9 @@ class _TripsPageState extends State<TripsPage> {
       'image': 'lib/assets/images/pailin.jpg'
     },
     {
-      'name': 'Preah Vihear',
+      'name': 'PreahVihear',
       'page': const PreahVihearPage(),
-      'image': 'lib/assets/images/preahvihear.jpg'
+      'image': 'lib/assets/images/preakvihea.jpg'
     },
     {
       'name': 'Prey Veng',
@@ -130,17 +130,17 @@ class _TripsPageState extends State<TripsPage> {
       'image': 'lib/assets/images/ratanakiri.jpg'
     },
     {
-      'name': 'Sihanoukville',
+      'name': 'Sihanouk',
       'page': const SihanoukvillePage(),
-      'image': 'lib/assets/images/sihanoukville.jpg'
+      'image': 'lib/assets/images/syhanus.jpg'
     },
     {
-      'name': 'Stung Treng',
+      'name': 'StungTreng',
       'page': const StungteangPage(),
-      'image': 'lib/assets/images/stungtreng.jpg'
+      'image': 'lib/assets/images/steangtreang.jpg'
     },
     {
-      'name': 'Svay Rieng',
+      'name': 'SvayRieng',
       'page': const SvayRiengPage(),
       'image': 'lib/assets/images/svayrieng.jpg'
     },
@@ -149,11 +149,11 @@ class _TripsPageState extends State<TripsPage> {
       'page': const TakeoPage(),
       'image': 'lib/assets/images/takeo.jpg'
     },
-    {
-      'name': 'Tboung Khmum',
-      'page': const TboungKhmumPage(),
-      'image': 'lib/assets/images/tboungkhmum.jpg'
-    },
+    // {
+    //   'name': 'TboungKhmum',
+    //   'page': const TboungKhmumPage(),
+    //   'image': 'lib/assets/images/tboungkhmum.jpg'
+    // },
   ];
 
   List<Map<String, dynamic>> filteredProvinces = [];
@@ -198,7 +198,7 @@ class _TripsPageState extends State<TripsPage> {
             ),
             const SizedBox(height: 20),
             const Text(
-              'Popular Destinations',
+              'All Provinces of Cambodia',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
@@ -248,34 +248,6 @@ class _TripsPageState extends State<TripsPage> {
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
-              'All Provinces of Cambodia',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            Expanded(
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  childAspectRatio: 1,
-                ),
-                itemCount: filteredProvinces.length,
-                itemBuilder: (context, index) {
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) =>
-                                filteredProvinces[index]['page'] as Widget),
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
           ],
         ),
       ),

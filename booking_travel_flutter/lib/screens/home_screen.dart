@@ -6,6 +6,7 @@ import 'page/offers_page.dart';
 import 'payment_screen.dart';
 import 'search_screen.dart';
 import 'profile_screen.dart';
+import 'history/history_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -14,13 +15,13 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
-  int _notificationCount = 3; // Added notification count
+  int _notificationCount = 3;
 
   final List<Widget> _pages = [
     HomePageContent(),
     PaymentScreen(),
     SearchScreen(),
-    Center(child: Text('Historys Page')),
+    HistoryScreen(), // Now properly linked to HistoryScreen
     ProfileScreen(),
   ];
 
@@ -43,7 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.payment), label: 'Payment'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
           BottomNavigationBarItem(
-              icon: Icon(Icons.card_travel), label: 'Historys'),
+              icon: Icon(Icons.card_travel), label: 'History'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
@@ -61,10 +62,10 @@ class HomePageContent extends StatelessWidget {
         const SizedBox(height: 10),
         _buildOptions(context),
         const SizedBox(height: 20),
-        _buildSectionTitle('Popular Offer'),
+        _buildSectionTitle('Popular Offers'),
         _buildPopularOffers(),
         const SizedBox(height: 20),
-        _buildSectionTitle('Hotel Near You'),
+        _buildSectionTitle('Hotels Near You'),
         _buildHotelCard(
           context,
           hotelName: 'Grand Hyatt Resort',
@@ -204,7 +205,7 @@ class HomePageContent extends StatelessWidget {
       Icons.local_offer,
     ];
     final pages = [
-      TripsPage(),  // Changed from TripScreen() to TripsPage()
+      TripsPage(),
       HotelsPage(),
       FlightsPage(),
       OffersPage(),
@@ -259,7 +260,7 @@ class HomePageContent extends StatelessWidget {
     ];
 
     return Container(
-      height: 220, // Height adjusted to fit name, price, and stars
+      height: 220,
       padding: const EdgeInsets.only(left: 16),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
@@ -296,65 +297,60 @@ class HomePageContent extends StatelessWidget {
                         height: 220,
                         fit: BoxFit.cover,
                       ),
-                if (url.startsWith('http'))
-                  Column(
+                Positioned(
+                  bottom: 12,
+                  left: 12,
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Positioned(
-                        top: 12,
-                        left: 12,
-                        child: Text(
-                          name,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black.withOpacity(0.5),
-                                offset: Offset(2, 2),
-                                blurRadius: 4,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 12,
-                        left: 12,
-                        child: Row(
-                          children: [
-                            Text(
-                              price,
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
-                                shadows: [
-                                  Shadow(
-                                    color: Colors.black.withOpacity(0.5),
-                                    offset: Offset(2, 2),
-                                    blurRadius: 4,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Row(
-                              children: List.generate(
-                                5,
-                                (index) => Icon(
-                                  index < (rating * 1).floor()
-                                      ? Icons.star
-                                      : Icons.star_border,
-                                  size: 16,
-                                  color: Colors.amber,
-                                ),
-                              ),
+                      Text(
+                        name,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withOpacity(0.5),
+                              offset: Offset(2, 2),
+                              blurRadius: 4,
                             ),
                           ],
                         ),
                       ),
+                      Row(
+                        children: [
+                          Text(
+                            price,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black.withOpacity(0.5),
+                                  offset: Offset(2, 2),
+                                  blurRadius: 4,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Row(
+                            children: List.generate(
+                              5,
+                              (index) => Icon(
+                                index < (rating * 1).floor()
+                                    ? Icons.star
+                                    : Icons.star_border,
+                                size: 16,
+                                color: Colors.amber,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
+                ),
               ],
             ),
           );

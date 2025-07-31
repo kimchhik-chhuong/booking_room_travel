@@ -7,8 +7,8 @@ class SiemReapPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Kampot')),
-      body: const Center(child: Text('Welcome to Kampot')),
+      appBar: AppBar(title: const Text('SiemReap')),
+      body: const Center(child: Text('Welcome to Siem Reap')),
     );
   }
 }
