@@ -14,7 +14,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
-  int _notificationCount = 3; // Added notification count
+  int _notificationCount = 3;
 
   final List<Widget> _pages = [
     HomePageContent(),
@@ -42,8 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.payment), label: 'Payment'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.card_travel), label: 'Historys'),
+          BottomNavigationBarItem(icon: Icon(Icons.card_travel), label: 'Historys'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
@@ -113,7 +112,13 @@ class HomePageContent extends StatelessWidget {
               IconButton(
                 icon: Icon(Icons.notifications),
                 onPressed: () {
-                  _showNotificationAlert(context);
+                  // Navigate to notification detail screen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => NotificationDetailScreen(),
+                    ),
+                  );
                 },
               ),
               Positioned(
@@ -143,50 +148,6 @@ class HomePageContent extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  void _showNotificationAlert(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Notifications'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: CircleAvatar(
-                  backgroundImage: NetworkImage(
-                    'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&q=80',
-                  ),
-                ),
-                title: Text('New message'),
-                subtitle: Text('You have 3 new notifications'),
-              ),
-              Divider(),
-              ListTile(
-                leading: Icon(Icons.flight, color: Colors.blue),
-                title: Text('Flight booking confirmed'),
-                subtitle: Text('Your flight to Paris is confirmed'),
-              ),
-              ListTile(
-                leading: Icon(Icons.hotel, color: Colors.green),
-                title: Text('Hotel reservation'),
-                subtitle: Text('Pan Pacific Hotel - 2 nights'),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              child: Text('Close'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
     );
   }
 
@@ -336,6 +297,186 @@ class HomePageContent extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// =======================
+// Notification Detail Screen with tappable notifications
+// =======================
+
+class NotificationDetailScreen extends StatelessWidget {
+  final List<NotificationItem> notifications = [
+    NotificationItem(
+      icon: Icons.mark_email_unread,
+      color: Colors.orange,
+      title: 'New Message Received',
+      subtitle: 'You have 3 unread messages.',
+      dateTime: DateTime.now().subtract(Duration(minutes: 5)),
+    ),
+    NotificationItem(
+      icon: Icons.flight_takeoff,
+      color: Colors.blue,
+      title: 'Flight Confirmed',
+      subtitle: 'Your booking to Paris has been confirmed.',
+      dateTime: DateTime.now().subtract(Duration(hours: 2)),
+    ),
+    NotificationItem(
+      icon: Icons.hotel,
+      color: Colors.green,
+      title: 'Hotel Reserved',
+      subtitle: 'Pan Pacific Hotel - 2 nights stay.',
+      dateTime: DateTime.now().subtract(Duration(days: 1)),
+    ),
+  ];
+
+  String _formatDateTime(DateTime dt) {
+    return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} '
+           '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Notifications'),
+        backgroundColor: Colors.blue,
+      ),
+      body: ListView.separated(
+        padding: const EdgeInsets.all(12),
+        itemCount: notifications.length,
+        separatorBuilder: (context, index) => Divider(color: Colors.grey[300]),
+        itemBuilder: (context, index) {
+          final item = notifications[index];
+          return ListTile(
+            leading: CircleAvatar(
+              backgroundColor: item.color.withOpacity(0.2),
+              child: Icon(item.icon, color: item.color),
+            ),
+            title: Text(
+              item.title,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(item.subtitle),
+                const SizedBox(height: 4),
+                Text(
+                  _formatDateTime(item.dateTime),
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                ),
+              ],
+            ),
+            isThreeLine: true,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) {
+                    switch (item.title) {
+                      case 'New Message Received':
+                        return NotificationDetailMessageScreen();
+                      case 'Flight Confirmed':
+                        return NotificationDetailFlightScreen();
+                      case 'Hotel Reserved':
+                        return NotificationDetailHotelScreen();
+                      default:
+                        return NotificationDetailGenericScreen(item: item);
+                    }
+                  },
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+class NotificationItem {
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String subtitle;
+  final DateTime dateTime;
+
+  NotificationItem({
+    required this.icon,
+    required this.color,
+    required this.title,
+    required this.subtitle,
+    required this.dateTime,
+  });
+}
+
+// ======= Notification Detail Pages =======
+
+class NotificationDetailMessageScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Message Details')),
+      body: Padding(
+        padding: EdgeInsets.all(16),
+        child: Text(
+          'You have 3 unread messages from your contacts. Please check your inbox to read them.',
+          style: TextStyle(fontSize: 16),
+        ),
+      ),
+    );
+  }
+}
+
+class NotificationDetailFlightScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Flight Confirmation')),
+      body: Padding(
+        padding: EdgeInsets.all(16),
+        child: Text(
+          'Your flight to Paris is confirmed.\nFlight number: AF123\nDeparture: 10:00 AM, July 30, 2025.',
+          style: TextStyle(fontSize: 16),
+        ),
+      ),
+    );
+  }
+}
+
+class NotificationDetailHotelScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Hotel Reservation')),
+      body: Padding(
+        padding: EdgeInsets.all(16),
+        child: Text(
+          'Your reservation at Pan Pacific Hotel is confirmed for 2 nights.\nCheck-in date: Aug 5, 2025.\nEnjoy your stay!',
+          style: TextStyle(fontSize: 16),
+        ),
+      ),
+    );
+  }
+}
+
+class NotificationDetailGenericScreen extends StatelessWidget {
+  final NotificationItem item;
+
+  const NotificationDetailGenericScreen({Key? key, required this.item}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(item.title)),
+      body: Padding(
+        padding: EdgeInsets.all(16),
+        child: Text(
+          item.subtitle,
+          style: TextStyle(fontSize: 16),
         ),
       ),
     );
