@@ -9,7 +9,7 @@ use App\Http\Controllers\RestaurantMetadataController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\TravelerController;
 use App\Models\Booking;
-use Illuminate\Http\Request;
+use Illuminate\Http\Request;    
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RoleController;
@@ -42,5 +42,12 @@ Route::delete('/travelers/{id}', [TravelerController::class, 'destroy']);
 Route::middleware(['auth'])->group(function () {
     Route::resource('users', UserController::class);
     Route::resource('roles', RoleController::class);
+
+
+    // route byhistory 
+    Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return $request->user();
+});
+
 });
 
