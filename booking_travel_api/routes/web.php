@@ -1,5 +1,5 @@
 <?php
-
+use App\Http\Controllers\Auth\LoginController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -9,99 +9,104 @@ use Illuminate\Support\Facades\Auth;
 |--------------------------------------------------------------------------
 |
 | Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within the "web" middleware group.
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
 |
 */
+use App\Models\CambodiaTrip;
 
-// Laravel authentication routes (login, register, etc.)
-Auth::routes();
-
-// Root URL: redirect based on authentication status
-Route::get('/', function () {
-    return auth()->check()
-        ? redirect()->route('dashboard')
-        : view('auth.login');
+Route::get('/test-cambodia-trip-factory', function () {
+    $trips = CambodiaTrip::factory()->count(5)->make();
+    $hotelNames = $trips->pluck('hotel_name')->toArray();
+    return response()->json([
+        'hotel_names' => $hotelNames,
+    ]);
 });
 
-// Authenticated routes group
+
+// Authentication Routes
+Auth::routes();
+
+// Root URL – redirect based on authentication status
+Route::get('/', function () {
+    return Auth::check() ? redirect()->route('dashboard') : view('auth.login');
+});
+Route::post('/login', [LoginController::class, 'login'])->name('login.post');
+// Routes that require authentication
 Route::middleware(['auth'])->group(function () {
 
-    // Dashboard
+    // Dashboard Route
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
 
-    // Packages
+    // Packages Routes
     Route::prefix('packages')->name('packages.')->group(function () {
         Route::get('/', function () {
             return view('packages.index');
         })->name('index');
-        // More package routes (create, store, edit, etc.) can be added here
+        // Add more package-related routes here
+        // Route::get('/create', ...); etc.
     });
 
-    // Bookings
+    // Bookings Routes
     Route::prefix('bookings')->name('bookings.')->group(function () {
         Route::get('/', function () {
             return view('bookings.index');
         })->name('index');
-        // More booking routes
+        // Add more booking-related routes here
     });
 
-    // Calendar
+    // Calendar Route
     Route::get('/calendar', function () {
         return view('calendar');
     })->name('calendar');
 
-    // Travelers
+    // Travelers Routes
     Route::prefix('travelers')->name('travelers.')->group(function () {
         Route::get('/', function () {
             return view('travelers.index');
         })->name('index');
-        // More traveler routes
+        // Add more traveler-related routes here
     });
 
-    // Guides
+    // Guides Routes
     Route::prefix('guides')->name('guides.')->group(function () {
         Route::get('/', function () {
             return view('guides.index');
         })->name('index');
-        // More guide routes
+        // Add more guide-related routes here
     });
 
-    // Gallery
+    // Gallery Routes
     Route::prefix('gallery')->name('gallery.')->group(function () {
         Route::get('/', function () {
             return view('gallery.index');
         })->name('index');
-        // More gallery routes
+        // Add more gallery-related routes here
     });
 
-    // Messages
+    // Messages Routes
     Route::prefix('messages')->name('messages.')->group(function () {
         Route::get('/', function () {
             return view('messages.index');
         })->name('index');
-        // More message routes
+        // Add more message-related routes here
     });
 
-    // Deals
+    // Deals Routes
     Route::prefix('deals')->name('deals.')->group(function () {
         Route::get('/', function () {
             return view('deals.index');
         })->name('index');
-        // More deal routes
+        // Add more deal-related routes here
     });
 
-    // Feedback
+    // Feedback Routes
     Route::prefix('feedback')->name('feedback.')->group(function () {
         Route::get('/', function () {
             return view('feedback.index');
         })->name('index');
-        // More feedback routes
+        // Add more feedback-related routes here
     });
-});
-
-// Optional: Fallback route for unknown URLs
-Route::fallback(function () {
-    return view('errors.404'); // Make sure you have resources/views/errors/404.blade.php
 });

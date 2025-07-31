@@ -8,18 +8,8 @@ class Destination extends Model
 {
     protected $fillable = ['name', 'country', 'description', 'image_url'];
 
-    public function hotelMetadata()
+    public function hotels()
     {
         return $this->hasMany(HotelMetadata::class);
-    }
-
-    public function restaurantMetadata()
-    {
-        return $this->hasMany(RestaurantMetadata::class);
-    }
-
-    public function reviews()
-    {
-        return $this->hasMany(Review::class);
     }
 }
