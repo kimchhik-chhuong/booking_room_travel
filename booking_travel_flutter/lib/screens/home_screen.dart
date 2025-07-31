@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'page/trips_page.dart';
-import 'page/hotels_page.dart';
+import 'page/hotels_page.dart' hide TripScreen;
 import 'page/flights_page.dart';
 import 'page/offers_page.dart';
 import 'payment_screen.dart';
@@ -14,7 +14,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
-  int _notificationCount = 3; // Added notification count
 
   final List<Widget> _pages = [
     HomePageContent(),
@@ -42,8 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.payment), label: 'Payment'),
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.card_travel), label: 'Historys'),
+          BottomNavigationBarItem(icon: Icon(Icons.card_travel), label: 'Historys'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
@@ -79,19 +77,6 @@ class HomePageContent extends StatelessWidget {
         ),
         const SizedBox(height: 20),
       ],
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
     );
   }
 
@@ -242,6 +227,19 @@ class HomePageContent extends StatelessWidget {
     );
   }
 
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
   Widget _buildPopularOffers() {
     final offers = [
       {
@@ -259,7 +257,7 @@ class HomePageContent extends StatelessWidget {
     ];
 
     return Container(
-      height: 220, // Height adjusted to fit name, price, and stars
+      height: 220,
       padding: const EdgeInsets.only(left: 16),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
@@ -271,11 +269,11 @@ class HomePageContent extends StatelessWidget {
           final name = offer['name'] as String;
           final price = offer['price'] as String;
           final rating = offer['rating'] as double;
-          return ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Stack(
-              children: [
-                url.startsWith('http')
+          return Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: url.startsWith('http')
                     ? Image.network(
                         url,
                         width: 280,
@@ -296,67 +294,61 @@ class HomePageContent extends StatelessWidget {
                         height: 220,
                         fit: BoxFit.cover,
                       ),
-                if (url.startsWith('http'))
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Positioned(
-                        top: 12,
-                        left: 12,
-                        child: Text(
-                          name,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black.withOpacity(0.5),
-                                offset: Offset(2, 2),
-                                blurRadius: 4,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 12,
-                        left: 12,
-                        child: Row(
-                          children: [
-                            Text(
-                              price,
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
-                                shadows: [
-                                  Shadow(
-                                    color: Colors.black.withOpacity(0.5),
-                                    offset: Offset(2, 2),
-                                    blurRadius: 4,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Row(
-                              children: List.generate(
-                                5,
-                                (index) => Icon(
-                                  index < (rating * 1).floor()
-                                      ? Icons.star
-                                      : Icons.star_border,
-                                  size: 16,
-                                  color: Colors.amber,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+              ),
+              Positioned(
+                top: 12,
+                left: 12,
+                child: Text(
+                  name,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withOpacity(0.5),
+                        offset: Offset(2, 2),
+                        blurRadius: 4,
                       ),
                     ],
                   ),
-              ],
-            ),
+                ),
+              ),
+              Positioned(
+                bottom: 12,
+                left: 12,
+                child: Row(
+                  children: [
+                    Text(
+                      price,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withOpacity(0.5),
+                            offset: Offset(2, 2),
+                            blurRadius: 4,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Row(
+                      children: List.generate(
+                        5,
+                        (index) => Icon(
+                          index < (rating * 1).floor()
+                              ? Icons.star
+                              : Icons.star_border,
+                          size: 16,
+                          color: Colors.amber,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           );
         },
       ),
@@ -403,8 +395,8 @@ class HomePageContent extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(hotelName,
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      style: TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold)),
                   Text(price, style: TextStyle(color: Colors.blue)),
                 ],
               ),
