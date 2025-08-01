@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class SearchScreen extends StatefulWidget {
+  const SearchScreen({super.key});
+
   @override
   _SearchScreenState createState() => _SearchScreenState();
 }
@@ -39,7 +41,7 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Search Hotels'),
+        title: const Text('Search Hotels'),
         backgroundColor: Colors.blue,
       ),
       body: Padding(
@@ -54,14 +56,14 @@ class _SearchScreenState extends State<SearchScreen> {
                     onChanged: _filterHotels, // Real-time filtering
                     decoration: InputDecoration(
                       hintText: 'Search hotel name...',
-                      prefixIcon: Icon(Icons.search),
+                      prefixIcon: const Icon(Icons.search),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                   ),
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 ElevatedButton(
                   onPressed: _performSearch,
                   style: ElevatedButton.styleFrom(
@@ -71,26 +73,26 @@ class _SearchScreenState extends State<SearchScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  child: Text('Search'),
+                  child: const Text('Search'),
                 ),
               ],
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Expanded(
               child: filteredHotels.isEmpty
-                  ? Center(child: Text('No hotels found'))
+                  ? const Center(child: Text('No hotels found'))
                   : ListView.builder(
                       itemCount: filteredHotels.length,
                       itemBuilder: (context, index) {
                         final hotel = filteredHotels[index];
                         return Card(
-                          margin: EdgeInsets.symmetric(vertical: 8),
+                          margin: const EdgeInsets.symmetric(vertical: 8),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10)),
                           child: ListTile(
-                            leading: Icon(Icons.hotel, color: Colors.blue),
+                            leading: const Icon(Icons.hotel, color: Colors.blue),
                             title: Text(hotel),
-                            trailing: Icon(Icons.arrow_forward_ios),
+                            trailing: const Icon(Icons.arrow_forward_ios),
                             onTap: () {
                               Navigator.push(
                                 context,
@@ -114,7 +116,7 @@ class _SearchScreenState extends State<SearchScreen> {
 class RoomDetailScreen extends StatefulWidget {
   final String hotelName;
 
-  RoomDetailScreen({required this.hotelName});
+  const RoomDetailScreen({super.key, required this.hotelName});
 
   @override
   _RoomDetailScreenState createState() => _RoomDetailScreenState();
@@ -222,12 +224,12 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                   },
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Text(
                 widget.hotelName,
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               // Selection Fields
               Row(
                 children: [
@@ -247,19 +249,19 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                             Text(
                               _selectedDate == null
                                   ? 'Select Date'
-                                  : '${_selectedDate!.toLocal().toString().split(' ')[0]}',
+                                  : _selectedDate!.toLocal().toString().split(' ')[0],
                             ),
-                            Icon(Icons.calendar_today),
+                            const Icon(Icons.calendar_today),
                           ],
                         ),
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       value: _selectedBeds,
-                      hint: Text('Beds'),
+                      hint: const Text('Beds'),
                       items: bedOptions.map((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
@@ -278,11 +280,11 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       value: _selectedPeople,
-                      hint: Text('People'),
+                      hint: const Text('People'),
                       items: peopleOptions.map((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
@@ -303,12 +305,12 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                   ),
                 ],
               ),
-              SizedBox(height: 20),
-              Text(
+              const SizedBox(height: 20),
+              const Text(
                 'Available Rooms',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               ...rooms.entries.map((entry) {
                 final roomName = entry.key;
                 final roomData = entry.value;
@@ -322,9 +324,9 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                 } // '3 rooms' can stay default black
 
                 return ListTile(
-                  leading: Icon(Icons.bed, color: Colors.blue),
+                  leading: const Icon(Icons.bed, color: Colors.blue),
                   title: Text(roomName),
-                  subtitle: Text('\$${price}/night'),
+                  subtitle: Text('\$$price/night'),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -332,7 +334,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                         '($availability)',
                         style: TextStyle(color: availabilityColor, fontWeight: FontWeight.bold),
                       ),
-                      SizedBox(width: 10),
+                      const SizedBox(width: 10),
                       ElevatedButton(
                         onPressed: availability == 'Full' || _selectedDate == null || _selectedBeds == null || _selectedPeople == null
                             ? null // Disable if full or selections are incomplete
@@ -348,7 +350,7 @@ class _RoomDetailScreenState extends State<RoomDetailScreen> {
                                 };
                                 print('Booking: $bookingDetails'); // Placeholder for booking logic
                               },
-                        child: Text('Book Now'),
+                        child: const Text('Book Now'),
                       ),
                     ],
                   ),

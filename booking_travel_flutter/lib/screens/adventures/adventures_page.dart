@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-
+import '../services/user_service.dart' as user_service;
 import '../hotels/hotels_by_adventure_page.dart'; // New screen for hotels by adventure
 
 class Adventure {
@@ -38,19 +36,8 @@ class _AdventuresPageState extends State<AdventuresPage> {
   @override
   void initState() {
     super.initState();
-    _adventuresFuture = fetchAdventures();
+    _adventuresFuture = user_service.UserService.fetchAdventuresByProvince(widget.provinceId);
   }
-
-    Future<List<Adventure>> fetchAdventures() async {
-        final response = await http.get(Uri.parse('http://localhost:8000/api/provinces/${widget.provinceId}/adventures-fake'));
-
-        if (response.statusCode == 200) {
-            final List<dynamic> jsonList = json.decode(response.body)['data'];
-            return jsonList.map((json) => Adventure.fromJson(json)).toList();
-        } else {
-            throw Exception('Failed to load adventures');
-        }
-    }
 
   @override
   Widget build(BuildContext context) {

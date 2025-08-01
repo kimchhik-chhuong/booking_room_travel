@@ -14,7 +14,7 @@ import 'services/user_service.dart'; // User login check service
 
 
 void main() {
-  runApp(TravelBookingApp());
+  runApp(const TravelBookingApp());
 }
 
 class TravelBookingApp extends StatelessWidget {
@@ -35,10 +35,10 @@ class TravelBookingApp extends StatelessWidget {
           systemOverlayStyle: SystemUiOverlayStyle.light,
         ),
       ),
-      home: SplashScreen(),
+      home: const SplashScreen(),
       routes: {
-        '/login': (context) => LoginScreen(),
-        '/register': (context) => RegisterScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/register': (context) => const RegisterScreen(),
         '/onboarding': (context) => OnboardingScreen(),
         '/home': (context) => HomeScreen(),
         '/payment': (context) => PaymentScreen(),
@@ -119,7 +119,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     await Future.delayed(const Duration(milliseconds: 800));
     _textController.forward();
 
-    await Future.delayed(Duration(milliseconds: 2500));
+    await Future.delayed(const Duration(milliseconds: 2500));
 
     bool isLoggedIn = await UserService.isLoggedIn();
     if (isLoggedIn) {

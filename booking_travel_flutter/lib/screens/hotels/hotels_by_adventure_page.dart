@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-
+import '../services/user_service.dart';
 import '../trips/trips_adventures_page.dart'; // Reuse Place and BookingCard from trips_adventures_page.dart
 
 class HotelsByAdventurePage extends StatefulWidget {
@@ -20,23 +18,12 @@ class _HotelsByAdventurePageState extends State<HotelsByAdventurePage> {
   @override
   void initState() {
     super.initState();
-    _hotelsFuture = fetchHotelsByAdventureId(widget.adventureId);
+    _hotelsFuture = UserService.fetchHotelsByAdventure(widget.adventureId);
   }
-
-    Future<List<Place>> fetchHotelsByAdventureId(String adventureId) async {
-        final response = await http.get(Uri.parse('http://localhost:8000/api/adventures/$adventureId/hotels-fake'));
-
-        if (response.statusCode == 200) {
-            final List<dynamic> jsonList = json.decode(response.body)['data'];
-            return jsonList.map((json) => Place.fromJson(json)).toList();
-        } else {
-            throw Exception('Failed to load hotels');
-        }
-    }
 
   Future<void> _refreshHotels() async {
     setState(() {
-      _hotelsFuture = fetchHotelsByAdventureId(widget.adventureId);
+      _hotelsFuture = UserService.fetchHotelsByAdventure(widget.adventureId);
     });
   }
 

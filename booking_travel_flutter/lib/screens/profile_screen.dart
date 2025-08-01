@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../services/user_service.dart';
 
 class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({super.key});
+
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
 }
@@ -38,7 +40,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       });
       print('Error loading user data: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Error loading profile data'),
           backgroundColor: Colors.red,
         ),
@@ -57,14 +59,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (_isLoading) {
       return Scaffold(
         body: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             image: DecorationImage(
               image: NetworkImage(
                   'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80'),
               fit: BoxFit.cover,
             ),
           ),
-          child: Center(
+          child: const Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -87,7 +89,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (_currentUser == null) {
       return Scaffold(
         body: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             image: DecorationImage(
               image: NetworkImage(
                   'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80'),
@@ -98,9 +100,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.error, size: 64, color: Colors.white),
-                SizedBox(height: 16),
-                Text(
+                const Icon(Icons.error, size: 64, color: Colors.white),
+                const SizedBox(height: 16),
+                const Text(
                   'No user data found',
                   style: TextStyle(
                     color: Colors.white,
@@ -108,15 +110,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 8),
-                Text(
+                const SizedBox(height: 8),
+                const Text(
                   'Please login again',
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: 14,
                   ),
                 ),
-                SizedBox(height: 24),
+                const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: () {
                     Navigator.pushReplacementNamed(context, '/login');
@@ -125,7 +127,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     backgroundColor: Colors.white,
                     foregroundColor: Colors.purple,
                   ),
-                  child: Text('Login'),
+                  child: const Text('Login'),
                 ),
               ],
             ),
@@ -136,7 +138,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           image: DecorationImage(
             image: NetworkImage(
                 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80'),
@@ -151,7 +153,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: Column(
                     children: [
                       Padding(
-                        padding: EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(20),
                         child: Column(
                           children: [
                             MouseRegion(
@@ -206,7 +208,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             width: 2,
                                           ),
                                         ),
-                                        child: Icon(
+                                        child: const Icon(
                                           Icons.camera_alt,
                                           color: Colors.white,
                                           size: 16,
@@ -217,7 +219,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                               ),
                             ),
-                            SizedBox(height: 16),
+                            const SizedBox(height: 16),
                             MouseRegion(
                               cursor: SystemMouseCursors.click,
                               child: GestureDetector(
@@ -226,7 +228,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 },
                                 child: Text(
                                   _currentUser!['name'] ?? 'Unknown User',
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
@@ -234,9 +236,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                               ),
                             ),
-                            SizedBox(height: 16),
+                            const SizedBox(height: 16),
                             Container(
-                              padding: EdgeInsets.symmetric(
+                              padding: const EdgeInsets.symmetric(
                                   horizontal: 16, vertical: 6),
                               decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(0.3),
@@ -246,7 +248,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   width: 1,
                                 ),
                               ),
-                              child: Row(
+                              child: const Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(
@@ -276,13 +278,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.9),
-                          borderRadius: BorderRadius.only(
+                          borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(30),
                             topRight: Radius.circular(30),
                           ),
                         ),
                         child: Padding(
-                          padding: EdgeInsets.all(20),
+                          padding: const EdgeInsets.all(20),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
@@ -291,7 +293,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
+                                  const Text(
                                     'About',
                                     style: TextStyle(
                                       fontSize: 18,
@@ -305,7 +307,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       onTap: () {
                                         _showEditProfileDialog(context);
                                       },
-                                      child: Text(
+                                      child: const Text(
                                         'Edit Profile',
                                         style: TextStyle(
                                           fontSize: 14,
@@ -316,7 +318,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ),
                                 ],
                               ),
-                              SizedBox(height: 20),
+                              const SizedBox(height: 20),
                               MouseRegion(
                                 cursor: SystemMouseCursors.click,
                                 child: GestureDetector(
@@ -327,7 +329,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       _currentUser!['name'] ?? 'Not set'),
                                 ),
                               ),
-                              SizedBox(height: 16),
+                              const SizedBox(height: 16),
                               MouseRegion(
                                 cursor: SystemMouseCursors.click,
                                 child: GestureDetector(
@@ -338,16 +340,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       _currentUser!['email'] ?? 'Not set'),
                                 ),
                               ),
-                              SizedBox(height: 16),
+                              const SizedBox(height: 16),
                               _buildInfoField('User ID:',
                                   _currentUser!['id']?.toString() ?? 'Unknown'),
-                              SizedBox(height: 16),
+                              const SizedBox(height: 16),
                               if (_currentUser!['created_at'] != null) ...[
                                 _buildInfoField('Member Since:',
                                     _formatDate(_currentUser!['created_at'])),
-                                SizedBox(height: 16),
+                                const SizedBox(height: 16),
                               ],
-                              SizedBox(height: 8),
+                              const SizedBox(height: 8),
                               _buildSettingsOption(
                                 icon: Icons.logout,
                                 title: 'Logout',
@@ -365,7 +367,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               // Update Button at the bottom
               Container(
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
                 color: Colors.white.withOpacity(0.9),
                 child: ElevatedButton(
                   onPressed: _hasChanges
@@ -378,7 +380,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               _hasChanges = false;
                             });
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
+                              const SnackBar(
                                 content: Text('Profile updated successfully!'),
                                 backgroundColor: Colors.green,
                               ),
@@ -386,7 +388,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           } catch (e) {
                             print('Error updating profile: $e');
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
+                              const SnackBar(
                                 content: Text('Failed to update profile'),
                                 backgroundColor: Colors.red,
                               ),
@@ -395,11 +397,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         }
                       : null,
                   style: ElevatedButton.styleFrom(
-                    minimumSize: Size(double.infinity, 50),
+                    minimumSize: const Size(double.infinity, 50),
                     backgroundColor: _hasChanges ? Colors.green : Colors.grey,
                     foregroundColor: Colors.white,
                   ),
-                  child: Text('Update'),
+                  child: const Text('Update'),
                 ),
               ),
             ],
@@ -415,16 +417,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
       children: [
         Text(
           label,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 14,
             color: Colors.black54,
             fontWeight: FontWeight.w500,
           ),
         ),
-        SizedBox(height: 4),
+        const SizedBox(height: 4),
         Text(
           value,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 16,
             color: Colors.black87,
             fontWeight: FontWeight.w400,
@@ -445,7 +447,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          padding: EdgeInsets.symmetric(vertical: 12),
+          padding: const EdgeInsets.symmetric(vertical: 12),
           child: Row(
             children: [
               Icon(
@@ -453,7 +455,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 size: 20,
                 color: textColor ?? Colors.black54,
               ),
-              SizedBox(width: 12),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   title,
@@ -464,7 +466,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
               ),
-              Icon(
+              const Icon(
                 Icons.arrow_forward_ios,
                 size: 16,
                 color: Colors.black26,
@@ -494,19 +496,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Change Profile Photo'),
+          title: const Text('Change Profile Photo'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: urlController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Image URL',
                   hintText: 'https://example.com/image.jpg',
                   border: OutlineInputBorder(),
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Text(
                 'Note: This will only change the display locally. To save permanently, use the Update button.',
                 style: TextStyle(
@@ -521,7 +523,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
@@ -532,14 +534,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   });
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                    const SnackBar(
                       content: Text('Profile photo updated locally!'),
                       backgroundColor: Colors.green,
                     ),
                   );
                 }
               },
-              child: Text('Update'),
+              child: const Text('Update'),
             ),
           ],
         );
@@ -556,18 +558,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Edit Name'),
+          title: const Text('Edit Name'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: nameController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Full Name',
                   border: OutlineInputBorder(),
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Text(
                 'Note: This will only change the display locally. To save permanently, use the Update button.',
                 style: TextStyle(
@@ -582,7 +584,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
@@ -593,14 +595,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   });
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                    const SnackBar(
                       content: Text('Name updated locally!'),
                       backgroundColor: Colors.green,
                     ),
                   );
                 }
               },
-              child: Text('Update'),
+              child: const Text('Update'),
             ),
           ],
         );
@@ -617,19 +619,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Edit Email'),
+          title: const Text('Edit Email'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: emailController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Email Address',
                   border: OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.emailAddress,
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Text(
                 'Note: This will only change the display locally. To save permanently, use the Update button.',
                 style: TextStyle(
@@ -644,7 +646,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
@@ -655,14 +657,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   });
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                    const SnackBar(
                       content: Text('Email updated locally!'),
                       backgroundColor: Colors.green,
                     ),
                   );
                 }
               },
-              child: Text('Update'),
+              child: const Text('Update'),
             ),
           ],
         );
@@ -675,29 +677,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Edit Profile'),
+          title: const Text('Edit Profile'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: Icon(Icons.person),
-                title: Text('Edit Name'),
+                leading: const Icon(Icons.person),
+                title: const Text('Edit Name'),
                 onTap: () {
                   Navigator.of(context).pop();
                   _showEditNameDialog(context);
                 },
               ),
               ListTile(
-                leading: Icon(Icons.email),
-                title: Text('Edit Email'),
+                leading: const Icon(Icons.email),
+                title: const Text('Edit Email'),
                 onTap: () {
                   Navigator.of(context).pop();
                   _showEditEmailDialog(context);
                 },
               ),
               ListTile(
-                leading: Icon(Icons.camera_alt),
-                title: Text('Change Photo'),
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Change Photo'),
                 onTap: () {
                   Navigator.of(context).pop();
                   _showImageUrlDialog(context);
@@ -715,8 +717,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Logout'),
-          content: Text('Are you sure you want to logout?'),
+          title: const Text('Logout'),
+          content: const Text('Are you sure you want to logout?'),
           actions: [
             // Cancel Button (unchanged)
             MouseRegion(
@@ -725,7 +727,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                child: Text('Cancel'),
+                child: const Text('Cancel'),
               ),
             ),
             // Logout Button (now in red)
@@ -740,13 +742,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Navigator.of(context).pop();
                   Navigator.pushReplacementNamed(context, '/login');
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                    const SnackBar(
                       content: Text('Logged out successfully'),
                       backgroundColor: Colors.green,
                     ),
                   );
                 },
-                child: Text('Logout'),
+                child: const Text('Logout'),
               ),
             ),
           ],

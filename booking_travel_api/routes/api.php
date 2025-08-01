@@ -17,8 +17,6 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\HotelController;
 use App\Http\Controllers\AdventureController;
-use App\Http\Controllers\FakeDataController;
-
 Route::post('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -50,9 +48,7 @@ Route::get('/provinces/{id}/hotels', [HotelController::class, 'getHotelsByProvin
 
 // New routes for adventures
 Route::get('/provinces/{province}/adventures', [AdventureController::class, 'getAdventuresByProvince']);
-Route::get('/provinces/{province}/adventures-fake', [FakeDataController::class, 'getAdventuresByProvinceFake']);
 Route::get('/adventures/{adventure}/hotels', [AdventureController::class, 'getHotelsByAdventure']);
-Route::get('/adventures/{adventure}/hotels-fake', [FakeDataController::class, 'getHotelsByAdventureFake']);
 
 //
 Route::middleware(['auth'])->group(function () {

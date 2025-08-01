@@ -10,6 +10,7 @@ class Adventure extends Model
         'name',
         'description',
         'province_id',
+        'image_url',
     ];
 
     public function province()

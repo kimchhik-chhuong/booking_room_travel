@@ -380,7 +380,7 @@ class _RegisterScreenState extends State<RegisterScreen>
 
   // Remove role dropdown widget as role is fixed to 'user'
   Widget _buildRoleDropdown() {
-    return SizedBox.shrink();
+    return const SizedBox.shrink();
   }
 
   Widget _buildAnimatedTextField({

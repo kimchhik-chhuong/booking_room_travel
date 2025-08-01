@@ -125,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen>
                             const SizedBox(height: 30),
                             _buildLoginButton(),
                             if (_errorMessage != null) ...[
-                              SizedBox(height: 20),
+                              const SizedBox(height: 20),
                               Text(
                                 _errorMessage!,
                                 style: TextStyle(
@@ -134,7 +134,7 @@ class _LoginScreenState extends State<LoginScreen>
                                 ),
                               ),
                             ],
-                            SizedBox(height: 20),
+                            const SizedBox(height: 20),
                             _buildSignUpLink(),
                           ],
                         ),

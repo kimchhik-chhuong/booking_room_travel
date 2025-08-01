@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class OnboardingScreen extends StatefulWidget {
+  const OnboardingScreen({super.key});
+
   @override
   _OnboardingScreenState createState() => _OnboardingScreenState();
 }
@@ -46,9 +48,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
             _buildIndicators(),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             _buildButton(context),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -71,11 +73,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
           ),
-          SizedBox(height: 30),
+          const SizedBox(height: 30),
           Text(
             page['title'] ?? '',
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -91,8 +93,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       children: List.generate(
         _pages.length,
         (index) => AnimatedContainer(
-          duration: Duration(milliseconds: 300),
-          margin: EdgeInsets.symmetric(horizontal: 5),
+          duration: const Duration(milliseconds: 300),
+          margin: const EdgeInsets.symmetric(horizontal: 5),
           width: _currentPage == index ? 12 : 8,
           height: _currentPage == index ? 12 : 8,
           decoration: BoxDecoration(
@@ -111,11 +113,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         Navigator.pushReplacementNamed(context, '/login');
       },
       style: ElevatedButton.styleFrom(
-        padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
         backgroundColor: Colors.blue,
       ),
-      child: Text(
+      child: const Text(
         'Book Your Trip',
         style: TextStyle(fontSize: 16, color: Colors.white),
       ),

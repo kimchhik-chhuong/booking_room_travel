@@ -162,4 +162,106 @@ class UserService {
   static Future updateUserProfile({required name, required email, required profileImageUrl, required followingCount}) async {}
 
   static Future<void> updateUser(Map<String, dynamic>? currentUser) async {}
+
+  /// Fetch list of provinces
+  static Future<List<Province>> fetchProvinces() async {
+    final response = await http.get(Uri.parse('$baseUrl/provinces'));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonList = json.decode(response.body)['data'];
+      return jsonList.map((json) => Province.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load provinces');
+    }
+  }
+
+  /// Fetch adventures by province id
+  static Future<List<Adventure>> fetchAdventuresByProvince(int provinceId) async {
+    final response = await http.get(Uri.parse('$baseUrl/provinces/$provinceId/adventures'));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonList = json.decode(response.body)['data'];
+      return jsonList.map((json) => Adventure.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load adventures');
+    }
+  }
+
+  /// Fetch hotels by adventure id
+  static Future<List<Hotel>> fetchHotelsByAdventure(String adventureId) async {
+    final response = await http.get(Uri.parse('$baseUrl/adventures/$adventureId/hotels'));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonList = json.decode(response.body)['data'];
+      return jsonList.map((json) => Hotel.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load hotels');
+    }
+  }
+}
+
+class Province {
+  final int id;
+  final String name;
+
+  Province({required this.id, required this.name});
+
+  factory Province.fromJson(Map<String, dynamic> json) {
+    return Province(
+      id: json['id'],
+      name: json['name'],
+    );
+  }
+}
+
+class Adventure {
+  final int id;
+  final String name;
+  final String description;
+  final String imageUrl;
+
+  Adventure({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.imageUrl,
+  });
+
+  factory Adventure.fromJson(Map<String, dynamic> json) {
+    return Adventure(
+      id: json['id'],
+      name: json['name'],
+      description: json['description'] ?? '',
+      imageUrl: json['image_url'] ?? '',
+    );
+  }
+}
+
+class Hotel {
+  final int id;
+  final String name;
+  final String image;
+  final int price;
+  final int day;
+  final String description;
+
+  Hotel({
+    required this.id,
+    required this.name,
+    required this.image,
+    required this.price,
+    required this.day,
+    required this.description,
+  });
+
+  factory Hotel.fromJson(Map<String, dynamic> json) {
+    return Hotel(
+      id: json['id'],
+      name: json['name'],
+      image: json['image'] ?? '',
+      price: json['price'] ?? 0,
+      day: json['day'] ?? 0,
+      description: json['description'] ?? '',
+    );
+  }
 }

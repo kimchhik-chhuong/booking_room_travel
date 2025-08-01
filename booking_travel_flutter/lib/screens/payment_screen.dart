@@ -15,6 +15,8 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -28,29 +30,31 @@ class MyApp extends StatelessWidget {
 }
 
 class PaymentScreen extends StatelessWidget {
+  const PaymentScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Payment'),
+        title: const Text('Payment'),
         backgroundColor: Colors.blue,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Text('Booking Summary',
+            const Text('Booking Summary',
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             _buildBookingDetails(),
-            SizedBox(height: 30),
-            Text('Payment Method',
+            const SizedBox(height: 30),
+            const Text('Payment Method',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             _buildPaymentOption(Icons.credit_card, 'Credit Card'),
             _buildPaymentOption(Icons.paypal, 'PayPal'),
             _buildPaymentOption(Icons.account_balance_wallet, 'Wallet'),
-            Spacer(),
+            const Spacer(),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -67,9 +71,9 @@ class PaymentScreen extends StatelessWidget {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
-                minimumSize: Size(double.infinity, 50),
+                minimumSize: const Size(double.infinity, 50),
               ),
-              child: Text(
+              child: const Text(
                 'Pay Now',
                 style: TextStyle(fontSize: 18),
               ),
@@ -82,7 +86,7 @@ class PaymentScreen extends StatelessWidget {
 
   Widget _buildBookingDetails() {
     return Container(
-      padding: EdgeInsets.all(12),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.grey.shade100,
         borderRadius: BorderRadius.circular(8),
@@ -113,7 +117,7 @@ class PaymentScreen extends StatelessWidget {
     return ListTile(
       leading: Icon(icon, color: Colors.blue),
       title: Text(method),
-      trailing: Icon(Icons.arrow_forward_ios, size: 16),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
       onTap: () {},
     );
   }
@@ -125,7 +129,7 @@ class ReceiptScreen extends StatelessWidget {
   final String guests;
   final String total;
 
-  ReceiptScreen({
+  ReceiptScreen({super.key, 
     required this.hotelName,
     required this.nights,
     required this.guests,
@@ -145,7 +149,7 @@ class ReceiptScreen extends StatelessWidget {
         await _saveReceiptForMobile(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Receipt saving not supported on this platform')),
+          const SnackBar(content: Text('Receipt saving not supported on this platform')),
         );
       }
     } catch (e) {
@@ -163,7 +167,7 @@ class ReceiptScreen extends StatelessWidget {
         status = await Permission.storage.request();
         if (!status.isGranted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Storage permission denied')),
+            const SnackBar(content: Text('Storage permission denied')),
           );
           return;
         }
@@ -182,7 +186,7 @@ class ReceiptScreen extends StatelessWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Receipt saved to $filePath'),
-        duration: Duration(seconds: 3),
+        duration: const Duration(seconds: 3),
       ),
     );
   }
@@ -202,7 +206,7 @@ class ReceiptScreen extends StatelessWidget {
       html.Url.revokeObjectUrl(url);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Receipt download started')),
+        const SnackBar(content: Text('Receipt download started')),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -216,7 +220,7 @@ class ReceiptScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        title: Text('Receipt'),
+        title: const Text('Receipt'),
         backgroundColor: Colors.blue,
         centerTitle: true,
       ),
@@ -238,8 +242,8 @@ class ReceiptScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Icon(Icons.check_circle, color: Colors.green, size: 80),
-                          SizedBox(height: 10),
+                          const Icon(Icons.check_circle, color: Colors.green, size: 80),
+                          const SizedBox(height: 10),
                           Text(
                             'Payment Successful!',
                             textAlign: TextAlign.center,
@@ -249,12 +253,12 @@ class ReceiptScreen extends StatelessWidget {
                               color: Colors.green.shade700,
                             ),
                           ),
-                          SizedBox(height: 30),
+                          const SizedBox(height: 30),
                           _buildReceiptItem(Icons.hotel, 'Hotel', hotelName),
                           _buildReceiptItem(Icons.nights_stay, 'Nights', nights),
                           _buildReceiptItem(Icons.group, 'Guests', guests),
                           _buildReceiptItem(Icons.attach_money, 'Total', total),
-                          SizedBox(height: 30),
+                          const SizedBox(height: 30),
                           Text(
                             'Thank you for booking with us!',
                             textAlign: TextAlign.center,
@@ -270,16 +274,16 @@ class ReceiptScreen extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: () => _captureAndSaveReceipt(context),
-              icon: Icon(Icons.download),
-              label: Text('Download Receipt'),
+              icon: const Icon(Icons.download),
+              label: const Text('Download Receipt'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
-                padding: EdgeInsets.symmetric(vertical: 14),
-                minimumSize: Size(double.infinity, 50),
-                textStyle: TextStyle(fontSize: 18),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                minimumSize: const Size(double.infinity, 50),
+                textStyle: const TextStyle(fontSize: 18),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -297,18 +301,18 @@ class ReceiptScreen extends StatelessWidget {
       child: Row(
         children: [
           Icon(icon, color: Colors.blue),
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
           Text(
             '$label:',
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
           ),
-          Spacer(),
+          const Spacer(),
           Text(
             value,
-            style: TextStyle(fontSize: 16),
+            style: const TextStyle(fontSize: 16),
           ),
         ],
       ),

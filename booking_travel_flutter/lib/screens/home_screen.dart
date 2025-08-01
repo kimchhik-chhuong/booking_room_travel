@@ -8,19 +8,21 @@ import 'search_screen.dart';
 import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
-  int _notificationCount = 3; // Added notification count
+  final int _notificationCount = 3; // Added notification count
 
   final List<Widget> _pages = [
     HomePageContent(),
     PaymentScreen(),
     SearchScreen(),
-    Center(child: Text('Historys Page')),
+    const Center(child: Text('Historys Page')),
     ProfileScreen(),
   ];
 
@@ -52,6 +54,8 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class HomePageContent extends StatelessWidget {
+  const HomePageContent({super.key});
+
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -110,7 +114,7 @@ class HomePageContent extends StatelessWidget {
           Stack(
             children: [
               IconButton(
-                icon: Icon(Icons.notifications),
+                icon: const Icon(Icons.notifications),
                 onPressed: () {
                   _showNotificationAlert(context);
                 },
@@ -119,16 +123,16 @@ class HomePageContent extends StatelessWidget {
                 right: 8,
                 top: 8,
                 child: Container(
-                  padding: EdgeInsets.all(2),
+                  padding: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
                     color: Colors.red,
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  constraints: BoxConstraints(
+                  constraints: const BoxConstraints(
                     minWidth: 14,
                     minHeight: 14,
                   ),
-                  child: Text(
+                  child: const Text(
                     '3',
                     style: TextStyle(
                       color: Colors.white,
@@ -150,8 +154,8 @@ class HomePageContent extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Notifications'),
-          content: Column(
+          title: const Text('Notifications'),
+          content: const Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
@@ -178,7 +182,7 @@ class HomePageContent extends StatelessWidget {
           ),
           actions: [
             TextButton(
-              child: Text('Close'),
+              child: const Text('Close'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -204,10 +208,10 @@ class HomePageContent extends StatelessWidget {
       Icons.local_offer,
     ];
     final pages = [
-      TripsPage(),  // Changed from TripScreen() to TripsPage()
-      HotelsPage(),
-      FlightsPage(),
-      OffersPage(),
+      const TripsPage(),  // Changed from TripScreen() to TripsPage()
+      const HotelsPage(),
+      const FlightsPage(),
+      const OffersPage(),
     ];
 
     return Padding(
@@ -311,7 +315,7 @@ class HomePageContent extends StatelessWidget {
                             shadows: [
                               Shadow(
                                 color: Colors.black.withOpacity(0.5),
-                                offset: Offset(2, 2),
+                                offset: const Offset(2, 2),
                                 blurRadius: 4,
                               ),
                             ],
@@ -331,7 +335,7 @@ class HomePageContent extends StatelessWidget {
                                 shadows: [
                                   Shadow(
                                     color: Colors.black.withOpacity(0.5),
-                                    offset: Offset(2, 2),
+                                    offset: const Offset(2, 2),
                                     blurRadius: 4,
                                   ),
                                 ],
@@ -396,8 +400,8 @@ class HomePageContent extends StatelessWidget {
                 children: [
                   Text(hotelName,
                       style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  Text(price, style: TextStyle(color: Colors.blue)),
+                          const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(price, style: const TextStyle(color: Colors.blue)),
                 ],
               ),
             ),

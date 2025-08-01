@@ -28,19 +28,22 @@ class AdventureSeeder extends Seeder
                 'name' => 'Areyksat Zipline, Mekong biking',
                 'description' => 'Exciting zipline and biking adventures in Phnompenh.',
                 'province_name' => 'Phnompenh',
-                'hotels' => ['Ohana Phnom Penh Palace Hotel', 'The Pavilion'],
-            ],
-            [
-                'name' => 'Koh Dach cycling',
-                'description' => 'Cycling adventure on Koh Dach island.',
-                'province_name' => 'Kandal',
-                'hotels' => ['La Plantation Koh Dach', 'Sunrise River Resort'],
-            ],
-            [
-                'name' => 'Han Chey Mountain, Bamboo Bridge',
-                'description' => 'Explore Han Chey Mountain and Bamboo Bridge.',
-                'province_name' => 'Kampongcham',
-                'hotels' => ['LBN Asian Hotel', 'Monorom VIP Hotel'],
+                'image_url' => 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=60&q=80',
+            'hotels' => ['Phnompenh Hotel 1', 'Phnompenh Hotel 2'],
+        ],
+        [
+            'name' => 'Koh Dach cycling',
+            'description' => 'Cycling adventure on Koh Dach island.',
+            'province_name' => 'Kandal',
+            'image_url' => 'https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=60&q=80',
+            'hotels' => ['Kandal Hotel 1', 'Kandal Hotel 2'],
+        ],
+        [
+            'name' => 'Han Chey Mountain, Bamboo Bridge',
+            'description' => 'Explore Han Chey Mountain and Bamboo Bridge.',
+            'province_name' => 'Kampongcham',
+            'image_url' => 'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=60&q=80',
+            'hotels' => ['Kampongcham Hotel 1', 'Kampongcham Hotel 2'],
             ],
             // Add more adventures as needed...
         ];
@@ -55,6 +58,7 @@ class AdventureSeeder extends Seeder
                 'name' => $data['name'],
                 'description' => $data['description'],
                 'province_id' => $province->id,
+                'image_url' => $data['image_url'] ?? null,
             ]);
 
             $hotelIds = Hotel::whereIn('name', $data['hotels'])->pluck('id')->toArray();
