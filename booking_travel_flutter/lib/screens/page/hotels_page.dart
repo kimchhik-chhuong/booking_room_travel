@@ -96,6 +96,7 @@ class HotelsPage extends StatelessWidget {
     );
   }
 
+
   Widget _buildHotelCard(BuildContext context,
       {required String hotelName,
       required String price,
@@ -194,6 +195,7 @@ class HotelsPage extends StatelessWidget {
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue,
+
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
@@ -312,6 +314,7 @@ class BookingScreen extends StatelessWidget {
                       _buildAmenityIcon(Icons.local_cafe, 'Café'),
                       _buildAmenityIcon(Icons.restaurant, 'Restaurant'),
                       _buildAmenityIcon(Icons.local_dining, 'Garden'),
+
                       _buildAmenityIcon(Icons.golf_course, 'Golf Course'),
                       _buildAmenityIcon(Icons.wifi, 'Free WiFi'),
                     ],

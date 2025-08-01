@@ -1,29 +1,43 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
 */
 
-// Authentication Routes
-Auth::routes();
+// Guest routes (Unauthenticated users)
+Route::middleware('guest')->group(function () {
+    // Show Login Page
+    Route::get('/login', function () {
+        return view('auth.login');
+    })->name('login');
 
-// Root URL – redirect based on authentication status
-Route::get('/', function () {
-    return Auth::check() ? redirect()->route('dashboard') : view('auth.login');
+    // Handle Login Form Submission
+    Route::post('/login', [LoginController::class, 'login'])->name('login.post');
+
+    // Show Register Page
+    Route::get('/register', function () {
+        return view('auth.register');
+    })->name('register');
+
+    // Handle Register Form Submission
+    Route::post('/register', [RegisterController::class, 'register'])->name('register.post');
+
+    // Default redirect to login
+    Route::get('/', function () {
+        return redirect()->route('login');
+    });
 });
 
-// Routes that require authentication
-Route::middleware(['auth'])->group(function () {
+// Authenticated routes (Logged-in users)
+Route::middleware('auth')->group(function () {
+    // Logout
+    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
     // Dashboard Route
     Route::get('/dashboard', function () {
@@ -35,8 +49,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', function () {
             return view('packages.index');
         })->name('index');
-        // Add more package-related routes here
-        // Route::get('/create', ...); etc.
+        // Additional package routes can go here
     });
 
     // Bookings Routes
@@ -44,7 +57,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', function () {
             return view('bookings.index');
         })->name('index');
-        // Add more booking-related routes here
+        // Additional booking routes can go here
     });
 
     // Calendar Route
@@ -57,7 +70,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', function () {
             return view('travelers.index');
         })->name('index');
-        // Add more traveler-related routes here
+        // Additional traveler routes can go here
     });
 
     // Guides Routes
@@ -65,7 +78,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', function () {
             return view('guides.index');
         })->name('index');
-        // Add more guide-related routes here
+        // Additional guide routes can go here
     });
 
     // Gallery Routes
@@ -73,7 +86,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', function () {
             return view('gallery.index');
         })->name('index');
-        // Add more gallery-related routes here
+        // Additional gallery routes can go here
     });
 
     // Messages Routes
@@ -81,7 +94,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', function () {
             return view('messages.index');
         })->name('index');
-        // Add more message-related routes here
+        // Additional message routes can go here
     });
 
     // Deals Routes
@@ -89,7 +102,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', function () {
             return view('deals.index');
         })->name('index');
-        // Add more deal-related routes here
+        // Additional deals routes can go here
     });
 
     // Feedback Routes
@@ -97,6 +110,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', function () {
             return view('feedback.index');
         })->name('index');
-        // Add more feedback-related routes here
+        // Additional feedback routes can go here
+    });
+
+    // Redirect root path to dashboard for authenticated users
+    Route::get('/', function () {
+        return redirect()->route('dashboard');
     });
 });
