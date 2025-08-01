@@ -15,9 +15,9 @@ class UserController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
+
         $this->middleware('role:admin,employer,user', ['only' => ['index', 'show']]);
-        $this->middleware('role:admin,employer', ['only' => ['create', 'store']]);
-        $this->middleware('role:admin,employer', ['only' => ['edit', 'update']]);
+        $this->middleware('role:admin,employer', ['only' => ['create', 'store', 'edit', 'update']]);
         $this->middleware('role:admin', ['only' => ['destroy']]);
     }
 
@@ -30,7 +30,7 @@ class UserController extends Controller
             'users'       => User::latest()->paginate(6),
             'totalUsers'  => User::count(),
             'activeUsers' => User::where('is_active', true)->count(),
-            'adminUsers'  => User::admins()->count(),
+            'adminUsers'  => User::where('role', 'admin')->count(), // fixed for simplicity
             'newUsers'    => User::where('created_at', '>=', now()->subDays(30))->count(),
         ]);
     }
@@ -59,10 +59,8 @@ class UserController extends Controller
             'is_active'           => 'boolean',
         ]);
 
-        // Hash password
         $validatedData['password'] = Hash::make($validatedData['password']);
 
-        // Handle profile image upload
         if ($request->hasFile('profile_picture_url')) {
             $validatedData['profile_picture_url'] = $request
                 ->file('profile_picture_url')
@@ -80,21 +78,24 @@ class UserController extends Controller
      * Display a specific user.
      */
     public function show(User $user)
-{
-    return response()->json($user);
-}
-
+    {
+        return response()->json($user);
+    }
 
     /**
      * Show the form for editing a user.
      */
-    public function edit(User $user)
-{
-    if ($user->hasRole('Super Admin') && $user->id != auth()->id) {
-        return response()->json(['message' => 'Unauthorized'], 403);
+    public function edit(User $user): View|RedirectResponse
+    {
+        if ($user->role === 'Super Admin' && $user->id !== auth()->id()) {
+            return redirect()->route('users.index')->withErrors('Unauthorized');
+        }
+
+        return view('users.edit', [
+            'user'  => $user,
+            'roles' => ['admin', 'employer', 'user'],
+        ]);
     }
-
-
 
     /**
      * Update a user.
@@ -110,18 +111,17 @@ class UserController extends Controller
             'is_active'           => 'boolean',
         ]);
 
-        // Update password if provided
         if (!empty($validatedData['password'])) {
             $validatedData['password'] = Hash::make($validatedData['password']);
         } else {
             unset($validatedData['password']);
         }
 
-        // Handle image upload and delete old image
         if ($request->hasFile('profile_picture_url')) {
             if ($user->profile_picture_url && Storage::disk('public')->exists($user->profile_picture_url)) {
                 Storage::disk('public')->delete($user->profile_picture_url);
             }
+
             $validatedData['profile_picture_url'] = $request
                 ->file('profile_picture_url')
                 ->store('users', 'public');
@@ -141,12 +141,13 @@ class UserController extends Controller
     {
         $authUser = Auth::user();
 
-        // Prevent deletion of Super Admin or self-deletion
-        if ($user->role === 'Super Admin' || ($authUser && $user->id == $authUser->id)) { // Changed getKey() to id
+        if (
+            $user->role === 'Super Admin' ||
+            ($authUser && $user->id === $authUser->id)
+        ) {
             abort(403, 'USER DOES NOT HAVE THE RIGHT PERMISSIONS');
         }
 
-        // Delete profile image if exists
         if ($user->profile_picture_url && Storage::disk('public')->exists($user->profile_picture_url)) {
             Storage::disk('public')->delete($user->profile_picture_url);
         }
