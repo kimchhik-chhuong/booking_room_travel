@@ -127,7 +127,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15.0), // Consistent rounded corners
                           ),
-                          color: Colors.white, // Solid white card
+                          color: const Color.fromARGB(255, 156, 144, 144), // Solid white card
                           child: Padding(
                             padding: const EdgeInsets.all(18.0), // Consistent padding
                             child: Column(
