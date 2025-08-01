@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 
+void main() {
+  runApp(MaterialApp(
+    home: HotelsPage(),
+    theme: ThemeData(primarySwatch: Colors.blue),
+  ));
+}
+
 class HotelsPage extends StatelessWidget {
   const HotelsPage({Key? key}) : super(key: key);
 
@@ -177,8 +184,10 @@ class HotelsPage extends StatelessWidget {
                               MaterialPageRoute(
                                 builder: (context) => BookingScreen(
                                   hotelName: hotelName,
-                                  address: '12 Eze Adele Road Rumuomasi Lagos Nigeria', // Example address
+                                  address: '12 Eze Adele Road Rumuomasi Lagos Nigeria',
                                   price: price,
+                                  imageUrl: imageUrl,
+                                  description: description,
                                 ),
                               ),
                             );
@@ -204,61 +213,189 @@ class HotelsPage extends StatelessWidget {
   }
 }
 
-// New Booking Screen Widget
 class BookingScreen extends StatelessWidget {
   final String hotelName;
   final String address;
   final String price;
+  final String imageUrl;
+  final String description;
 
   const BookingScreen({
     Key? key,
     required this.hotelName,
     required this.address,
     required this.price,
+    required this.imageUrl,
+    required this.description,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Book $hotelName'),
-        backgroundColor: Colors.blue,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Hotel: $hotelName', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            Text('Address: $address', style: TextStyle(fontSize: 16)),
-            Text('Price: $price', style: TextStyle(fontSize: 16, color: Colors.blue)),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Booking confirmed for $hotelName!')),
-                );
-                Navigator.pop(context); // Return to previous screen
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+            // Header Image
+            ClipRRect(
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
+              child: Image.asset(
+                imageUrl,
+                height: 200,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    height: 200,
+                    color: Colors.grey[300],
+                    child: const Icon(Icons.broken_image, size: 40),
+                  );
+                },
               ),
-              child: const Text('Confirm Booking'),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        hotelName,
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        price,
+                        style: TextStyle(fontSize: 18, color: Colors.green),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(Icons.star, size: 16, color: Colors.yellow[700]),
+                      const SizedBox(width: 4),
+                      Text(
+                        '4.9 (1,092 Reviews)',
+                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    address,
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    description,
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Amenities',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      TextButton(
+                        onPressed: () {},
+                        child: Text('View All', style: TextStyle(color: Colors.blue)),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildAmenityIcon(Icons.local_cafe, 'Café'),
+                      _buildAmenityIcon(Icons.restaurant, 'Restaurant'),
+                      _buildAmenityIcon(Icons.local_dining, 'Garden'),
+                      _buildAmenityIcon(Icons.golf_course, 'Golf Course'),
+                      _buildAmenityIcon(Icons.wifi, 'Free WiFi'),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Gallery Photos',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      TextButton(
+                        onPressed: () {},
+                        child: Text('See All', style: TextStyle(color: Colors.blue)),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildGalleryImage('assets/room1.jpg'),
+                      _buildGalleryImage('assets/room2.jpg'),
+                      _buildGalleryImage('assets/room3.jpg'),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Booking confirmed for $hotelName!')),
+                        );
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                      ),
+                      child: const Text('Confirm Booking'),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
       ),
     );
   }
-}
 
-// Main function to run the app
-void main() {
-  runApp(MaterialApp(
-    home: HotelsPage(),
-    theme: ThemeData(primarySwatch: Colors.blue),
-  ));
+  Widget _buildAmenityIcon(IconData icon, String label) {
+    return Column(
+      children: [
+        Icon(icon, color: Colors.blue, size: 24),
+        const SizedBox(height: 4),
+        Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+      ],
+    );
+  }
+
+  Widget _buildGalleryImage(String imageUrl) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Image.asset(
+          imageUrl,
+          height: 80,
+          width: 80,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              height: 80,
+              width: 80,
+              color: Colors.grey[300],
+              child: const Icon(Icons.broken_image, size: 40),
+            );
+          },
+        ),
+      ),
+    );
+  }
 }
