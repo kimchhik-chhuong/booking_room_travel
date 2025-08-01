@@ -80,26 +80,25 @@ class UserController extends Controller
      * Display a specific user.
      */
     public function show(User $user)
-{
-    return response()->json($user);
-}
-
+    {
+        return response()->json($user);
+    }
 
     /**
      * Show the form for editing a user.
      */
     public function edit(User $user)
-{
-    if ($user->hasRole('Super Admin') && $user->id != auth()->id) {
-        return response()->json(['message' => 'Unauthorized'], 403);
+    {
+        if ($user->hasRole('Super Admin') && $user->id != auth()->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+        return view('users.edit', compact('user'));
     }
-
-
 
     /**
      * Update a user.
      */
-    public function update(Request $request, User $user): RedirectResponse
+    public function update(Request $request, User $user): RedirectResponse  
     {
         $validatedData = $request->validate([
             'name'                => 'required|string|max:255',
@@ -142,7 +141,7 @@ class UserController extends Controller
         $authUser = Auth::user();
 
         // Prevent deletion of Super Admin or self-deletion
-        if ($user->role === 'Super Admin' || ($authUser && $user->id == $authUser->id)) { // Changed getKey() to id
+        if ($user->role === 'Super Admin' || ($authUser && $user->id == $authUser->id)) {
             abort(403, 'USER DOES NOT HAVE THE RIGHT PERMISSIONS');
         }
 
