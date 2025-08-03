@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'page/trips_page.dart';
-import 'page/hotels_page.dart';
+import 'page/hotels_page.dart' hide TripScreen;
 import 'page/flights_page.dart';
 import 'page/offers_page.dart';
 import 'payment_screen.dart';
@@ -78,19 +78,6 @@ class HomePageContent extends StatelessWidget {
         ),
         const SizedBox(height: 20),
       ],
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
     );
   }
 
@@ -227,6 +214,19 @@ class HomePageContent extends StatelessWidget {
             ),
           );
         }),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
@@ -380,8 +380,8 @@ class HomePageContent extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(hotelName,
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      style: TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold)),
                   Text(price, style: TextStyle(color: Colors.blue)),
                 ],
               ),

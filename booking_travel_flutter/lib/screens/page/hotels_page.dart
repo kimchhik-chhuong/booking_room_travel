@@ -12,30 +12,6 @@ class HotelsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hotels = [
-      {
-        'name': 'Raffles Hotel Le Royal',
-        'image':
-            'https://images.unsplash.com/photo-1572715375839-98d3b6f16358?w=800&q=80',
-        'location': 'Phnom Penh, Cambodia',
-        'price': '\$120/night',
-      },
-      {
-        'name': 'Anantara Angkor Resort',
-        'image':
-            'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80',
-        'location': 'Siem Reap, Cambodia',
-        'price': '\$180/night',
-      },
-      {
-        'name': 'Baitong Hotel & Resort',
-        'image':
-            'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=80',
-        'location': 'Phnom Penh, Cambodia',
-        'price': '\$75/night',
-      },
-    ];
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Hotels'),

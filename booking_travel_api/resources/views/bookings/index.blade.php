@@ -1,11 +1,11 @@
 @extends('layouts.dashboard')
 
 @section('title', 'Bookings')
-@section('page-title', 'Bookings')
-@section('page-subtitle', 'Manage all your travel bookings and reservations.')
+@section('page-title', 'Bookings Management')
+@section('page-subtitle', 'Track and manage all your travel bookings and reservations.')
 
 @section('content')
-<div class="min-h-screen bg-gray-50">
+<div class="min-h-screen">
     <!-- Sidebar -->
     @include('partials.sidebar')
 
@@ -13,128 +13,135 @@
     @include('partials.header')
 
     <!-- Main Content -->
-    <div class="ml-64 mr-80 p-6">
+    <div class="ml-72 p-8">
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <!-- Total Booking -->
-            <div class="bg-white rounded-2xl shadow-sm p-6 stat-card border border-gray-100 hover:shadow-xl transition-all duration-300">
-                <div class="flex items-center justify-between">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+            <div class="stat-card">
+                <div class="flex items-center justify-between mb-4">
                     <div>
-                        <p class="text-sm text-gray-500 mb-1">Total Booking</p>
-                        <p class="text-3xl font-bold text-gray-800">1,200</p>
-                        <p class="text-sm text-green-600 mt-2 flex items-center">
-                            <i class="fas fa-arrow-up mr-1"></i> +2.98% <span class="text-gray-500 ml-1">from last week</span>
+                        <p class="text-dark-500 text-sm font-medium mb-2">Total Bookings</p>
+                        <p class="text-3xl font-bold text-dark-800">1,247</p>
+                        <p class="text-emerald-600 text-sm font-medium mt-2 flex items-center">
+                            <i class="fas fa-arrow-up mr-1"></i> +12.5%
                         </p>
                     </div>
-                    <div class="bg-blue-100 p-4 rounded-2xl">
-                        <i class="fas fa-calendar-check text-blue-600 text-2xl"></i>
+                    <div class="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center">
+                        <i class="fas fa-calendar-check text-white text-xl"></i>
                     </div>
                 </div>
-                <div class="chart-container-small mt-4">
-                    <canvas id="totalBookingChart"></canvas>
+                <div class="chart-container-small">
+                    <canvas id="totalBookingsChart"></canvas>
                 </div>
             </div>
 
-            <!-- Total Participants -->
-            <div class="bg-white rounded-2xl shadow-sm p-6 stat-card border border-gray-100 hover:shadow-xl transition-all duration-300">
-                <div class="flex items-center justify-between">
+            <div class="stat-card">
+                <div class="flex items-center justify-between mb-4">
                     <div>
-                        <p class="text-sm text-gray-500 mb-1">Total Participants</p>
-                        <p class="text-3xl font-bold text-gray-800">2,845</p>
-                        <p class="text-sm text-red-600 mt-2 flex items-center">
-                            <i class="fas fa-arrow-down mr-1"></i> -1.45% <span class="text-gray-500 ml-1">from last week</span>
+                        <p class="text-dark-500 text-sm font-medium mb-2">Confirmed</p>
+                        <p class="text-3xl font-bold text-dark-800">1,089</p>
+                        <p class="text-emerald-600 text-sm font-medium mt-2 flex items-center">
+                            <i class="fas fa-arrow-up mr-1"></i> +8.3%
                         </p>
                     </div>
-                    <div class="bg-red-100 p-4 rounded-2xl">
-                        <i class="fas fa-users text-red-600 text-2xl"></i>
+                    <div class="w-14 h-14 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl flex items-center justify-center">
+                        <i class="fas fa-check-circle text-white text-xl"></i>
                     </div>
                 </div>
-                <div class="chart-container-small mt-4">
-                    <canvas id="totalParticipantsChart"></canvas>
+                <div class="chart-container-small">
+                    <canvas id="confirmedChart"></canvas>
                 </div>
             </div>
 
-            <!-- Total Earnings -->
-            <div class="bg-white rounded-2xl shadow-sm p-6 stat-card border border-gray-100 hover:shadow-xl transition-all duration-300">
-                <div class="flex items-center justify-between">
+            <div class="stat-card">
+                <div class="flex items-center justify-between mb-4">
                     <div>
-                        <p class="text-sm text-gray-500 mb-1">Total Earnings</p>
-                        <p class="text-3xl font-bold text-gray-800">$14,795</p>
-                        <p class="text-sm text-green-600 mt-2 flex items-center">
-                            <i class="fas fa-arrow-up mr-1"></i> +3.75% <span class="text-gray-500 ml-1">from last week</span>
+                        <p class="text-dark-500 text-sm font-medium mb-2">Pending</p>
+                        <p class="text-3xl font-bold text-dark-800">89</p>
+                        <p class="text-yellow-600 text-sm font-medium mt-2 flex items-center">
+                            <i class="fas fa-clock mr-1"></i> Awaiting
                         </p>
                     </div>
-                    <div class="bg-yellow-100 p-4 rounded-2xl">
-                        <i class="fas fa-dollar-sign text-yellow-600 text-2xl"></i>
+                    <div class="w-14 h-14 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-2xl flex items-center justify-center">
+                        <i class="fas fa-hourglass-half text-white text-xl"></i>
                     </div>
                 </div>
-                <div class="chart-container-small mt-4">
-                    <canvas id="totalEarningsChart"></canvas>
+                <div class="chart-container-small">
+                    <canvas id="pendingChart"></canvas>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <p class="text-dark-500 text-sm font-medium mb-2">Revenue</p>
+                        <p class="text-3xl font-bold text-dark-800">$234K</p>
+                        <p class="text-emerald-600 text-sm font-medium mt-2 flex items-center">
+                            <i class="fas fa-arrow-up mr-1"></i> +18.7%
+                        </p>
+                    </div>
+                    <div class="w-14 h-14 bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl flex items-center justify-center">
+                        <i class="fas fa-dollar-sign text-white text-xl"></i>
+                    </div>
+                </div>
+                <div class="chart-container-small">
+                    <canvas id="revenueChart"></canvas>
                 </div>
             </div>
         </div>
 
-        <!-- Trips Overview and Top Packages Row -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <!-- Trips Overview Chart -->
-            <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-lg font-semibold text-gray-800">Trips Overview</h3>
-                    <div class="flex items-center space-x-4">
-                        <div class="flex items-center space-x-2 text-sm text-gray-600">
-                            <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-blue-500 mr-1"></span> Done</span>
-                            <span class="flex items-center"><span class="w-3 h-3 rounded-full bg-gray-400 mr-1"></span> Canceled</span>
-                        </div>
-                        <select class="bg-blue-500 text-white text-sm px-4 py-2 rounded-lg border-0 focus:ring-2 focus:ring-blue-300">
-                            <option>Last 12 Months</option>
-                            <option>Last 6 Months</option>
-                            <option>Last 3 Months</option>
-                        </select>
+        <!-- Booking Analytics -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+            <!-- Booking Trends -->
+            <div class="lg:col-span-2 card-modern p-8">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h3 class="text-2xl font-bold text-dark-800 mb-2">Booking Trends</h3>
+                        <p class="text-dark-500">Monthly booking performance and trends</p>
                     </div>
+                    <select class="input-modern text-sm">
+                        <option>Last 12 Months</option>
+                        <option>Last 6 Months</option>
+                        <option>Last 3 Months</option>
+                    </select>
                 </div>
                 <div class="chart-container">
-                    <canvas id="tripsOverviewChart"></canvas>
+                    <canvas id="bookingTrendsChart"></canvas>
                 </div>
             </div>
 
             <!-- Top Packages -->
-            <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-lg font-semibold text-gray-800">Top Packages</h3>
-                    <button class="text-gray-400 hover:text-gray-600 p-1 rounded hover:bg-gray-100">
-                        <i class="fas fa-ellipsis-h"></i>
-                    </button>
-                </div>
-                <div class="flex flex-col items-center mb-6">
-                    <div class="relative w-40 h-40">
-                        <canvas id="topPackagesChart"></canvas>
-                        <div class="absolute inset-0 flex flex-col items-center justify-center">
-                            <p class="text-lg font-bold text-gray-800">This Week</p>
-                            <p class="text-2xl font-bold text-blue-600">1,856</p>
-                            <p class="text-xs text-gray-500">Total Participants</p>
-                        </div>
+            <div class="card-modern p-8">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h3 class="text-xl font-bold text-dark-800 mb-2">Top Packages</h3>
+                        <p class="text-dark-500 text-sm">Most booked packages</p>
                     </div>
                 </div>
-                <div class="space-y-4">
+                <div class="space-y-6">
                     @php
                     $topPackages = [
-                        ['name' => 'Tokyo Cultural Adventure', 'participants' => '650 Participants', 'percentage' => 35, 'color' => 'bg-blue-500'],
-                        ['name' => 'Bali Beach Escape', 'participants' => '520 Participants', 'percentage' => 28, 'color' => 'bg-cyan-500'],
-                        ['name' => 'Safari Adventure', 'participants' => '408 Participants', 'percentage' => 22, 'color' => 'bg-green-500'],
-                        ['name' => 'Greek Island Hopping', 'participants' => '278 Participants', 'percentage' => 15, 'color' => 'bg-purple-500']
+                        ['name' => 'Tokyo Cultural Adventure', 'bookings' => 234, 'percentage' => 35, 'color' => 'bg-blue-500'],
+                        ['name' => 'Bali Beach Paradise', 'bookings' => 189, 'percentage' => 28, 'color' => 'bg-emerald-500'],
+                        ['name' => 'European Grand Tour', 'bookings' => 156, 'percentage' => 22, 'color' => 'bg-purple-500'],
+                        ['name' => 'Safari Adventure', 'bookings' => 98, 'percentage' => 15, 'color' => 'bg-orange-500']
                     ];
                     @endphp
                     
                     @foreach($topPackages as $package)
-                    <div class="flex items-center justify-between hover:bg-gray-50 p-2 rounded-lg transition-colors">
-                        <div class="flex items-center space-x-3">
+                    <div class="flex items-center justify-between p-4 bg-gradient-to-r from-slate-50 to-transparent rounded-2xl hover:from-slate-100 transition-all">
+                        <div class="flex items-center space-x-4">
                             <div class="w-3 h-3 {{ $package['color'] }} rounded-full"></div>
                             <div>
-                                <p class="text-sm font-medium text-gray-800">{{ $package['name'] }}</p>
-                                <p class="text-xs text-gray-500">{{ $package['participants'] }}</p>
+                                <p class="font-semibold text-dark-800">{{ $package['name'] }}</p>
+                                <p class="text-sm text-dark-500">{{ $package['bookings'] }} bookings</p>
                             </div>
                         </div>
-                        <span class="text-sm font-bold text-gray-800">{{ $package['percentage'] }}%</span>
+                        <div class="text-right">
+                            <p class="font-bold text-dark-800">{{ $package['percentage'] }}%</p>
+                            <div class="w-16 h-2 bg-slate-200 rounded-full mt-2">
+                                <div class="{{ $package['color'] }} h-2 rounded-full" style="width: {{ $package['percentage'] }}%"></div>
+                            </div>
+                        </div>
                     </div>
                     @endforeach
                 </div>
@@ -142,23 +149,26 @@
         </div>
 
         <!-- Bookings Table -->
-        <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100 mb-8">
-            <div class="px-6 py-4 border-b border-gray-100">
+        <div class="card-modern overflow-hidden">
+            <div class="p-8 border-b border-slate-200">
                 <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-semibold text-gray-800">Bookings</h3>
-                    <div class="flex items-center space-x-3">
+                    <div>
+                        <h3 class="text-2xl font-bold text-dark-800 mb-2">All Bookings</h3>
+                        <p class="text-dark-500">Manage and track all customer bookings</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
                         <div class="relative">
-                            <input type="text" placeholder="Search name, package, etc" 
-                                   class="pl-8 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
-                            <i class="fas fa-search absolute left-2.5 top-2.5 text-gray-400 text-sm"></i>
+                            <input type="text" placeholder="Search bookings..." class="input-modern pl-10 w-64">
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-dark-400"></i>
                         </div>
-                        <select class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500">
-                            <option>Today</option>
-                            <option>This Week</option>
-                            <option>This Month</option>
+                        <select class="input-modern">
+                            <option>All Status</option>
+                            <option>Confirmed</option>
+                            <option>Pending</option>
+                            <option>Cancelled</option>
                         </select>
-                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors flex items-center">
-                            <i class="fas fa-plus mr-2"></i> Add Booking
+                        <button class="btn-modern">
+                            <i class="fas fa-plus mr-2"></i> New Booking
                         </button>
                     </div>
                 </div>
@@ -166,182 +176,184 @@
 
             <div class="overflow-x-auto">
                 <table class="w-full">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-slate-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Name <i class="fas fa-sort ml-1"></i>
+                            <th class="px-8 py-4 text-left text-sm font-semibold text-dark-600 uppercase tracking-wider">
+                                Customer
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Booking Code <i class="fas fa-sort ml-1"></i>
+                            <th class="px-8 py-4 text-left text-sm font-semibold text-dark-600 uppercase tracking-wider">
+                                Package
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Package <i class="fas fa-sort ml-1"></i>
+                            <th class="px-8 py-4 text-left text-sm font-semibold text-dark-600 uppercase tracking-wider">
+                                Dates
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Duration <i class="fas fa-sort ml-1"></i>
+                            <th class="px-8 py-4 text-left text-sm font-semibold text-dark-600 uppercase tracking-wider">
+                                Amount
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Date <i class="fas fa-sort ml-1"></i>
+                            <th class="px-8 py-4 text-left text-sm font-semibold text-dark-600 uppercase tracking-wider">
+                                Status
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Price <i class="fas fa-sort ml-1"></i>
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Status <i class="fas fa-sort ml-1"></i>
+                            <th class="px-8 py-4 text-left text-sm font-semibold text-dark-600 uppercase tracking-wider">
+                                Actions
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="bg-white divide-y divide-slate-200">
                         @php
                         $bookings = [
-                            ['name' => 'Cornelia Swan', 'booking_code' => 'BKG12345', 'package' => 'Venice Dreams', 'duration' => '6 Days / 5 Nights', 'date' => 'Jun 25 - Jun 30', 'price' => '$1,500', 'status' => 'Confirmed'],
-                            ['name' => 'Raphael Goodman', 'booking_code' => 'BKG12346', 'package' => 'Safari Adventure', 'duration' => '8 Days / 7 Nights', 'date' => 'Jun 25 - Jul 2', 'price' => '$3,200', 'status' => 'Pending'],
-                            ['name' => 'Ludwig Contessa', 'booking_code' => 'BKG12347', 'package' => 'Alpine Escape', 'duration' => '7 Days / 6 Nights', 'date' => 'Jun 26 - Jul 2', 'price' => '$2,100', 'status' => 'Confirmed'],
-                            ['name' => 'Armina Raul Meyes', 'booking_code' => 'BKG12348', 'package' => 'Caribbean Cruise', 'duration' => '10 Days / 9 Nights', 'date' => 'Jun 26 - Jul 5', 'price' => '$2,800', 'status' => 'Cancelled'],
-                            ['name' => 'James Dunn', 'booking_code' => 'BKG12349', 'package' => 'Parisian Romance', 'duration' => '5 Days / 4 Nights', 'date' => 'Jun 26 - Jun 30', 'price' => '$1,200', 'status' => 'Confirmed'],
-                            ['name' => 'Hillary Grey', 'booking_code' => 'BKG12350', 'package' => 'Tokyo Cultural Adventure', 'duration' => '7 Days / 6 Nights', 'date' => 'Jun 27 - Jul 3', 'price' => '$1,800', 'status' => 'Confirmed'],
-                            ['name' => 'Lucas O\'connor', 'booking_code' => 'BKG12351', 'package' => 'Greek Island Hopping', 'duration' => '10 Days / 9 Nights', 'date' => 'Jun 28 - Jul 7', 'price' => '$2,500', 'status' => 'Pending'],
-                            ['name' => 'Layla Linch', 'booking_code' => 'BKG12352', 'package' => 'Bali Beach Escape', 'duration' => '8 Days / 7 Nights', 'date' => 'Jun 29 - Jul 6', 'price' => '$1,600', 'status' => 'Confirmed']
+                            ['customer' => 'Sarah Wilson', 'email' => 'sarah@example.com', 'package' => 'Tokyo Cultural Adventure', 'dates' => 'Aug 15 - Aug 22', 'amount' => '$2,450', 'status' => 'Confirmed', 'avatar' => 'https://ui-avatars.com/api/?name=Sarah+Wilson&background=random&size=40'],
+                            ['customer' => 'Michael Chen', 'email' => 'michael@example.com', 'package' => 'Bali Beach Paradise', 'dates' => 'Sep 5 - Sep 10', 'amount' => '$1,890', 'status' => 'Pending', 'avatar' => 'https://ui-avatars.com/api/?name=Michael+Chen&background=random&size=40'],
+                            ['customer' => 'Emma Davis', 'email' => 'emma@example.com', 'package' => 'European Grand Tour', 'dates' => 'Oct 1 - Oct 15', 'amount' => '$4,200', 'status' => 'Confirmed', 'avatar' => 'https://ui-avatars.com/api/?name=Emma+Davis&background=random&size=40'],
+                            ['customer' => 'James Rodriguez', 'email' => 'james@example.com', 'package' => 'Safari Adventure', 'dates' => 'Nov 10 - Nov 18', 'amount' => '$3,650', 'status' => 'Confirmed', 'avatar' => 'https://ui-avatars.com/api/?name=James+Rodriguez&background=random&size=40'],
+                            ['customer' => 'Lisa Thompson', 'email' => 'lisa@example.com', 'package' => 'Swiss Alps Retreat', 'dates' => 'Dec 20 - Dec 26', 'amount' => '$2,890', 'status' => 'Cancelled', 'avatar' => 'https://ui-avatars.com/api/?name=Lisa+Thompson&background=random&size=40'],
+                            ['customer' => 'David Park', 'email' => 'david@example.com', 'package' => 'New York City Break', 'dates' => 'Jan 15 - Jan 19', 'amount' => '$1,299', 'status' => 'Pending', 'avatar' => 'https://ui-avatars.com/api/?name=David+Park&background=random&size=40']
                         ];
                         @endphp
                         
                         @foreach($bookings as $booking)
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <img src="https://ui-avatars.com/api/?name={{ urlencode($booking['name']) }}&background=random&size=32" 
-                                         alt="{{ $booking['name'] }}" 
-                                         class="w-8 h-8 rounded-full mr-3">
-                                    <div class="text-sm font-medium text-gray-900">{{ $booking['name'] }}</div>
+                        <tr class="table-row transition-all duration-200 hover:bg-slate-50">
+                            <td class="px-8 py-6">
+                                <div class="flex items-center space-x-4">
+                                    <img src="{{ $booking['avatar'] }}" alt="{{ $booking['customer'] }}" class="w-12 h-12 rounded-xl shadow-md">
+                                    <div>
+                                        <p class="font-semibold text-dark-800">{{ $booking['customer'] }}</p>
+                                        <p class="text-sm text-dark-500">{{ $booking['email'] }}</p>
+                                    </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $booking['booking_code'] }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $booking['package'] }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $booking['duration'] }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $booking['date'] }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $booking['price'] }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                                    {{ $booking['status'] === 'Confirmed' ? 'bg-green-100 text-green-800' : 
-                                       ($booking['status'] === 'Pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
+                            <td class="px-8 py-6">
+                                <p class="font-medium text-dark-800">{{ $booking['package'] }}</p>
+                            </td>
+                            <td class="px-8 py-6">
+                                <p class="text-dark-700">{{ $booking['dates'] }}</p>
+                            </td>
+                            <td class="px-8 py-6">
+                                <p class="font-bold text-primary-600 text-lg">{{ $booking['amount'] }}</p>
+                            </td>
+                            <td class="px-8 py-6">
+                                <span class="badge-modern {{ $booking['status'] === 'Confirmed' ? 'bg-emerald-100 text-emerald-800' : 
+                                    ($booking['status'] === 'Pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
                                     {{ $booking['status'] }}
                                 </span>
+                            </td>
+                            <td class="px-8 py-6">
+                                <div class="flex items-center space-x-3">
+                                    <button class="p-2 text-dark-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="p-2 text-dark-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="p-2 text-dark-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
-            <div class="px-6 py-4 flex items-center justify-between text-sm text-gray-600">
-                <div class="flex items-center space-x-2">
+            
+            <!-- Pagination -->
+            <div class="px-8 py-6 flex items-center justify-between border-t border-slate-200">
+                <div class="flex items-center space-x-2 text-dark-600">
                     <span>Showing</span>
-                    <select class="border border-gray-200 rounded-lg px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500">
-                        <option>8</option>
-                        <option>16</option>
-                        <option>32</option>
+                    <select class="input-modern text-sm px-2 py-1">
+                        <option>6</option>
+                        <option>12</option>
+                        <option>24</option>
                     </select>
-                    <span>out of 286</span>
+                    <span>of 1,247 bookings</span>
                 </div>
                 <div class="flex items-center space-x-2">
-                    <button class="px-3 py-1 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors">
-                        <i class="fas fa-chevron-left"></i> Previous
+                    <button class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-dark-600">
+                        <i class="fas fa-chevron-left mr-2"></i> Previous
                     </button>
-                    <button class="px-3 py-1 rounded-lg bg-blue-600 text-white">1</button>
-                    <button class="px-3 py-1 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors">2</button>
-                    <button class="px-3 py-1 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors">3</button>
-                    <span>...</span>
-                    <button class="px-3 py-1 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors">16</button>
-                    <button class="px-3 py-1 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors">
-                        Next <i class="fas fa-chevron-right"></i>
+                    <button class="px-4 py-2 bg-primary-600 text-white rounded-lg">1</button>
+                    <button class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-dark-600">2</button>
+                    <button class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-dark-600">3</button>
+                    <span class="px-2 text-dark-400">...</span>
+                    <button class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-dark-600">208</button>
+                    <button class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-dark-600">
+                        Next <i class="fas fa-chevron-right ml-2"></i>
                     </button>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Right Sidebar -->
-    @include('partials.right-sidebar')
 </div>
-@endsection
 
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Small Charts for Stats Cards
-    const createSmallLineChart = (elementId, data, borderColor, backgroundColor) => {
+    // Small charts for stat cards
+    const createMiniChart = (elementId, data, color) => {
         const ctx = document.getElementById(elementId)?.getContext('2d');
         if (ctx) {
             new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
                     datasets: [{
                         data: data,
-                        borderColor: borderColor,
-                        backgroundColor: backgroundColor,
+                        borderColor: color,
+                        backgroundColor: color + '20',
                         tension: 0.4,
                         fill: true,
                         pointRadius: 0,
-                        borderWidth: 2
+                        borderWidth: 3
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { enabled: false }
-                    },
+                    plugins: { legend: { display: false } },
                     scales: {
                         x: { display: false },
                         y: { display: false }
-                    },
-                    layout: {
-                        padding: { left: 0, right: 0, top: 5, bottom: 0 }
                     }
                 }
             });
         }
     };
 
-    createSmallLineChart('totalBookingChart', [10, 20, 15, 25, 22, 30, 28], '#3B82F6', 'rgba(59, 130, 246, 0.1)');
-    createSmallLineChart('totalParticipantsChart', [30, 25, 28, 20, 23, 18, 20], '#EF4444', 'rgba(239, 68, 68, 0.1)');
-    createSmallLineChart('totalEarningsChart', [15, 18, 22, 19, 25, 23, 27], '#F59E0B', 'rgba(245, 158, 11, 0.1)');
+    createMiniChart('totalBookingsChart', [20, 35, 25, 45, 38, 52], '#3b82f6');
+    createMiniChart('confirmedChart', [18, 32, 23, 42, 35, 48], '#10b981');
+    createMiniChart('pendingChart', [5, 8, 6, 12, 9, 15], '#f59e0b');
+    createMiniChart('revenueChart', [30, 45, 35, 55, 48, 65], '#8b5cf6');
 
-    // Trips Overview Chart
-    const tripsOverviewCtx = document.getElementById('tripsOverviewChart')?.getContext('2d');
-    if (tripsOverviewCtx) {
-        new Chart(tripsOverviewCtx, {
+    // Main booking trends chart
+    const trendsCtx = document.getElementById('bookingTrendsChart')?.getContext('2d');
+    if (trendsCtx) {
+        new Chart(trendsCtx, {
             type: 'line',
             data: {
-                labels: ['Aug 27', 'Sep 27', 'Oct 27', 'Nov 27', 'Dec 27', 'Jan 28', 'Feb 28', 'Mar 28', 'Apr 28', 'May 28', 'Jun 28', 'Jul 28'],
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                 datasets: [
                     {
-                        label: 'Done',
-                        data: [500, 600, 750, 800, 950, 1780, 1600, 1800, 1900, 1700, 1850, 1950],
-                        borderColor: '#3B82F6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        label: 'Confirmed',
+                        data: [85, 92, 88, 105, 98, 115, 125, 118, 135, 142, 155, 168],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
                         tension: 0.4,
                         fill: true,
-                        pointBackgroundColor: '#3B82F6',
+                        pointBackgroundColor: '#10b981',
                         pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 6
+                        pointBorderWidth: 3,
+                        pointRadius: 6
                     },
                     {
-                        label: 'Canceled',
-                        data: [300, 350, 400, 380, 450, 500, 480, 520, 550, 530, 580, 600],
-                        borderColor: '#9CA3AF',
-                        backgroundColor: 'rgba(156, 163, 175, 0.1)',
+                        label: 'Pending',
+                        data: [15, 18, 12, 25, 22, 28, 32, 25, 35, 38, 42, 45],
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
                         tension: 0.4,
                         fill: false,
-                        borderDash: [5, 5],
-                        pointBackgroundColor: '#9CA3AF',
+                        pointBackgroundColor: '#f59e0b',
                         pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 6
+                        pointBorderWidth: 3,
+                        pointRadius: 6
                     }
                 ]
             },
@@ -349,125 +361,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                        callbacks: {
-                            title: function(context) {
-                                return context[0].label;
-                            },
-                            label: function(context) {
-                                let label = context.dataset.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                if (context.parsed.y !== null) {
-                                    label += context.parsed.y;
-                                }
-                                return label;
-                            }
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: { weight: '600' }
                         }
                     }
                 },
                 scales: {
                     x: {
                         grid: { display: false },
-                        ticks: { color: '#6B7280' }
+                        ticks: { color: '#64748b', font: { weight: '500' } }
                     },
                     y: {
                         beginAtZero: true,
-                        grid: { color: '#F3F4F6' },
-                        ticks: { color: '#6B7280' }
-                    }
-                },
-                elements: {
-                    point: {
-                        hoverBackgroundColor: '#3B82F6'
+                        grid: { color: '#f1f5f9' },
+                        ticks: { color: '#64748b', font: { weight: '500' } }
                     }
                 }
             }
         });
     }
-
-    // Top Packages Donut Chart
-    const topPackagesCtx = document.getElementById('topPackagesChart')?.getContext('2d');
-    if (topPackagesCtx) {
-        new Chart(topPackagesCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Tokyo Cultural Adventure', 'Bali Beach Escape', 'Safari Adventure', 'Greek Island Hopping'],
-                datasets: [{
-                    data: [35, 28, 22, 15],
-                    backgroundColor: ['#3B82F6', '#06B6D4', '#10B981', '#8B5CF6'],
-                    borderColor: '#ffffff',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '80%', // Makes it a donut chart
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                if (context.parsed !== null) {
-                                    label += context.parsed + '%';
-                                }
-                                return label;
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    // Add smooth scrolling
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth'
-                });
-            }
-        });
-    });
-
-    // Add loading states for buttons
-    document.querySelectorAll('button[type="submit"], .btn-loading').forEach(button => {
-        button.addEventListener('click', function() {
-            if (!this.disabled && !this.classList.contains('no-loading')) {
-                const originalText = this.innerHTML;
-                this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Loading...';
-                this.disabled = true;
-                
-                setTimeout(() => {
-                    this.innerHTML = originalText;
-                    this.disabled = false;
-                }, 2000);
-            }
-        });
-    });
-
-    // Add hover effects for cards
-    document.querySelectorAll('.stat-card, .trip-card').forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-4px)';
-        });
-        
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-        });
-    });
 });
 </script>
 @endpush
+@endsection
