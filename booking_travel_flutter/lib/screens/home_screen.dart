@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'page/trips_page.dart';
-import 'page/hotels_page.dart' hide TripScreen;
+import 'page/hotels_page.dart' hide TripScreen, HotelsPage;
 import 'page/flights_page.dart';
 import 'page/offers_page.dart';
 import 'payment_screen.dart';
