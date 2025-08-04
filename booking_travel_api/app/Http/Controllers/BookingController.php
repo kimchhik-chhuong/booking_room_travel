@@ -16,6 +16,10 @@ class BookingController extends Controller
         $bookings = Booking::with(['user', 'payment', 'hotelBookings'])->get();
         return response()->json(['status' => 'success', 'data' => $bookings], 200);
     }
+    public function create()
+    {
+        return view('bookings.create');
+    }
 
     /**
      * Store a newly created resource in storage.

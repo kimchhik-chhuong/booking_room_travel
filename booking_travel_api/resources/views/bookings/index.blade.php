@@ -98,10 +98,10 @@
                         <h3 class="text-2xl font-bold text-dark-800 mb-2">Booking Trends</h3>
                         <p class="text-dark-500">Monthly booking performance and trends</p>
                     </div>
-                    <select class="input-modern text-sm">
-                        <option>Last 12 Months</option>
-                        <option>Last 6 Months</option>
-                        <option>Last 3 Months</option>
+                    <select id="timeRange" class="input-modern text-sm">
+                        <option value="12">Last 12 Months</option>
+                        <option value="6">Last 6 Months</option>
+                        <option value="3">Last 3 Months</option>
                     </select>
                 </div>
                 <div class="chart-container">
@@ -158,24 +158,24 @@
                     </div>
                     <div class="flex items-center space-x-4">
                         <div class="relative">
-                            <input type="text" placeholder="Search bookings..." class="input-modern pl-10 w-64">
+                            <input type="text" id="searchBookings" placeholder="Search bookings..." class="input-modern pl-10 w-64">
                             <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-dark-400"></i>
                         </div>
-                        <select class="input-modern">
-                            <option>All Status</option>
-                            <option>Confirmed</option>
-                            <option>Pending</option>
-                            <option>Cancelled</option>
+                        <select id="statusFilter" class="input-modern">
+                            <option value="All">All Status</option>
+                            <option value="Confirmed">Confirmed</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Cancelled">Cancelled</option>
                         </select>
-                        <button class="btn-modern">
+                        <a href="{{ route('bookings.create') }}" id="newBookingButton" class="btn-modern">
                             <i class="fas fa-plus mr-2"></i> New Booking
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>
 
             <div class="overflow-x-auto">
-                <table class="w-full">
+                <table class="w-full" id="bookingsTable">
                     <thead class="bg-slate-50">
                         <tr>
                             <th class="px-8 py-4 text-left text-sm font-semibold text-dark-600 uppercase tracking-wider">
@@ -198,7 +198,7 @@
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-slate-200">
+                    <tbody class="bg-white divide-y divide-slate-200" id="bookingsTableBody">
                         @php
                         $bookings = [
                             ['customer' => 'Sarah Wilson', 'email' => 'sarah@example.com', 'package' => 'Tokyo Cultural Adventure', 'dates' => 'Aug 15 - Aug 22', 'amount' => '$2,450', 'status' => 'Confirmed', 'avatar' => 'https://ui-avatars.com/api/?name=Sarah+Wilson&background=random&size=40'],
@@ -211,7 +211,7 @@
                         @endphp
                         
                         @foreach($bookings as $booking)
-                        <tr class="table-row transition-all duration-200 hover:bg-slate-50">
+                        <tr class="table-row transition-all duration-200 hover:bg-slate-50" data-customer="{{ $booking['customer'] }}" data-email="{{ $booking['email'] }}" data-package="{{ $booking['package'] }}" data-status="{{ $booking['status'] }}" data-dates="{{ $booking['dates'] }}" data-amount="{{ $booking['amount'] }}">
                             <td class="px-8 py-6">
                                 <div class="flex items-center space-x-4">
                                     <img src="{{ $booking['avatar'] }}" alt="{{ $booking['customer'] }}" class="w-12 h-12 rounded-xl shadow-md">
@@ -238,13 +238,13 @@
                             </td>
                             <td class="px-8 py-6">
                                 <div class="flex items-center space-x-3">
-                                    <button class="p-2 text-dark-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
+                                    <button class="view-btn p-2 text-dark-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all" data-customer="{{ $booking['customer'] }}">
                                         <i class="fas fa-eye"></i>
                                     </button>
-                                    <button class="p-2 text-dark-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all">
+                                    <button class="edit-btn p-2 text-dark-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all" data-customer="{{ $booking['customer'] }}">
                                         <i class="fas fa-edit"></i>
                                     </button>
-                                    <button class="p-2 text-dark-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                                    <button class="delete-btn p-2 text-dark-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" data-customer="{{ $booking['customer'] }}">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
@@ -257,25 +257,21 @@
             
             <!-- Pagination -->
             <div class="px-8 py-6 flex items-center justify-between border-t border-slate-200">
-                <div class="flex items-center space-x-2 text-dark-600">
+                <div class="flex items-center space-x-2 text-dark-600" id="paginationInfo">
                     <span>Showing</span>
-                    <select class="input-modern text-sm px-2 py-1">
+                    <select id="itemsPerPage" class="input-modern text-sm px-2 py-1">
                         <option>6</option>
                         <option>12</option>
                         <option>24</option>
                     </select>
-                    <span>of 1,247 bookings</span>
+                    <span>of <span id="totalBookingsDisplay">1,247</span> bookings</span>
                 </div>
-                <div class="flex items-center space-x-2">
-                    <button class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-dark-600">
+                <div class="flex items-center space-x-2" id="paginationControls">
+                    <button id="prevPage" class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-dark-600 disabled:opacity-50" disabled>
                         <i class="fas fa-chevron-left mr-2"></i> Previous
                     </button>
-                    <button class="px-4 py-2 bg-primary-600 text-white rounded-lg">1</button>
-                    <button class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-dark-600">2</button>
-                    <button class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-dark-600">3</button>
-                    <span class="px-2 text-dark-400">...</span>
-                    <button class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-dark-600">208</button>
-                    <button class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-dark-600">
+                    <button id="currentPage" class="px-4 py-2 bg-primary-600 text-white rounded-lg">1</button>
+                    <button id="nextPage" class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-dark-600">
                         Next <i class="fas fa-chevron-right ml-2"></i>
                     </button>
                 </div>
@@ -287,6 +283,12 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Pass bookings data to JavaScript
+    const bookings = @json($bookings);
+    let currentPage = 1;
+    let itemsPerPage = 6;
+    const totalBookings = 1247;
+
     // Small charts for stat cards
     const createMiniChart = (elementId, data, color) => {
         const ctx = document.getElementById(elementId)?.getContext('2d');
@@ -324,67 +326,197 @@ document.addEventListener('DOMContentLoaded', function() {
     createMiniChart('revenueChart', [30, 45, 35, 55, 48, 65], '#8b5cf6');
 
     // Main booking trends chart
-    const trendsCtx = document.getElementById('bookingTrendsChart')?.getContext('2d');
-    if (trendsCtx) {
-        new Chart(trendsCtx, {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                datasets: [
-                    {
-                        label: 'Confirmed',
-                        data: [85, 92, 88, 105, 98, 115, 125, 118, 135, 142, 155, 168],
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        tension: 0.4,
-                        fill: true,
-                        pointBackgroundColor: '#10b981',
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 3,
-                        pointRadius: 6
+    let bookingTrendsChart;
+
+    function createBookingTrendsChart(monthsToShow = 12) {
+        const allMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const allConfirmedData = [85, 92, 88, 105, 98, 115, 125, 118, 135, 142, 155, 168];
+        const allPendingData = [15, 18, 12, 25, 22, 28, 32, 25, 35, 38, 42, 45];
+        
+        // Get the last X months of data
+        const startIndex = 12 - monthsToShow;
+        const labels = allMonths.slice(startIndex);
+        const confirmedData = allConfirmedData.slice(startIndex);
+        const pendingData = allPendingData.slice(startIndex);
+        
+        const trendsCtx = document.getElementById('bookingTrendsChart')?.getContext('2d');
+        if (trendsCtx) {
+            // Destroy previous chart if it exists
+            if (bookingTrendsChart) {
+                bookingTrendsChart.destroy();
+            }
+            
+            bookingTrendsChart = new Chart(trendsCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Confirmed',
+                            data: confirmedData,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4,
+                            fill: true,
+                            pointBackgroundColor: '#10b981',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 3,
+                            pointRadius: 6
+                        },
+                        {
+                            label: 'Pending',
+                            data: pendingData,
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            tension: 0.4,
+                            fill: false,
+                            pointBackgroundColor: '#f59e0b',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 3,
+                            pointRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: { weight: '600' }
+                            }
+                        }
                     },
-                    {
-                        label: 'Pending',
-                        data: [15, 18, 12, 25, 22, 28, 32, 25, 35, 38, 42, 45],
-                        borderColor: '#f59e0b',
-                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                        tension: 0.4,
-                        fill: false,
-                        pointBackgroundColor: '#f59e0b',
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 3,
-                        pointRadius: 6
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top',
-                        labels: {
-                            usePointStyle: true,
-                            padding: 20,
-                            font: { weight: '600' }
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#64748b', font: { weight: '500' } }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#f1f5f9' },
+                            ticks: { color: '#64748b', font: { weight: '500' } }
                         }
                     }
-                },
-                scales: {
-                    x: {
-                        grid: { display: false },
-                        ticks: { color: '#64748b', font: { weight: '500' } }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: '#f1f5f9' },
-                        ticks: { color: '#64748b', font: { weight: '500' } }
-                    }
                 }
-            }
+            });
+        }
+    }
+
+    // Time range selector event listener
+    document.getElementById('timeRange')?.addEventListener('change', function() {
+        const monthsToShow = parseInt(this.value);
+        createBookingTrendsChart(monthsToShow);
+    });
+
+    // Initialize the chart with default 12 months
+    createBookingTrendsChart();
+
+    // Function to filter and paginate bookings
+    function updateTable(status = 'All') {
+        const input = document.getElementById('searchBookings').value.toLowerCase().trim();
+        const tableBody = document.getElementById('bookingsTableBody');
+        const rows = Array.from(tableBody.getElementsByTagName('tr'));
+        const filteredRows = rows.filter(row => {
+            const customer = row.getAttribute('data-customer').toLowerCase();
+            const package = row.getAttribute('data-package').toLowerCase();
+            const rowStatus = row.getAttribute('data-status').toLowerCase();
+            const dates = row.getAttribute('data-dates').toLowerCase();
+            const amount = row.getAttribute('data-amount').toLowerCase().replace('$', '').replace('k', '000');
+            return (input === '' || customer.includes(input) || package.includes(input) || rowStatus.includes(input) || dates.includes(input) || amount.includes(input)) &&
+                   (status === 'All' || rowStatus === status.toLowerCase());
+        });
+
+        const totalPages = Math.ceil(filteredRows.length / itemsPerPage);
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const paginatedRows = filteredRows.slice(startIndex, endIndex);
+
+        rows.forEach(row => row.style.display = 'none');
+        paginatedRows.forEach(row => row.style.display = '');
+
+        document.getElementById('prevPage').disabled = currentPage === 1;
+        document.getElementById('nextPage').disabled = currentPage === totalPages;
+        document.getElementById('currentPage').textContent = currentPage;
+        document.getElementById('totalBookingsDisplay').textContent = totalBookings.toLocaleString();
+        document.getElementById('paginationInfo').querySelector('span:nth-child(3)').textContent = `of ${totalBookings.toLocaleString()} bookings`;
+    }
+
+    // Event listeners for pagination
+    document.getElementById('prevPage').addEventListener('click', function() {
+        if (currentPage > 1) {
+            currentPage--;
+            updateTable(document.getElementById('statusFilter').value);
+        }
+    });
+
+    document.getElementById('nextPage').addEventListener('click', function() {
+        const totalPages = Math.ceil(bookings.length / itemsPerPage);
+        if (currentPage < totalPages) {
+            currentPage++;
+            updateTable(document.getElementById('statusFilter').value);
+        }
+    });
+
+    document.getElementById('itemsPerPage').addEventListener('change', function() {
+        itemsPerPage = parseInt(this.value);
+        currentPage = 1;
+        updateTable(document.getElementById('statusFilter').value);
+    });
+
+    // Real-time filtering on input
+    const searchInput = document.getElementById('searchBookings');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            currentPage = 1;
+            updateTable(document.getElementById('statusFilter').value);
         });
     }
+
+    // Status filter change event
+    const statusFilter = document.getElementById('statusFilter');
+    if (statusFilter) {
+        statusFilter.addEventListener('change', function() {
+            currentPage = 1;
+            updateTable(this.value);
+        });
+    }
+
+    // Action buttons functionality
+    document.querySelectorAll('.view-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const customer = this.getAttribute('data-customer');
+            alert(`Viewing details for ${customer}`);
+            // Add your view logic here, e.g., open a modal or navigate to a view page
+        });
+    });
+
+    document.querySelectorAll('.edit-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const customer = this.getAttribute('data-customer');
+            alert(`Editing details for ${customer}`);
+            // Add your edit logic here, e.g., open an edit form or navigate to an edit page
+        });
+    });
+
+    document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const customer = this.getAttribute('data-customer');
+            if (confirm(`Are you sure you want to delete ${customer}'s booking?`)) {
+                alert(`Deleted booking for ${customer}`);
+                // Add your delete logic here, e.g., send a DELETE request to your API
+                this.closest('tr').remove();
+                updateTable(document.getElementById('statusFilter').value);
+            }
+        });
+    });
+
+    // Initial table update
+    updateTable();
 });
 </script>
 @endpush
