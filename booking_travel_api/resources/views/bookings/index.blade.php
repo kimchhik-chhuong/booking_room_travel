@@ -158,7 +158,7 @@
                     </div>
                     <div class="flex items-center space-x-4">
                         <div class="relative">
-                            <input type="text" placeholder="Search bookings..." class="input-modern pl-10 w-64">
+                            <input type="text" id="searchBookings" placeholder="Search bookings..." class="input-modern pl-10 w-64">
                             <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-dark-400"></i>
                         </div>
                         <select class="input-modern">
@@ -167,15 +167,15 @@
                             <option>Pending</option>
                             <option>Cancelled</option>
                         </select>
-                        <button class="btn-modern">
+                        <a href="{{ route('bookings.create') }}" id="newBookingButton" class="btn-modern">
                             <i class="fas fa-plus mr-2"></i> New Booking
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>
 
             <div class="overflow-x-auto">
-                <table class="w-full">
+                <table class="w-full" id="bookingsTable">
                     <thead class="bg-slate-50">
                         <tr>
                             <th class="px-8 py-4 text-left text-sm font-semibold text-dark-600 uppercase tracking-wider">
@@ -211,7 +211,7 @@
                         @endphp
                         
                         @foreach($bookings as $booking)
-                        <tr class="table-row transition-all duration-200 hover:bg-slate-50">
+                        <tr class="table-row transition-all duration-200 hover:bg-slate-50" data-customer="{{ $booking['customer'] }}" data-package="{{ $booking['package'] }}" data-status="{{ $booking['status'] }}" data-dates="{{ $booking['dates'] }}" data-amount="{{ $booking['amount'] }}">
                             <td class="px-8 py-6">
                                 <div class="flex items-center space-x-4">
                                     <img src="{{ $booking['avatar'] }}" alt="{{ $booking['customer'] }}" class="w-12 h-12 rounded-xl shadow-md">
@@ -274,7 +274,7 @@
                     <button class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-dark-600">2</button>
                     <button class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-dark-600">3</button>
                     <span class="px-2 text-dark-400">...</span>
-                    <button class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-dark-600">208</button>
+                    {{-- <button class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-dark-600">208</button> --}}
                     <button class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-dark-600">
                         Next <i class="fas fa-chevron-right ml-2"></i>
                     </button>
@@ -287,6 +287,9 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Pass bookings data to JavaScript
+    const bookings = @json($bookings);
+
     // Small charts for stat cards
     const createMiniChart = (elementId, data, color) => {
         const ctx = document.getElementById(elementId)?.getContext('2d');
@@ -385,6 +388,42 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Function to filter bookings
+    function filterBookings() {
+        const input = document.getElementById('searchBookings').value.toLowerCase().trim();
+        const table = document.getElementById('bookingsTable');
+        const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+        console.log('Filtering for:', input); // Debug log
+        for (let i = 0; i < rows.length; i++) {
+            const customer = rows[i].getAttribute('data-customer').toLowerCase();
+            const package = rows[i].getAttribute('data-package').toLowerCase();
+            const status = rows[i].getAttribute('data-status').toLowerCase();
+            const dates = rows[i].getAttribute('data-dates').toLowerCase();
+            const amount = rows[i].getAttribute('data-amount').toLowerCase().replace('$', '').replace('k', '000');
+
+            if (input === '' || customer.includes(input) || package.includes(input) || status.includes(input) || dates.includes(input) || amount.includes(input)) {
+                rows[i].style.display = '';
+            } else {
+                rows[i].style.display = 'none';
+            }
+        }
+    }
+
+    // Real-time filtering on input
+    const searchInput = document.getElementById('searchBookings');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            console.log('Input changed to:', this.value); // Debug log
+            filterBookings();
+        });
+    } else {
+        console.error('Search input not found'); // Debug error
+    }
+
+    // Initial filter to show all bookings
+    filterBookings();
 });
 </script>
 @endpush
