@@ -1,316 +1,146 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'dart:ui' as ui;
-import 'package:path_provider/path_provider.dart';
-import 'dart:io';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:typed_data';
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html;
 
-void main() {
-  runApp(MyApp());
-}
+class PaymentScreen extends StatefulWidget {
+  const PaymentScreen({super.key});
 
-class MyApp extends StatelessWidget {
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Hotel Booking',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: PaymentScreen(),
-    );
-  }
+  State<PaymentScreen> createState() => _PaymentScreenState();
 }
 
-class PaymentScreen extends StatelessWidget {
+class _PaymentScreenState extends State<PaymentScreen> {
+  final _formKey = GlobalKey<FormState>();
+
+  String _cardNumber = '';
+  String _expiryDate = '';
+  String _cvv = '';
+  String _cardHolderName = '';
+
+  bool _isProcessing = false;
+
+  void _handlePayment() {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isProcessing = true;
+      });
+
+      // Simulate payment delay
+      Future.delayed(const Duration(seconds: 2), () {
+        setState(() {
+          _isProcessing = false;
+        });
+
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text('Payment Successful'),
+            content: const Text('Thank you for your purchase!'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pushReplacementNamed('/home');
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Payment'),
-        backgroundColor: Colors.blue,
+        title: const Text('Payment'),
+        backgroundColor: Colors.blue.shade700,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Text('Booking Summary',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            SizedBox(height: 20),
-            _buildBookingDetails(),
-            SizedBox(height: 30),
-            Text('Payment Method',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-            SizedBox(height: 10),
-            _buildPaymentOption(Icons.credit_card, 'Credit Card'),
-            _buildPaymentOption(Icons.paypal, 'PayPal'),
-            _buildPaymentOption(Icons.account_balance_wallet, 'Wallet'),
-            Spacer(),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ReceiptScreen(
-                      hotelName: 'Pan Pacific',
-                      nights: '3',
-                      guests: '2',
-                      total: '\$360',
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: [
+              const Text(
+                'Enter Payment Details',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 20),
+
+              TextFormField(
+                decoration: const InputDecoration(
+                  labelText: 'Card Holder Name',
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (val) => _cardHolderName = val,
+                validator: (val) => val!.isEmpty ? 'Required' : null,
+              ),
+              const SizedBox(height: 16),
+
+              TextFormField(
+                decoration: const InputDecoration(
+                  labelText: 'Card Number',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                maxLength: 16,
+                onChanged: (val) => _cardNumber = val,
+                validator: (val) =>
+                    val!.length < 16 ? 'Enter valid card number' : null,
+              ),
+              const SizedBox(height: 16),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      decoration: const InputDecoration(
+                        labelText: 'Expiry Date (MM/YY)',
+                        border: OutlineInputBorder(),
+                      ),
+                      onChanged: (val) => _expiryDate = val,
+                      validator: (val) =>
+                          val!.isEmpty ? 'Required' : null,
                     ),
                   ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                minimumSize: Size(double.infinity, 50),
-              ),
-              child: Text(
-                'Pay Now',
-                style: TextStyle(fontSize: 18),
-              ),
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBookingDetails() {
-    return Container(
-      padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Column(
-        children: [
-          _buildRow('Hotel:', 'Pan Pacific'),
-          _buildRow('Nights:', '3'),
-          _buildRow('Guests:', '2'),
-          _buildRow('Total:', '\$360'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [Text(label), Text(value)],
-      ),
-    );
-  }
-
-  Widget _buildPaymentOption(IconData icon, String method) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.blue),
-      title: Text(method),
-      trailing: Icon(Icons.arrow_forward_ios, size: 16),
-      onTap: () {},
-    );
-  }
-}
-
-class ReceiptScreen extends StatelessWidget {
-  final String hotelName;
-  final String nights;
-  final String guests;
-  final String total;
-
-  ReceiptScreen({
-    required this.hotelName,
-    required this.nights,
-    required this.guests,
-    required this.total,
-  });
-
-  final GlobalKey _receiptKey = GlobalKey();
-
-  Future<void> _captureAndSaveReceipt(BuildContext context) async {
-    try {
-      if (kIsWeb) {
-        await _saveReceiptForWeb(context);
-        return;
-      }
-
-      if (Platform.isAndroid || Platform.isIOS) {
-        await _saveReceiptForMobile(context);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Receipt saving not supported on this platform')),
-        );
-      }
-    } catch (e) {
-      print('Error saving receipt: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to save receipt: ${e.toString()}')),
-      );
-    }
-  }
-
-  Future<void> _saveReceiptForMobile(BuildContext context) async {
-    if (Platform.isAndroid) {
-      var status = await Permission.storage.status;
-      if (!status.isGranted) {
-        status = await Permission.storage.request();
-        if (!status.isGranted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Storage permission denied')),
-          );
-          return;
-        }
-      }
-    }
-
-    RenderRepaintBoundary boundary = _receiptKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-    ui.Image image = await boundary.toImage(pixelRatio: 3.0);
-    ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-    Uint8List pngBytes = byteData!.buffer.asUint8List();
-
-    final directory = await getApplicationDocumentsDirectory();
-    final String filePath = '${directory.path}/receipt_${DateTime.now().millisecondsSinceEpoch}.png';
-    await File(filePath).writeAsBytes(pngBytes);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Receipt saved to $filePath'),
-        duration: Duration(seconds: 3),
-      ),
-    );
-  }
-
-  Future<void> _saveReceiptForWeb(BuildContext context) async {
-    try {
-      RenderRepaintBoundary boundary = _receiptKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-      ui.Image image = await boundary.toImage(pixelRatio: 3.0);
-      ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      Uint8List pngBytes = byteData!.buffer.asUint8List();
-
-      final blob = html.Blob([pngBytes], 'image/png');
-      final url = html.Url.createObjectUrlFromBlob(blob);
-      final anchor = html.AnchorElement(href: url)
-        ..setAttribute('download', 'receipt_${DateTime.now().millisecondsSinceEpoch}.png')
-        ..click();
-      html.Url.revokeObjectUrl(url);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Receipt download started')),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to save receipt: ${e.toString()}')),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade100,
-      appBar: AppBar(
-        title: Text('Receipt'),
-        backgroundColor: Colors.blue,
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: RepaintBoundary(
-                  key: _receiptKey,
-                  child: Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: TextFormField(
+                      decoration: const InputDecoration(
+                        labelText: 'CVV',
+                        border: OutlineInputBorder(),
+                      ),
+                      obscureText: true,
+                      maxLength: 3,
+                      keyboardType: TextInputType.number,
+                      onChanged: (val) => _cvv = val,
+                      validator: (val) =>
+                          val!.length != 3 ? 'Invalid CVV' : null,
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Icon(Icons.check_circle, color: Colors.green, size: 80),
-                          SizedBox(height: 10),
-                          Text(
-                            'Payment Successful!',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green.shade700,
-                            ),
-                          ),
-                          SizedBox(height: 30),
-                          _buildReceiptItem(Icons.hotel, 'Hotel', hotelName),
-                          _buildReceiptItem(Icons.nights_stay, 'Nights', nights),
-                          _buildReceiptItem(Icons.group, 'Guests', guests),
-                          _buildReceiptItem(Icons.attach_money, 'Total', total),
-                          SizedBox(height: 30),
-                          Text(
-                            'Thank you for booking with us!',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                        ],
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 30),
+
+              _isProcessing
+                  ? const Center(child: CircularProgressIndicator())
+                  : ElevatedButton.icon(
+                      onPressed: _handlePayment,
+                      icon: const Icon(Icons.lock),
+                      label: const Text(
+                        'Pay Now',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        backgroundColor: Colors.blue.shade700,
                       ),
                     ),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: () => _captureAndSaveReceipt(context),
-              icon: Icon(Icons.download),
-              label: Text('Download Receipt'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                padding: EdgeInsets.symmetric(vertical: 14),
-                minimumSize: Size(double.infinity, 50),
-                textStyle: TextStyle(fontSize: 18),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildReceiptItem(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.0),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.blue),
-          SizedBox(width: 12),
-          Text(
-            '$label:',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          Spacer(),
-          Text(
-            value,
-            style: TextStyle(fontSize: 16),
-          ),
-        ],
       ),
     );
   }

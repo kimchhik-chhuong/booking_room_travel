@@ -45,7 +45,7 @@ class HotelsPage extends StatelessWidget {
       {
         'name': 'Taj Hotel',
         'price': '\$200/Night',
-        'imageUrl': '../lib/assets/room2.jpg',
+        'imageUrl': 'assets/room2.jpg',
         'rating': 4.5,
         'reviews': 20,
         'description': 'The ONOMO Hotels chain established...',
@@ -53,7 +53,7 @@ class HotelsPage extends StatelessWidget {
       {
         'name': 'AR Hotel',
         'price': '\$200/Night',
-        'imageUrl': '../lib/assets/room2.jpg',
+        'imageUrl': 'assets/room2.jpg',
         'rating': 4.5,
         'reviews': 20,
         'description': 'The ONOMO Hotels chain established...',
@@ -61,7 +61,7 @@ class HotelsPage extends StatelessWidget {
       {
         'name': 'Al Rahman Hotel',
         'price': '\$200/Night',
-        'imageUrl': '../lib/assets/room2.jpg',
+        'imageUrl': 'assets/room2.jpg',
         'rating': 4.5,
         'reviews': 20,
         'description': 'The ONOMO Hotels chain established...',
@@ -69,7 +69,7 @@ class HotelsPage extends StatelessWidget {
       {
         'name': 'Oberoy Hotel',
         'price': '\$200/Night',
-        'imageUrl': '../lib/assets/room2.jpg',
+        'imageUrl': 'assets/room2.jpg',
         'rating': 4.5,
         'reviews': 20,
         'description': 'The ONOMO Hotels chain established...',
@@ -79,7 +79,7 @@ class HotelsPage extends StatelessWidget {
     return ListView.builder(
       padding: const EdgeInsets.all(8),
       shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
+      physics: const NeverScrollableScrollPhysics(),
       itemCount: hotels.length,
       itemBuilder: (context, index) {
         final hotel = hotels[index];
@@ -95,7 +95,6 @@ class HotelsPage extends StatelessWidget {
       },
     );
   }
-
 
   Widget _buildHotelCard(BuildContext context,
       {required String hotelName,
@@ -162,14 +161,16 @@ class HotelsPage extends StatelessWidget {
                         const SizedBox(width: 4),
                         Text(
                           '$rating Reviews ($reviews)',
-                          style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                          style: TextStyle(
+                              fontSize: 14, color: Colors.grey[600]),
                         ),
                       ],
                     ),
                     const SizedBox(height: 4),
                     Text(
                       description,
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      style:
+                          TextStyle(fontSize: 12, color: Colors.grey[600]),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -177,7 +178,9 @@ class HotelsPage extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(price, style: TextStyle(color: Colors.blue, fontSize: 16)),
+                        Text(price,
+                            style:
+                                TextStyle(color: Colors.blue, fontSize: 16)),
                         ElevatedButton(
                           onPressed: () {
                             Navigator.push(
@@ -185,7 +188,8 @@ class HotelsPage extends StatelessWidget {
                               MaterialPageRoute(
                                 builder: (context) => BookingScreen(
                                   hotelName: hotelName,
-                                  address: '12 Eze Adele Road Rumuomasi Lagos Nigeria',
+                                  address:
+                                      '12 Eze Adele Road Rumuomasi Lagos Nigeria',
                                   price: price,
                                   imageUrl: imageUrl,
                                   description: description,
@@ -195,7 +199,6 @@ class HotelsPage extends StatelessWidget {
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue,
-
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
@@ -233,137 +236,160 @@ class BookingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header Image
-            ClipRRect(
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
-              child: Image.asset(
-                imageUrl,
-                height: 200,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    height: 200,
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.broken_image, size: 40),
-                  );
-                },
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        hotelName,
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        price,
-                        style: TextStyle(fontSize: 18, color: Colors.green),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(Icons.star, size: 16, color: Colors.yellow[700]),
-                      const SizedBox(width: 4),
-                      Text(
-                        '4.9 (1,092 Reviews)',
-                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    address,
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    description,
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Amenities',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      TextButton(
-                        onPressed: () {},
-                        child: Text('View All', style: TextStyle(color: Colors.blue)),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildAmenityIcon(Icons.local_cafe, 'Café'),
-                      _buildAmenityIcon(Icons.restaurant, 'Restaurant'),
-                      _buildAmenityIcon(Icons.local_dining, 'Garden'),
+    final isNetwork = imageUrl.startsWith('http');
 
-                      _buildAmenityIcon(Icons.golf_course, 'Golf Course'),
-                      _buildAmenityIcon(Icons.wifi, 'Free WiFi'),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Gallery Photos',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+    return Scaffold(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header Image
+              ClipRRect(
+                borderRadius:
+                    const BorderRadius.vertical(bottom: Radius.circular(12)),
+                child: isNetwork
+                    ? Image.network(
+                        imageUrl,
+                        height: 200,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 200,
+                            color: Colors.grey[300],
+                            child: const Icon(Icons.broken_image, size: 40),
+                          );
+                        },
+                      )
+                    : Image.asset(
+                        imageUrl,
+                        height: 200,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
                       ),
-                      TextButton(
-                        onPressed: () {},
-                        child: Text('See All', style: TextStyle(color: Colors.blue)),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildGalleryImage('assets/room1.jpg'),
-                      _buildGalleryImage('assets/room2.jpg'),
-                      _buildGalleryImage('assets/room3.jpg'),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Booking confirmed for $hotelName!')),
-                        );
-                        Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                      ),
-                      child: const Text('Confirm Booking'),
-                    ),
-                  ),
-                ],
               ),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          hotelName,
+                          style: const TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          price,
+                          style: const TextStyle(
+                              fontSize: 18, color: Colors.green),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(Icons.star, size: 16, color: Colors.yellow[700]),
+                        const SizedBox(width: 4),
+                        Text(
+                          '4.9 (1,092 Reviews)',
+                          style: TextStyle(
+                              fontSize: 14, color: Colors.grey[600]),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      address,
+                      style:
+                          TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      description,
+                      style:
+                          TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Amenities',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        TextButton(
+                          onPressed: () {},
+                          child:
+                              const Text('View All', style: TextStyle(color: Colors.blue)),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildAmenityIcon(Icons.local_cafe, 'Café'),
+                        _buildAmenityIcon(Icons.restaurant, 'Restaurant'),
+                        _buildAmenityIcon(Icons.local_dining, 'Garden'),
+                        _buildAmenityIcon(Icons.golf_course, 'Golf Course'),
+                        _buildAmenityIcon(Icons.wifi, 'Free WiFi'),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Gallery Photos',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        TextButton(
+                          onPressed: () {},
+                          child:
+                              const Text('See All', style: TextStyle(color: Colors.blue)),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildGalleryImage('assets/room1.jpg'),
+                        _buildGalleryImage('assets/room2.jpg'),
+                        _buildGalleryImage('assets/room3.jpg'),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Booking confirmed for $hotelName!'),
+                            ),
+                          );
+                          Navigator.pop(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 40, vertical: 15),
+                        ),
+                        child: const Text('Confirm Booking'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
