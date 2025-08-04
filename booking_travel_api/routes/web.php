@@ -119,5 +119,7 @@ Route::middleware('auth')->group(function () {
         return redirect()->route('dashboard');
     });
 });
+
+// Route::resource('bookings', BookingController::class);
 Route::get('/bookings/create', [BookingController::class, 'create'])->name('bookings.create');
 Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
