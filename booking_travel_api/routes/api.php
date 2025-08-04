@@ -1,4 +1,6 @@
 <?php
+
+use App\Http\Controllers\Api\BookingHistoryController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\DestinationController;
 use App\Http\Controllers\HotelBookingController;
@@ -22,6 +24,9 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
+
+    // This will call the 'index' method in your BookingHistoryController.
+    Route::get('/booking-history', [BookingHistoryController::class, 'index']);
 
 Route::apiResource('booking', BookingController::class);
 Route::apiResource('destination', DestinationController::class);

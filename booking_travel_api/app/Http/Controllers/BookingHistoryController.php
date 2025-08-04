@@ -30,10 +30,10 @@ class BookingHistoryController extends Controller
         $userId = Auth::id();
 
         try {
-            // Fetch bookings for the authenticated user
-            // Order by 'travel_date' in descending order to show most recent travel first
-            // You can also include 'package' if you eager load it and have a Package model
-            $bookings = Booking::where('user_id', $userId)
+            // Fetch bookings for the authenticated user, eager-loading the 'package' relationship
+            // Eager loading is crucial to access the package's details without making separate queries.
+            $bookings = Booking::with('package')
+                               ->where('user_id', $userId)
                                ->orderBy('travel_date', 'desc') // Order by travel_date for history
                                ->get();
 
@@ -45,12 +45,23 @@ class BookingHistoryController extends Controller
                 ], 200); // 200 OK, but with empty data
             }
 
-            // Return the bookings as a JSON response
-            // You might want to format the data here if needed,
-            // for example, using Laravel API Resources for cleaner output.
+            // Transform the bookings data to match the Flutter app's expectations
+            $formattedBookings = $bookings->map(function ($booking) {
+                return [
+                    // Ensure the column names match your database schema
+                    'booking_id' => $booking->booking_reference, // Use booking_reference as booking_id
+                    'hotel_name' => $booking->package->name ?? 'N/A', // Access package name
+                    'location' => $booking->package->location ?? 'N/A', // Access package location
+                    'start_date' => $booking->travel_date ? $booking->travel_date->toDateString() : 'N/A', // Use travel_date
+                    'end_date' => 'N/A', // Assuming you don't have an end_date, you can add it if needed
+                    'total_price' => $booking->total_amount,
+                ];
+            });
+
+            // Return the formatted bookings as a JSON response
             return response()->json([
                 'message' => 'Booking history retrieved successfully.',
-                'data' => $bookings
+                'data' => $formattedBookings
             ], 200); // 200 OK
         } catch (\Exception $e) {
             // Log the error for debugging purposes
@@ -66,4 +77,3 @@ class BookingHistoryController extends Controller
         }
     }
 }
-
