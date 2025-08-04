@@ -42,17 +42,17 @@
                 <span class="font-medium">Travelers</span>
             </a>
             
-            <a href="{{ route('guides.index') }}" 
+            {{-- <a href="{{ route('guides.index') }}" 
                class="nav-link flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('guides.*') ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800' }}">
                 <i class="fas fa-map w-5"></i>
                 <span class="font-medium">Guides</span>
-            </a>
+            </a> --}}
             
-            <a href="{{ route('gallery.index') }}" 
+            {{-- <a href="{{ route('gallery.index') }}" 
                class="nav-link flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('gallery.*') ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800' }}">
                 <i class="fas fa-images w-5"></i>
                 <span class="font-medium">Gallery</span>
-            </a>
+            </a> --}}
             
             <a href="{{ route('messages.index') }}" 
                class="nav-link flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('messages.*') ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800' }}">
