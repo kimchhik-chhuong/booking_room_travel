@@ -1,20 +1,18 @@
-// import 'package:booking_travel_flutter/screens/payment_screen.dart';
-// import 'package:booking_travel_flutter/screens/profile_screen.dart';
-import 'package:flutter/material.dart'; 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 
 import 'screens/register.dart';
 import 'screens/login.dart';
 import 'screens/onboarding.dart';
 import 'screens/home_screen.dart';
 import 'screens/payment_screen.dart';
-import 'screens/search_screen.dart'; // ✅ Add this line
-import 'screens/profile_screen.dart'; // User login check service
-import 'services/user_service.dart'; // User login check service
-
+import 'screens/search_screen.dart';
+import 'screens/profile_screen.dart';
+import 'services/user_service.dart';
 
 void main() {
-  runApp(TravelBookingApp());
+  runApp(const TravelBookingApp());
 }
 
 class TravelBookingApp extends StatelessWidget {
@@ -35,10 +33,10 @@ class TravelBookingApp extends StatelessWidget {
           systemOverlayStyle: SystemUiOverlayStyle.light,
         ),
       ),
-      home: SplashScreen(),
+      home: const SplashScreen(),
       routes: {
-        '/login': (context) => LoginScreen(),
-        '/register': (context) => RegisterScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/register': (context) => const RegisterScreen(),
         '/onboarding': (context) => OnboardingScreen(),
         '/home': (context) => HomeScreen(),
         '/payment': (context) => PaymentScreen(),
@@ -56,7 +54,8 @@ class SplashScreen extends StatefulWidget {
   _SplashScreenState createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with TickerProviderStateMixin {
   late AnimationController _logoController;
   late AnimationController _textController;
   late AnimationController _backgroundController;
@@ -119,13 +118,15 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     await Future.delayed(const Duration(milliseconds: 800));
     _textController.forward();
 
-    await Future.delayed(Duration(milliseconds: 2500));
+    await Future.delayed(const Duration(milliseconds: 2500));
 
     bool isLoggedIn = await UserService.isLoggedIn();
-    if (isLoggedIn) {
-      Navigator.pushReplacementNamed(context, '/home');
-    } else {
-      Navigator.pushReplacementNamed(context, '/onboarding');
+    if (mounted) {
+      if (isLoggedIn) {
+        Navigator.pushReplacementNamed(context, '/home');
+      } else {
+        Navigator.pushReplacementNamed(context, '/onboarding');
+      }
     }
   }
 
@@ -141,9 +142,12 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color.lerp(Colors.blue.shade900, Colors.purple.shade900, _backgroundAnimation.value)!,
-                  Color.lerp(Colors.blue.shade600, Colors.pink.shade600, _backgroundAnimation.value)!,
-                  Color.lerp(Colors.cyan.shade400, Colors.orange.shade400, _backgroundAnimation.value)!,
+                  Color.lerp(
+                      Colors.blue.shade900, Colors.purple.shade900, _backgroundAnimation.value)!,
+                  Color.lerp(
+                      Colors.blue.shade600, Colors.pink.shade600, _backgroundAnimation.value)!,
+                  Color.lerp(
+                      Colors.cyan.shade400, Colors.orange.shade400, _backgroundAnimation.value)!,
                 ],
                 stops: const [0.0, 0.5, 1.0],
               ),

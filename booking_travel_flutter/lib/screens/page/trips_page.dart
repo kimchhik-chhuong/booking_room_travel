@@ -36,17 +36,17 @@ class _TripsPageState extends State<TripsPage> {
     {
       'name': 'PhnomPenh',
       'page': const PhnompenhPage(),
-      'image': 'lib/assets/images/phnompenh.jpg'
+      'image': 'assets/images/phnompenh.jpg'
     },
     {
       'name': 'SiemReap',
       'page': const SiemReapPage(),
-      'image': 'lib/assets/images/siemreap.jpg'
+      'image': 'assets/images/siemreap.jpg'
     },
     {
       'name': 'BanteayMeanchey',
       'page': const BanteayMeancheyPage(),
-      'image': 'lib/assets/images/bantaymeanchey.jpg'
+      'image': 'assets/images/bantaymeanchey.jpg'
     },
     {
       'name': 'Battambang',
@@ -56,97 +56,97 @@ class _TripsPageState extends State<TripsPage> {
     {
       'name': 'K.Cham',
       'page': const KampongChamPage(),
-      'image': 'lib/assets/images/kompongcham.jpg'
+      'image': 'assets/images/kampongcham.jpg'
     },
     {
       'name': 'K.Chhnang',
       'page': const KampongChhnangPage(),
-      'image': 'lib/assets/images/kampongchhnang.jpg'
+      'image': 'assets/images/kampongchhnang.jpg'
     },
     {
       'name': 'K.Speu',
       'page': const KampongSpeuPage(),
-      'image': 'lib/assets/images/kampongspue.jpg'
+      'image': 'assets/images/kampongspue.jpg'
     },
     {
       'name': 'K.Thom',
       'page': const KampongThomPage(),
-      'image': 'lib/assets/images/kompong-thom.jpg'
+      'image': 'assets/images/kompong-thom.jpg'
     },
     {
       'name': 'Kampot',
       'page': const KompotPage(),
-      'image': 'lib/assets/images/kampot.jpg'
+      'image': 'assets/images/kampot.jpg'
     },
     {
       'name': 'Kandal',
       'page': const KandalPage(),
-      'image': 'lib/assets/images/kaldal.jpg'
+      'image': 'assets/images/kaldal.jpg'
     },
     {
       'name': 'Kep',
       'page': const KepPage(),
-      'image': 'lib/assets/images/kep.jpg'
+      'image': 'assets/images/kep.jpg'
     },
     {
       'name': 'KohKong',
       'page': const KohKongPage(),
-      'image': 'lib/assets/images/kohkong.jpg'
+      'image': 'assets/images/kohkong.jpg'
     },
     {
       'name': 'Mondulkiri',
       'page': const MondulkiriPage(),
-      'image': 'lib/assets/images/mundoulkiri.jpg'
+      'image': 'assets/images/mundulkiri.jpg'
     },
     {
       'name': 'OddarMeanchey',
       'page': const OddarMeancheyPage(),
-      'image': 'lib/assets/images/oddar-Meanchey.jpg'
+      'image': 'assets/images/oddar-meanchey.jpg'
     },
     {
       'name': 'Pailin',
       'page': const PailinPage(),
-      'image': 'lib/assets/images/pailin.jpg'
+      'image': 'assets/images/pailin.jpg'
     },
     {
       'name': 'PreahVihear',
       'page': const PreahVihearPage(),
-      'image': 'lib/assets/images/preakvihea.jpg'
+      'image': 'assets/images/preahvihear.jpg'
     },
     {
       'name': 'Prey Veng',
       'page': const PreyVengPage(),
-      'image': 'lib/assets/images/preyveng.jpg'
+      'image': 'assets/images/preyveng.jpg'
     },
     {
       'name': 'Pursat',
       'page': const PursatPage(),
-      'image': 'lib/assets/images/pursat.jpg'
+      'image': 'assets/images/pursat.jpg'
     },
     {
       'name': 'Ratanakiri',
       'page': const RatanakiriPage(),
-      'image': 'lib/assets/images/ratanakiri.jpg'
+      'image': 'assets/images/ratanakiri.jpg'
     },
     {
       'name': 'Sihanouk',
       'page': const SihanoukvillePage(),
-      'image': 'lib/assets/images/syhanus.jpg'
+      'image': 'assets/images/sihanoukville.jpg'
     },
     {
       'name': 'StungTreng',
       'page': const StungteangPage(),
-      'image': 'lib/assets/images/steangtreang.jpg'
+      'image': 'assets/images/steangtreang.jpg'
     },
     {
       'name': 'SvayRieng',
       'page': const SvayRiengPage(),
-      'image': 'lib/assets/images/svayrieng.jpg'
+      'image': 'assets/images/svayrieng.jpg'
     },
     {
       'name': 'Takeo',
       'page': const TakeoPage(),
-      'image': 'lib/assets/images/takeo.jpg'
+      'image': 'assets/images/takeo.jpg'
     },
     // {
     //   'name': 'TboungKhmum',
