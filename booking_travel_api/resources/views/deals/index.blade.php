@@ -20,7 +20,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-dark-500 text-sm font-medium mb-2">Active Deals</p>
-                        <p class="text-3xl font-bold text-dark-800">12</p>
+                        <p class="text-3xl font-bold text-dark-800">15</p>
                         <p class="text-emerald-600 text-sm font-medium mt-2">+3 new deals</p>
                     </div>
                     <div class="w-14 h-14 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl flex items-center justify-center">
@@ -33,8 +33,8 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-dark-500 text-sm font-medium mb-2">Total Savings</p>
-                        <p class="text-3xl font-bold text-dark-800">$45,230</p>
-                        <p class="text-emerald-600 text-sm font-medium mt-2">+18.2% this month</p>
+                        <p class="text-3xl font-bold text-dark-800">$52,730</p>
+                        <p class="text-emerald-600 text-sm font-medium mt-2">+20.5% this month</p>
                     </div>
                     <div class="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center">
                         <i class="fas fa-dollar-sign text-white text-xl"></i>
@@ -46,8 +46,8 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-dark-500 text-sm font-medium mb-2">Deal Usage</p>
-                        <p class="text-3xl font-bold text-dark-800">1,456</p>
-                        <p class="text-emerald-600 text-sm font-medium mt-2">+24.1% usage rate</p>
+                        <p class="text-3xl font-bold text-dark-800">1,856</p>
+                        <p class="text-emerald-600 text-sm font-medium mt-2">+26.7% usage rate</p>
                     </div>
                     <div class="w-14 h-14 bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl flex items-center justify-center">
                         <i class="fas fa-chart-line text-white text-xl"></i>
@@ -59,8 +59,8 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-dark-500 text-sm font-medium mb-2">Avg. Discount</p>
-                        <p class="text-3xl font-bold text-dark-800">18%</p>
-                        <p class="text-emerald-600 text-sm font-medium mt-2">+2% increase</p>
+                        <p class="text-3xl font-bold text-dark-800">20%</p>
+                        <p class="text-emerald-600 text-sm font-medium mt-2">+3% increase</p>
                     </div>
                     <div class="w-14 h-14 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center">
                         <i class="fas fa-percentage text-white text-xl"></i>
@@ -74,36 +74,36 @@
             @php
             $featuredDeals = [
                 [
-                    'title' => 'Summer Escape Sale',
-                    'discount' => '25% OFF',
-                    'description' => 'Get 25% off on all beach destinations',
-                    'code' => 'SUMMER25',
-                    'valid_until' => '2024-08-31',
-                    'used' => 234,
-                    'limit' => 500,
-                    'status' => 'Active',
+                    'title' => 'Khmer New Year Celebration',
+                    'discount' => '50% OFF',
+                    'description' => 'Celebrate Choul Chnam Thmey with 50% off on all tours in Siem Reap and Phnom Penh',
+                    'code' => 'KHMER2025',
+                    'valid_until' => '2025-04-16',
+                    'used' => 120,
+                    'limit' => 400,
+                    'status' => 'Scheduled',
                     'color' => 'from-orange-400 to-pink-500'
                 ],
                 [
-                    'title' => 'Early Bird Special',
-                    'discount' => '$300 OFF',
-                    'description' => 'Book 60 days in advance and save big',
-                    'code' => 'EARLY300',
-                    'valid_until' => '2024-12-31',
-                    'used' => 89,
-                    'limit' => 200,
-                    'status' => 'Active',
+                    'title' => 'Pchum Ben Pilgrimage',
+                    'discount' => '$200 OFF',
+                    'description' => 'Honor ancestors with discounted temple tours during Pchum Ben',
+                    'code' => 'PCHUM2025',
+                    'valid_until' => '2025-10-03',
+                    'used' => 45,
+                    'limit' => 250,
+                    'status' => 'Scheduled',
                     'color' => 'from-blue-400 to-purple-500'
                 ],
                 [
-                    'title' => 'Group Adventure',
-                    'discount' => '15% OFF',
-                    'description' => 'Special discount for groups of 4 or more',
-                    'code' => 'GROUP15',
-                    'valid_until' => '2024-09-30',
-                    'used' => 156,
-                    'limit' => 300,
-                    'status' => 'Active',
+                    'title' => 'Independence Day Getaway',
+                    'discount' => '30% OFF',
+                    'description' => 'Commemorate Khmer National Day with 30% off Phnom Penh packages',
+                    'code' => 'INDEPENDENCE25',
+                    'valid_until' => '2025-11-09',
+                    'used' => 30,
+                    'limit' => 200,
+                    'status' => 'Scheduled',
                     'color' => 'from-emerald-400 to-blue-500'
                 ]
             ];
@@ -196,6 +196,9 @@
                     <tbody class="bg-white divide-y divide-slate-200">
                         @php
                         $allDeals = [
+                            ['name' => 'Khmer New Year Celebration', 'discount' => '50% Off', 'code' => 'KHMER2025', 'used' => 120, 'limit' => 400, 'valid_until' => '2025-04-16', 'status' => 'Scheduled'],
+                            ['name' => 'Pchum Ben Pilgrimage', 'discount' => '$200 Off', 'code' => 'PCHUM2025', 'used' => 45, 'limit' => 250, 'valid_until' => '2025-10-03', 'status' => 'Scheduled'],
+                            ['name' => 'Independence Day Getaway', 'discount' => '30% Off', 'code' => 'INDEPENDENCE25', 'used' => 30, 'limit' => 200, 'valid_until' => '2025-11-09', 'status' => 'Scheduled'],
                             ['name' => 'Summer Escape Sale', 'discount' => '25% Off', 'code' => 'SUMMER25', 'used' => 234, 'limit' => 500, 'valid_until' => '2024-08-31', 'status' => 'Active'],
                             ['name' => 'Early Bird Special', 'discount' => '$300 Off', 'code' => 'EARLY300', 'used' => 89, 'limit' => 200, 'valid_until' => '2024-12-31', 'status' => 'Active'],
                             ['name' => 'Group Adventure', 'discount' => '15% Off', 'code' => 'GROUP15', 'used' => 156, 'limit' => 300, 'valid_until' => '2024-09-30', 'status' => 'Active'],
@@ -257,11 +260,11 @@
                 <div class="flex items-center space-x-2 text-dark-600">
                     <span>Showing</span>
                     <select class="input-modern text-sm px-2 py-1">
-                        <option>6</option>
+                        <option>9</option>
                         <option>12</option>
                         <option>24</option>
                     </select>
-                    <span>of 24 deals</span>
+                    <span>of 27 deals</span>
                 </div>
                 <div class="flex items-center space-x-2">
                     <button class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-dark-600">
