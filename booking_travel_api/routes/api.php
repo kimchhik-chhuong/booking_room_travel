@@ -15,13 +15,15 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\HotelController;
 use App\Http\Controllers\AdventureController;
 use App\Http\Controllers\FakeDataController;
+use App\Http\Controllers\ProvinceController;
+use App\Http\Controllers\HotelController;
 
 Route::post('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('/adventures/{id}/hotels', [AdventureController::class, 'hotels']);
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -35,6 +37,7 @@ Route::apiResource('notification', NotificationController::class);
 Route::apiResource('payment', PaymentController::class);
 Route::apiResource('restaurantmetadata', RestaurantMetadataController::class);
 Route::apiResource('review', ReviewController::class);
+
 //travelers
 Route::get('/travelers', [TravelerController::class, 'index']);
 Route::get('/travelers/{id}', [TravelerController::class, 'show']);
@@ -54,10 +57,23 @@ Route::get('/provinces/{province}/adventures-fake', [FakeDataController::class, 
 Route::get('/adventures/{adventure}/hotels', [AdventureController::class, 'getHotelsByAdventure']);
 Route::get('/adventures/{adventure}/hotels-fake', [FakeDataController::class, 'getHotelsByAdventureFake']);
 
-//
+
 Route::middleware(['auth'])->group(function () {
     Route::resource('users', UserController::class);
     Route::resource('roles', RoleController::class);
 });
 
 Route::post('/cambodia-trips', [CambodiaTripController::class, 'store']);
+// routes/api.php
+
+
+
+
+Route::get('/provinces', [ProvinceController::class, 'index']);
+Route::get('/adventures', [AdventureController::class, 'index']);
+
+
+Route::get('/adventures/{adventure}/hotels', [HotelController::class, 'getHotelsByAdventureId']);
+
+Route::get('/hotels', [HotelController::class, 'index']);
+Route::get('/adventures/{id}/hotels', [AdventureController::class, 'getHotelsByAdventure']);

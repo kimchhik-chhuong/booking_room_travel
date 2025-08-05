@@ -12,11 +12,12 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.2
-  http: ^1.1.0
+  http: ^1.2.2
   shared_preferences: ^2.0.20  # Use older stable version
   url_launcher: ^6.3.2
   path_provider: ^2.1.5
   permission_handler: ^12.0.1
+  cached_network_image: ^3.2.3
 
 dev_dependencies:
   flutter_test:
@@ -31,26 +32,26 @@ flutter:
     - lib/assets/f3.png
     - lib/assets/room1.png
     - lib/assets/room2.jpg
+    - lib/assets/default_hotel.png
 # province
-    - lib/assets/images/phnompenh.jpg
-    - lib/assets/images/bantaymeanchey.jpg
-    - lib/assets/images/batambong.jpg
-    - lib/assets/images/bantaymeanchey.jpg
-    - lib/assets/images/kaldal.jpg
-    - lib/assets/images/kampongchhnang.jpg
-    - lib/assets/images/kampongspue.jpg
-    - lib/assets/images/kampot.jpg
-    - lib/assets/images/kep.jpg
-    - lib/assets/images/kohkong.jpg
-    - lib/assets/images/kompong-thom.jpg
-    - lib/assets/images/kompongcham.jpg
-    - lib/assets/images/krojes.jpg
-    - lib/assets/images/oddar-Meanchey.jpg
-    - lib/assets/images/pailin.jpg
-    - lib/assets/images/preakvihea.jpg
-    - lib/assets/images/Preyveng.jpg
-    - lib/assets/images/pursat.jpg
-    - lib/assets/images/svayrieng.jpg
-    - lib/assets/images/syhanus.jpg
-    - lib/assets/images/takeo.jpg
-    # - lib/assets/images/tbumkmum.jpg
+    # - lib/assets/images/phnompenh.jpg
+    # - lib/assets/images/bantaymeanchey.jpg
+    # - lib/assets/images/batambong.jpg
+    # - lib/assets/images/bantaymeanchey.jpg
+    # - lib/assets/images/kaldal.jpg
+    # - lib/assets/images/kampongchhnang.jpg
+    # - lib/assets/images/kampongspue.jpg
+    # - lib/assets/images/kampot.jpg
+    # - lib/assets/images/kep.jpg
+    # - lib/assets/images/kohkong.jpg
+    # - lib/assets/images/kompong-thom.jpg
+    # - lib/assets/images/kompongcham.jpg
+    # - lib/assets/images/krojes.jpg
+    # - lib/assets/images/oddar-Meanchey.jpg
+    # - lib/assets/images/pailin.jpg
+    # - lib/assets/images/preakvihea.jpg
+    # - lib/assets/images/Preyveng.jpg
+    # - lib/assets/images/pursat.jpg
+    # - lib/assets/images/svayrieng.jpg
+    # - lib/assets/images/syhanus.jpg
+    # - lib/assets/images/takeo.jpg

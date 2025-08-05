@@ -1,116 +1,100 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
-import '../hotels/hotels_by_adventure_page.dart'; // New screen for hotels by adventure
-
-class Adventure {
-  final int id;
-  final String name;
-  final String description;
-  final String imageUrl;
-
-  Adventure({required this.id, required this.name, required this.description, required this.imageUrl});
-
-  factory Adventure.fromJson(Map<String, dynamic> json) {
-    return Adventure(
-      id: json['id'],
-      name: json['name'],
-      description: json['description'] ?? '',
-      imageUrl: json['image_url'] ?? '',
-    );
-  }
-}
+import 'hotels_page.dart';
 
 class AdventuresPage extends StatefulWidget {
   final int provinceId;
   final String provinceName;
 
-  const AdventuresPage({Key? key, required this.provinceId, required this.provinceName}) : super(key: key);
+  const AdventuresPage(
+      {Key? key, required this.provinceId, required this.provinceName})
+      : super(key: key);
 
   @override
-  _AdventuresPageState createState() => _AdventuresPageState();
+  State<AdventuresPage> createState() => _AdventuresPageState();
 }
 
 class _AdventuresPageState extends State<AdventuresPage> {
-  late Future<List<Adventure>> _adventuresFuture;
+  List<Map<String, dynamic>> adventures = [];
+  bool isLoading = true;
+  String? errorMessage;
+
+
+final String baseUrl = 'http://127.0.0.1:8000/api'; 
 
   @override
   void initState() {
     super.initState();
-    _adventuresFuture = fetchAdventures();
+    fetchAdventures();
   }
 
-    Future<List<Adventure>> fetchAdventures() async {
-        final response = await http.get(Uri.parse('http://localhost:8000/api/provinces/${widget.provinceId}/adventures-fake'));
-
-        if (response.statusCode == 200) {
-            final List<dynamic> jsonList = json.decode(response.body)['data'];
-            return jsonList.map((json) => Adventure.fromJson(json)).toList();
-        } else {
-            throw Exception('Failed to load adventures');
-        }
+  Future<void> fetchAdventures() async {
+    try {
+      final response = await http.get(Uri.parse(
+          '$baseUrl/provinces/${widget.provinceId}/adventures'));
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        setState(() {
+          adventures = data
+              .map((item) => {
+                    'id': item['id'],
+                    'name': item['name'],
+                    'description': item['description'],
+                    'created_at': item['created_at'],
+                  })
+              .toList();
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          errorMessage =
+              'Failed to load adventures (Status: ${response.statusCode})';
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Error fetching adventures: $e';
+        isLoading = false;
+      });
     }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.provinceName} Adventures'),
-        backgroundColor: Colors.deepPurple,
-        foregroundColor: Colors.white,
-        centerTitle: true,
+        title: Text('Adventures in ${widget.provinceName}'),
       ),
-      body: FutureBuilder<List<Adventure>>(
-        future: _adventuresFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Failed to load adventures: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No adventures available.'));
-          } else {
-            final adventures = snapshot.data!;
-            return ListView.builder(
-              itemCount: adventures.length,
-              itemBuilder: (context, index) {
-                final adventure = adventures[index];
-                return ListTile(
-                  leading: adventure.imageUrl.isNotEmpty
-                      ? Image.network(
-                          adventure.imageUrl,
-                          width: 60,
-                          height: 60,
-                          fit: BoxFit.cover,
-                        )
-                      : Container(
-                          width: 60,
-                          height: 60,
-                          color: Colors.grey[300],
-                          child: const Icon(Icons.image_not_supported),
-                        ),
-                  title: Text(adventure.name),
-                  subtitle: Text(adventure.description),
-                  trailing: const Icon(Icons.arrow_forward),
-                  onTap: () {
-                    // Navigate to hotels by adventure page
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => HotelsByAdventurePage(
-                          adventureId: adventure.id.toString(),
-                          adventureName: adventure.name,
-                        ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : errorMessage != null
+              ? Center(child: Text(errorMessage!))
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16.0),
+                  itemCount: adventures.length,
+                  itemBuilder: (context, index) {
+                    final adventure = adventures[index];
+                    return Card(
+                      margin: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: ListTile(
+                        title: Text(adventure['name']),
+                        subtitle: Text(adventure['description'] ?? ''),
+                        trailing: Text('Added: ${adventure['created_at']}'),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  HotelsPage(adventureId: adventure['id']),
+                            ),
+                          );
+                        },
                       ),
                     );
                   },
-                );
-              },
-            );
-          }
-        },
-      ),
+                ),
     );
   }
 }

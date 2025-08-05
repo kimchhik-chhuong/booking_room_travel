@@ -24,8 +24,8 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             ProvinceSeeder::class,
-            HotelSeeder::class,
             AdventureSeeder::class,
+            HotelSeeder::class,
         ]);
     }
 }

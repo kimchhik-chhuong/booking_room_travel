@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../adventures/adventures_page.dart';
 
@@ -10,142 +13,63 @@ class TripsPage extends StatefulWidget {
 }
 
 class _TripsPageState extends State<TripsPage> {
-  List<Map<String, dynamic>> provinces = [
-    {
-      'name': 'Phnom Penh',
-      'page': AdventuresPage(provinceId: 1, provinceName: 'Phnom Penh'),
-      'image': 'lib/assets/images/phnompenh.jpg'
-    },
-    {
-      'name': 'Siem Reap',
-      'page': AdventuresPage(provinceId: 2, provinceName: 'Siem Reap'),
-      'image': 'lib/assets/images/siemreap.jpg'
-    },
-    {
-      'name': 'Banteay Meanchey',
-      'page': AdventuresPage(provinceId: 3, provinceName: 'Banteay Meanchey'),
-      'image': 'lib/assets/images/bantaymeanchey.jpg'
-    },
-    {
-      'name': 'Battambang',
-      'page': AdventuresPage(provinceId: 4, provinceName: 'Battambang'),
-      'image': 'lib/assets/images/batambong.jpg'
-    },
-    {
-      'name': 'Kampong Cham',
-      'page': AdventuresPage(provinceId: 5, provinceName: 'Kampong Cham'),
-      'image': 'lib/assets/images/kampongcham.jpg'
-    },
-    {
-      'name': 'Kampong Chhnang',
-      'page': AdventuresPage(provinceId: 6, provinceName: 'Kampong Chhnang'),
-      'image': 'lib/assets/images/kampongchhnang.jpg'
-    },
-    {
-      'name': 'Kampong Speu',
-      'page': AdventuresPage(provinceId: 7, provinceName: 'Kampong Speu'),
-      'image': 'lib/assets/images/kampongspeu.jpg'
-    },
-    {
-      'name': 'Kampong Thom',
-      'page': AdventuresPage(provinceId: 8, provinceName: 'Kampong Thom'),
-      'image': 'lib/assets/images/kampongthom.jpg'
-    },
-    {
-      'name': 'Kampot',
-      'page': AdventuresPage(provinceId: 9, provinceName: 'Kampot'),
-      'image': 'lib/assets/images/kampot.jpg'
-    },
-    {
-      'name': 'Kandal',
-      'page': AdventuresPage(provinceId: 10, provinceName: 'Kandal'),
-      'image': 'lib/assets/images/kandal.jpg'
-    },
-    {
-      'name': 'Kep',
-      'page': AdventuresPage(provinceId: 11, provinceName: 'Kep'),
-      'image': 'lib/assets/images/kep.jpg'
-    },
-    {
-      'name': 'Koh Kong',
-      'page': AdventuresPage(provinceId: 12, provinceName: 'Koh Kong'),
-      'image': 'lib/assets/images/kohkong.jpg'
-    },
-    {
-      'name': 'Mondulkiri',
-      'page': AdventuresPage(provinceId: 13, provinceName: 'Mondulkiri'),
-      'image': 'lib/assets/images/mondulkiri.jpg'
-    },
-    {
-      'name': 'Oddar Meanchey',
-      'page': AdventuresPage(provinceId: 14, provinceName: 'Oddar Meanchey'),
-      'image': 'lib/assets/images/oddarmeanchey.jpg'
-    },
-    {
-      'name': 'Pailin',
-      'page': AdventuresPage(provinceId: 15, provinceName: 'Pailin'),
-      'image': 'lib/assets/images/pailin.jpg'
-    },
-    {
-      'name': 'Preah Vihear',
-      'page': AdventuresPage(provinceId: 16, provinceName: 'Preah Vihear'),
-      'image': 'lib/assets/images/preahvihear.jpg'
-    },
-    {
-      'name': 'Prey Veng',
-      'page': AdventuresPage(provinceId: 17, provinceName: 'Prey Veng'),
-      'image': 'lib/assets/images/preyveng.jpg'
-    },
-    {
-      'name': 'Pursat',
-      'page': AdventuresPage(provinceId: 18, provinceName: 'Pursat'),
-      'image': 'lib/assets/images/pursat.jpg'
-    },
-    {
-      'name': 'Ratanakiri',
-      'page': AdventuresPage(provinceId: 19, provinceName: 'Ratanakiri'),
-      'image': 'lib/assets/images/ratanakiri.jpg'
-    },
-    {
-      'name': 'Sihanoukville',
-      'page': AdventuresPage(provinceId: 20, provinceName: 'Sihanoukville'),
-      'image': 'lib/assets/images/sihanoukville.jpg'
-    },
-    {
-      'name': 'Stung Treng',
-      'page': AdventuresPage(provinceId: 21, provinceName: 'Stung Treng'),
-      'image': 'lib/assets/images/stungtreng.jpg'
-    },
-    {
-      'name': 'Svay Rieng',
-      'page': AdventuresPage(provinceId: 22, provinceName: 'Svay Rieng'),
-      'image': 'lib/assets/images/svayrieng.jpg'
-    },
-    {
-      'name': 'Takeo',
-      'page': AdventuresPage(provinceId: 23, provinceName: 'Takeo'),
-      'image': 'lib/assets/images/takeo.jpg'
-    },
-    {
-      'name': 'Tboung Khmum',
-      'page': AdventuresPage(provinceId: 24, provinceName: 'Tboung Khmum'),
-      'image': 'lib/assets/images/tboungkhmum.jpg'
-    },
-  ];
-
+  List<Map<String, dynamic>> provinces = [];
   List<Map<String, dynamic>> filteredProvinces = [];
+  bool isLoading = true;
+  String? errorMessage;
 
   @override
   void initState() {
     super.initState();
-    filteredProvinces = provinces; // Initialize with all provinces
+    fetchProvinces();
+  }
+
+  Future<void> fetchProvinces() async {
+    try {
+      final response =
+          await http.get(Uri.parse('http://localhost:8000/api/provinces'));
+      if (response.statusCode == 200) {
+        if (response.headers['content-type']?.contains('application/json') ??
+            false) {
+          final List<dynamic> data = jsonDecode(response.body);
+          setState(() {
+            provinces = data.map((item) {
+              final assetName =
+                  item['name'].toLowerCase().replaceAll(' ', '') + '.jpg';
+              final assetPath = 'lib/assets/images/$assetName';
+              return {
+                'id': item['id'],
+                'name': item['name'],
+                'image': assetPath,
+                'page': AdventuresPage(
+                    provinceId: item['id'], provinceName: item['name']),
+              };
+            }).toList();
+            filteredProvinces = provinces;
+            isLoading = false;
+          });
+        } else {
+          throw Exception('Response is not JSON');
+        }
+      } else {
+        setState(() {
+          errorMessage =
+              'Failed to load provinces (Status: ${response.statusCode})';
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Error fetching data: $e';
+        isLoading = false;
+      });
+    }
   }
 
   void filterProvinces(String query) {
-    final List<Map<String, dynamic>> results = provinces.where((province) {
+    final results = provinces.where((province) {
       return province['name'].toLowerCase().contains(query.toLowerCase());
     }).toList();
-
     setState(() {
       filteredProvinces = results;
     });
@@ -154,131 +78,156 @@ class _TripsPageState extends State<TripsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Cambodia Provinces')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Search Provinces',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              onChanged: filterProvinces,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Enter province name',
-                suffixIcon: const Icon(Icons.search),
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Popular Destinations',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            SizedBox(
-              height: 100,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: provinces.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (_) =>
-                                  provinces[index]['page'] as Widget),
-                        );
-                      },
-                      child: Column(
-                        children: [
-                          CircleAvatar(
-                            backgroundColor: Colors.purple,
-                            radius: 30,
-                            child: ClipOval(
-                              child: Image.asset(
-                                provinces[index]['image'] as String,
-                                width: 60,
-                                height: 60,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            (provinces[index]['name'] as String)
-                                .split(' ')
-                                .first,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'All Provinces of Cambodia',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            Expanded(
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  childAspectRatio: 1,
-                ),
-                itemCount: filteredProvinces.length,
-                itemBuilder: (context, index) {
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) =>
-                                filteredProvinces[index]['page'] as Widget),
-                      );
-                    },
-                    child: Column(
-                      children: [
-                        CircleAvatar(
-                          backgroundColor: Colors.purple,
-                          radius: 30,
-                          child: ClipOval(
-                            child: Image.asset(
-                              filteredProvinces[index]['image'] as String,
-                              width: 60,
-                              height: 60,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          (filteredProvinces[index]['name'] as String)
-                              .split(' ')
-                              .first,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
+      appBar: AppBar(
+        title: const Text('Provinces'),
+        // Ensure no Positioned inside AppBar's children
       ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : errorMessage != null
+              ? Center(child: Text(errorMessage!))
+              : Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Search Provinces',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 10),
+                      TextField(
+                        onChanged: filterProvinces,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          hintText: 'Enter province name',
+                          suffixIcon: Icon(Icons.search),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Popular Destinations',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        height: 100,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: provinces.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8.0),
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          provinces[index]['page'] as Widget,
+                                    ),
+                                  );
+                                },
+                                child: Column(
+                                  children: [
+                                    CircleAvatar(
+                                      backgroundColor: Colors.purple,
+                                      radius: 30,
+                                      child: ClipOval(
+                                        child: CachedNetworkImage(
+                                          imageUrl: provinces[index]['image'],
+                                          width: 60,
+                                          height: 60,
+                                          fit: BoxFit.cover,
+                                          placeholder: (context, url) =>
+                                              const CircularProgressIndicator(),
+                                          errorWidget: (context, url, error) =>
+                                              const Icon(Icons.error),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      (provinces[index]['name'] as String)
+                                          .split(' ')
+                                          .first,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'All Provinces',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 10),
+                      Expanded(
+                        child: GridView.builder(
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3,
+                            crossAxisSpacing: 10,
+                            mainAxisSpacing: 10,
+                            childAspectRatio: 1,
+                          ),
+                          itemCount: filteredProvinces.length,
+                          itemBuilder: (context, index) {
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => filteredProvinces[index]
+                                        ['page'] as Widget,
+                                  ),
+                                );
+                              },
+                              child: Column(
+                                children: [
+                                  CircleAvatar(
+                                    backgroundColor: Colors.purple,
+                                    radius: 30,
+                                    child: ClipOval(
+                                      child: CachedNetworkImage(
+                                        imageUrl: filteredProvinces[index]
+                                            ['image'],
+                                        width: 60,
+                                        height: 60,
+                                        fit: BoxFit.cover,
+                                        placeholder: (context, url) =>
+                                            const CircularProgressIndicator(),
+                                        errorWidget: (context, url, error) =>
+                                            const Icon(Icons.error),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    (filteredProvinces[index]['name'] as String)
+                                        .split(' ')
+                                        .first,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
     );
   }
 }

@@ -7,37 +7,11 @@ use App\Models\Province;
 
 class ProvinceSeeder extends Seeder
 {
-    public function run()
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
     {
-        $provinces = [
-            'Banteaymeanchey',
-            'Battambang',
-            'Kampongcham',
-            'Kampongchhnang',
-            'Kampongspeu',
-            'Kampongthom',
-            'Kandal',
-            'Kep',
-            'Kohkong',
-            'Kompot',
-            'Mondulkiri',
-            'Oddarmeanchey',
-            'Pailin',
-            'Phnompenh',
-            'Preahvihear',
-            'Preyveng',
-            'Pursat',
-            'Ratanakiri',
-            'Siemreap',
-            'Sihanoukville',
-            'Stugteang',
-            'Svayrieng',
-            'Takeo',
-            'Tboungkhmum',
-        ];
-
-        foreach ($provinces as $province) {
-            Province::create(['name' => $province]);
-        }
+        Province::factory()->count(10)->create();
     }
 }

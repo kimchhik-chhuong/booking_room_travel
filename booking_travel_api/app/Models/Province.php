@@ -3,14 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Province extends Model
 {
-    public function hotels()
-    {
-        return $this->hasMany(Hotel::class);
-    }
-
+    use HasFactory;
     public function adventures()
     {
         return $this->hasMany(Adventure::class);

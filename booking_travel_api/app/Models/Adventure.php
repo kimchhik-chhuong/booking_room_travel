@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Adventure extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'name',
         'description',
@@ -19,6 +21,6 @@ class Adventure extends Model
 
     public function hotels()
     {
-        return $this->belongsToMany(Hotel::class, 'adventure_hotel');
+        return $this->hasMany(Hotel::class);
     }
 }
