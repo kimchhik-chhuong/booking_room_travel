@@ -8,8 +8,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:typed_data';
 import 'dart:html' as html;
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 void main() {
   runApp(MaterialApp(
@@ -262,7 +260,7 @@ class _BookingScreenState extends State<BookingScreen> {
     _hotelNameController = TextEditingController(text: widget.hotelName);
     _bedsController = TextEditingController();
     _peopleController = TextEditingController();
-    _selectedDate = null;
+    _selectedDate = null; // Initialize with null, will be set via date picker
   }
 
   @override
@@ -296,6 +294,7 @@ class _BookingScreenState extends State<BookingScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header Image
             ClipRRect(
               borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
               child: Image.asset(
@@ -398,6 +397,7 @@ class _BookingScreenState extends State<BookingScreen> {
                     ],
                   ),
                   const SizedBox(height: 20),
+                  // New Booking Form Section
                   _buildBookingForm(context),
                   const SizedBox(height: 20),
                   Center(
@@ -576,63 +576,6 @@ class _BookingScreenState extends State<BookingScreen> {
 }
 
 class PaymentScreen extends StatelessWidget {
-  Future<void> _submitBooking(Map<String, String> args, BuildContext context) async {
-    const String apiUrl = 'https://your-laravel-api.com/api/bookings'; // Replace with your API URL
-    try {
-      final userResponse = await http.get(
-        Uri.parse('https://your-laravel-api.com/api/user'), // Replace with your user endpoint
-        headers: {'Authorization': 'Bearer your-token-here'}, // Add authentication token
-      );
-      if (userResponse.statusCode == 200) {
-        final userData = jsonDecode(userResponse.body);
-        final customerName = userData['name'] ?? 'Unknown User';
-        final customerEmail = userData['email'] ?? 'unknown@example.com';
-
-        final response = await http.post(
-          Uri.parse(apiUrl),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
-            'hotel_name': args['hotelName'] ?? 'Unknown Hotel',
-            'price': args['price']?.replaceAll(RegExp(r'[^\d.]'), '') ?? '0',
-            'destination': args['destination'] ?? 'Unknown',
-            'date': args['date'] ?? DateTime.now().toIso8601String().split('T')[0],
-            'beds': args['beds'] ?? '1',
-            'people': args['people'] ?? '1',
-            'customer_name': customerName,
-            'customer_email': customerEmail,
-          }),
-        );
-
-        if (response.statusCode == 201) {
-          print('Booking submitted successfully: ${response.body}');
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ReceiptScreen(
-                hotelName: args['hotelName']!,
-                nights: (int.tryParse(args['beds'] ?? '1') ?? 1).toString(),
-                guests: args['people']!,
-                total: args['price']!,
-              ),
-            ),
-          );
-        } else {
-          print('Failed to submit booking: ${response.body}');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: ${response.statusCode} - ${response.body}')),
-          );
-        }
-      } else {
-        throw Exception('Failed to fetch user data: ${userResponse.statusCode}');
-      }
-    } catch (e) {
-      print('Error: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error submitting booking: $e')),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as Map<String, String>;
@@ -659,7 +602,19 @@ class PaymentScreen extends StatelessWidget {
             _buildPaymentOption(Icons.account_balance_wallet, 'Wallet'),
             Spacer(),
             ElevatedButton(
-              onPressed: () => _submitBooking(args, context),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ReceiptScreen(
+                      hotelName: args['hotelName']!,
+                      nights: (int.tryParse(args['beds'] ?? '1') ?? 1).toString(), // Assuming nights = beds
+                      guests: args['people']!,
+                      total: args['price']!,
+                    ),
+                  ),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
                 minimumSize: Size(double.infinity, 50),
@@ -686,7 +641,7 @@ class PaymentScreen extends StatelessWidget {
       child: Column(
         children: [
           _buildRow('Hotel:', args['hotelName'] ?? 'Unknown'),
-          _buildRow('Nights:', (int.tryParse(args['beds'] ?? '1') ?? 1).toString()),
+          _buildRow('Nights:', (int.tryParse(args['beds'] ?? '1') ?? 1).toString()), // Assuming nights = beds
           _buildRow('Guests:', args['people'] ?? 'Unknown'),
           _buildRow('Total:', args['price'] ?? '\$0'),
           _buildRow('Destination:', args['destination'] ?? 'Unknown'),
