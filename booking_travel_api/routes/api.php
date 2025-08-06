@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookingHistoryController as ControllersBookingHistoryController;
+use App\Http\Controllers\DealController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 
@@ -45,6 +46,14 @@ Route::get('/travelers/{id}', [TravelerController::class, 'show']);
 Route::post('/travelers', [TravelerController::class, 'store']);
 Route::put('/travelers/{id}', [TravelerController::class, 'update']);
 Route::delete('/travelers/{id}', [TravelerController::class, 'destroy']);
+
+//deal
+Route::get('/deals', [DealController::class, 'index'])->name('deals.index');
+Route::post('/deals', [DealController::class, 'store'])->name('deals.store');
+Route::get('/deals/create', [DealController::class, 'create'])->name('deals.create');
+Route::get('/deals/{id}', [DealController::class, 'show'])->name('deals.show');
+Route::put('/deals/{id}', [DealController::class, 'update'])->name('deals.update');
+Route::delete('/deals/{id}', [DealController::class, 'destroy'])->name('deals.destroy');
 
 //
 Route::middleware(['auth'])->group(function () {

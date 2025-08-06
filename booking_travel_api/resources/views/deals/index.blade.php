@@ -70,75 +70,10 @@
         </div>
 
         <!-- Featured Deals -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-            @php
-            $featuredDeals = [
-                [
-                    'title' => 'Khmer New Year Celebration',
-                    'discount' => '50% OFF',
-                    'description' => 'Celebrate Choul Chnam Thmey with 50% off on all tours in Siem Reap and Phnom Penh',
-                    'code' => 'KHMER2025',
-                    'valid_until' => '2025-04-16',
-                    'used' => 120,
-                    'limit' => 400,
-                    'status' => 'Scheduled',
-                    'color' => 'from-orange-400 to-pink-500'
-                ],
-                [
-                    'title' => 'Pchum Ben Pilgrimage',
-                    'discount' => '$200 OFF',
-                    'description' => 'Honor ancestors with discounted temple tours during Pchum Ben',
-                    'code' => 'PCHUM2025',
-                    'valid_until' => '2025-10-03',
-                    'used' => 45,
-                    'limit' => 250,
-                    'status' => 'Scheduled',
-                    'color' => 'from-blue-400 to-purple-500'
-                ],
-                [
-                    'title' => 'Independence Day Getaway',
-                    'discount' => '30% OFF',
-                    'description' => 'Commemorate Khmer National Day with 30% off Phnom Penh packages',
-                    'code' => 'INDEPENDENCE25',
-                    'valid_until' => '2025-11-09',
-                    'used' => 30,
-                    'limit' => 200,
-                    'status' => 'Scheduled',
-                    'color' => 'from-emerald-400 to-blue-500'
-                ]
-            ];
-            @endphp
-
-            @foreach($featuredDeals as $deal)
-            <div class="bg-gradient-to-br {{ $deal['color'] }} rounded-2xl p-8 text-white card-modern">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-2xl font-bold">{{ $deal['title'] }}</h3>
-                    <span class="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-semibold">
-                        {{ $deal['status'] }}
-                    </span>
-                </div>
-                
-                <div class="mb-6">
-                    <p class="text-4xl font-bold mb-3">{{ $deal['discount'] }}</p>
-                    <p class="text-white/90">{{ $deal['description'] }}</p>
-                </div>
-
-                <div class="bg-white/20 backdrop-blur-sm rounded-2xl p-4 mb-6">
-                    <p class="text-sm font-semibold mb-1">Promo Code</p>
-                    <p class="text-xl font-bold tracking-wider">{{ $deal['code'] }}</p>
-                </div>
-
-                <div class="flex items-center justify-between text-sm mb-4">
-                    <span>Valid until {{ date('M d, Y', strtotime($deal['valid_until'])) }}</span>
-                    <span>{{ $deal['used'] }}/{{ $deal['limit'] }} used</span>
-                </div>
-
-                <div class="bg-white/20 backdrop-blur-sm rounded-full h-3">
-                    <div class="bg-white rounded-full h-3" style="width: {{ ($deal['used'] / $deal['limit']) * 100 }}%"></div>
-                </div>
-            </div>
-            @endforeach
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12" id="featuredDeals">
+            <!-- Populated by JavaScript -->
         </div>
+
 
         <!-- Deals Table -->
         <div class="card-modern overflow-hidden">
@@ -150,90 +85,99 @@
                     </div>
                     <div class="flex items-center space-x-4">
                         <div class="relative">
-                            <input type="text" placeholder="Search deals..." class="input-modern pl-10 w-64">
+                            <input type="text" id="searchDeals" placeholder="Search deals..." class="input-modern pl-10 w-64">
                             <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-dark-400"></i>
                         </div>
-                        <select class="input-modern">
-                            <option>All Status</option>
-                            <option>Active</option>
-                            <option>Expired</option>
-                            <option>Scheduled</option>
+                        <select id="filterStatus" class="input-modern">
+                            <option value="">All Status</option>
+                            <option value="Active">Active</option>
+                            <option value="Expired">Expired</option>
+                            <option value="Scheduled">Scheduled</option>
                         </select>
-                        <button class="btn-modern">
+                        <button id="createDealBtn" class="btn-modern">
                             <i class="fas fa-plus mr-2"></i> Create Deal
                         </button>
                     </div>
                 </div>
-            </div>
 
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-slate-50">
-                        <tr>
-                            <th class="px-8 py-4 text-left text-sm font-semibold text-dark-600 uppercase tracking-wider">
-                                Deal Name
-                            </th>
-                            <th class="px-8 py-4 text-left text-sm font-semibold text-dark-600 uppercase tracking-wider">
-                                Discount
-                            </th>
-                            <th class="px-8 py-4 text-left text-sm font-semibold text-dark-600 uppercase tracking-wider">
-                                Code
-                            </th>
-                            <th class="px-8 py-4 text-left text-sm font-semibold text-dark-600 uppercase tracking-wider">
-                                Usage
-                            </th>
-                            <th class="px-8 py-4 text-left text-sm font-semibold text-dark-600 uppercase tracking-wider">
-                                Valid Until
-                            </th>
-                            <th class="px-8 py-4 text-left text-sm font-semibold text-dark-600 uppercase tracking-wider">
-                                Status
-                            </th>
-                            <th class="px-8 py-4 text-left text-sm font-semibold text-dark-600 uppercase tracking-wider">
-                                Actions
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-slate-200">
-                        @php
-                        $allDeals = [
-                            ['name' => 'Khmer New Year Celebration', 'discount' => '50% Off', 'code' => 'KHMER2025', 'used' => 120, 'limit' => 400, 'valid_until' => '2025-04-16', 'status' => 'Scheduled'],
-                            ['name' => 'Pchum Ben Pilgrimage', 'discount' => '$200 Off', 'code' => 'PCHUM2025', 'used' => 45, 'limit' => 250, 'valid_until' => '2025-10-03', 'status' => 'Scheduled'],
-                            ['name' => 'Independence Day Getaway', 'discount' => '30% Off', 'code' => 'INDEPENDENCE25', 'used' => 30, 'limit' => 200, 'valid_until' => '2025-11-09', 'status' => 'Scheduled'],
-                            ['name' => 'Summer Escape Sale', 'discount' => '25% Off', 'code' => 'SUMMER25', 'used' => 234, 'limit' => 500, 'valid_until' => '2024-08-31', 'status' => 'Active'],
-                            ['name' => 'Early Bird Special', 'discount' => '$300 Off', 'code' => 'EARLY300', 'used' => 89, 'limit' => 200, 'valid_until' => '2024-12-31', 'status' => 'Active'],
-                            ['name' => 'Group Adventure', 'discount' => '15% Off', 'code' => 'GROUP15', 'used' => 156, 'limit' => 300, 'valid_until' => '2024-09-30', 'status' => 'Active'],
-                            ['name' => 'Last Minute Deal', 'discount' => '20% Off', 'code' => 'LASTMIN20', 'used' => 67, 'limit' => 150, 'valid_until' => '2024-07-15', 'status' => 'Expired'],
-                            ['name' => 'Holiday Special', 'discount' => '$500 Off', 'code' => 'HOLIDAY500', 'used' => 0, 'limit' => 100, 'valid_until' => '2024-12-25', 'status' => 'Scheduled'],
-                            ['name' => 'Student Discount', 'discount' => '10% Off', 'code' => 'STUDENT10', 'used' => 345, 'limit' => 1000, 'valid_until' => '2024-12-31', 'status' => 'Active'],
-                        ];
-                        @endphp
-                        
-                        @foreach($allDeals as $deal)
-                        <tr class="table-row transition-all duration-200 hover:bg-slate-50">
-                            <td class="px-8 py-6">
-                                <p class="font-semibold text-dark-800">{{ $deal['name'] }}</p>
-                            </td>
-                            <td class="px-8 py-6">
-                                <span class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-sm font-semibold">{{ $deal['discount'] }}</span>
-                            </td>
-                            <td class="px-8 py-6">
-                                <code class="bg-slate-100 text-dark-800 px-3 py-1 rounded-lg text-sm font-mono">{{ $deal['code'] }}</code>
-                            </td>
+                <div class="overflow-x-auto">
+                    <table class="w-full" id="dealsTable">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th class="px-8 py-4 text-left text-sm font-semibold text-dark-600 uppercase tracking-wider">
+                                    Deal Name
+                                </th>
+                                <th class="px-8 py-4 text-left text-sm font-semibold text-dark-600 uppercase tracking-wider">
+                                    Discount
+                                </th>
+                                <th class="px-8 py-4 text-left text-sm font-semibold text-dark-600 uppercase tracking-wider">
+                                    Code
+                                </th>
+                                <th class="px-8 py-4 text-left text-sm font-semibold text-dark-600 uppercase tracking-wider">
+                                    Usage
+                                </th>
+                                <th class="px-8 py-4 text-left text-sm font-semibold text-dark-600 uppercase tracking-wider">
+                                    Valid Until
+                                </th>
+                                <th class="px-8 py-4 text-left text-sm font-semibold text-dark-600 uppercase tracking-wider">
+                                    Status
+                                </th>
+                                <th class="px-8 py-4 text-left text-sm font-semibold text-dark-600 uppercase tracking-wider">
+                                    Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-slate-200" id="dealsTableBody">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="px-8 py-6 flex items-center justify-between border-t border-slate-200" id="pagination">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Dynamic Form Container -->
+        <div id="createDealFormContainer" class="hidden mt-8"></div>
+    </div>
+</div>
+
+
+@push('scripts')
+<script>
+    // Fetch and display deals
+    function fetchDeals() {
+        const search = document.getElementById('searchDeals').value;
+        const status = document.getElementById('filterStatus').value;
+        fetch(`/api/deals?search=${search}&status=${status}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const deals = data.data;
+                    const tableBody = document.getElementById('dealsTableBody');
+                    tableBody.innerHTML = '';
+                    deals.forEach(deal => {
+                        const row = document.createElement('tr');
+                        row.className = 'table-row transition-all duration-200 hover:bg-slate-50';
+                        row.innerHTML = `
+                            <td class="px-8 py-6"><p class="font-semibold text-dark-800">${deal.title}</p></td>
+                            <td class="px-8 py-6"><span class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-sm font-semibold">${deal.discount}</span></td>
+                            <td class="px-8 py-6"><code class="bg-slate-100 text-dark-800 px-3 py-1 rounded-lg text-sm font-mono">${deal.code}</code></td>
                             <td class="px-8 py-6">
                                 <div class="flex items-center space-x-3">
-                                    <span class="text-sm font-medium text-dark-800">{{ $deal['used'] }}/{{ $deal['limit'] }}</span>
+                                    <span class="text-sm font-medium text-dark-800">${deal.used}/${deal.limit}</span>
                                     <div class="w-20 bg-slate-200 rounded-full h-2">
-                                        <div class="bg-primary-600 h-2 rounded-full" style="width: {{ ($deal['used'] / $deal['limit']) * 100 }}%"></div>
+                                        <div class="bg-primary-600 h-2 rounded-full" style="width: ${(deal.used / deal.limit) * 100}%"></div>
                                     </div>
                                 </div>
                             </td>
+                            <td class="px-8 py-6"><p class="text-dark-700">${new Date(deal.valid_until).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p></td>
                             <td class="px-8 py-6">
-                                <p class="text-dark-700">{{ date('M d, Y', strtotime($deal['valid_until'])) }}</p>
-                            </td>
-                            <td class="px-8 py-6">
-                                <span class="badge-modern {{ $deal['status'] === 'Active' ? 'bg-emerald-100 text-emerald-800' : 
-                                    ($deal['status'] === 'Scheduled' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800') }}">
-                                    {{ $deal['status'] }}
+                                <span class="badge-modern ${deal.status === 'Active' ? 'bg-emerald-100 text-emerald-800' : deal.status === 'Scheduled' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}">
+                                    ${deal.status}
                                 </span>
                             </td>
                             <td class="px-8 py-6">
@@ -249,37 +193,124 @@
                                     </button>
                                 </div>
                             </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Pagination -->
-            <div class="px-8 py-6 flex items-center justify-between border-t border-slate-200">
-                <div class="flex items-center space-x-2 text-dark-600">
-                    <span>Showing</span>
-                    <select class="input-modern text-sm px-2 py-1">
-                        <option>9</option>
-                        <option>12</option>
-                        <option>24</option>
-                    </select>
-                    <span>of 27 deals</span>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <button class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-dark-600">
-                        <i class="fas fa-chevron-left mr-2"></i> Previous
-                    </button>
-                    <button class="px-4 py-2 bg-primary-600 text-white rounded-lg">1</button>
-                    <button class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-dark-600">2</button>
-                    <button class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-dark-600">3</button>
-                    <button class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-dark-600">4</button>
-                    <button class="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors text-dark-600">
-                        Next <i class="fas fa-chevron-right ml-2"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                }
+            })
+            .catch(error => console.error('Error fetching deals:', error));
+    }
+
+
+    // Fetch featured deals (e.g., scheduled ones)
+    function fetchFeaturedDeals() {
+        fetch('/api/deals?status=Scheduled')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const deals = data.data;
+                    const container = document.getElementById('featuredDeals');
+                    container.innerHTML = '';
+                    deals.forEach(deal => {
+                        const div = document.createElement('div');
+                        div.className = `bg-gradient-to-br ${deal.color} rounded-2xl p-8 text-white card-modern`;
+                        div.innerHTML = `
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-2xl font-bold">${deal.title}</h3>
+                                <span class="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-semibold">${deal.status}</span>
+                            </div>
+                            <div class="mb-6">
+                                <p class="text-4xl font-bold mb-3">${deal.discount}</p>
+                                <p class="text-white/90">${deal.description}</p>
+                            </div>
+                            <div class="bg-white/20 backdrop-blur-sm rounded-2xl p-4 mb-6">
+                                <p class="text-sm font-semibold mb-1">Promo Code</p>
+                                <p class="text-xl font-bold tracking-wider">${deal.code}</p>
+                            </div>
+                            <div class="flex items-center justify-between text-sm mb-4">
+                                <span>Valid until ${new Date(deal.valid_until).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                <span>${deal.used}/${deal.limit} used</span>
+                            </div>
+                            <div class="bg-white/20 backdrop-blur-sm rounded-full h-3">
+                                <div class="bg-white rounded-full h-3" style="width: ${(deal.used / deal.limit) * 100}%"></div>
+                            </div>
+                        `;
+                        container.appendChild(div);
+                    });
+                }
+            })
+            .catch(error => console.error('Error fetching featured deals:', error));
+    }
+
+
+    // Fetch and display create form
+    document.getElementById('createDealBtn').addEventListener('click', function() {
+        fetch('/api/deals/create')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const container = document.getElementById('createDealFormContainer');
+                    container.innerHTML = `
+                        <div class="bg-white rounded-2xl p-8 card-modern">
+                            <form id="createDealForm">
+                                ${Object.entries(data.form).map(([key, field]) => `
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-dark-600 mb-2" for="${key}">${field.label}</label>
+                                        ${field.type === 'textarea' ? `<textarea id="${key}" name="${key}" class="input-modern w-full" rows="4" placeholder="${field.placeholder}" ${field.required ? 'required' : ''}></textarea>` : 
+                                        field.type === 'select' ? `
+                                            <select id="${key}" name="${key}" class="input-modern w-full" ${field.required ? 'required' : ''}>
+                                                ${field.options.map(option => `<option value="${option}">${option.replace('from-', '').replace('to-', ' to ')}</option>`).join('')}
+                                            </select>` : 
+                                        `<input type="${field.type}" id="${key}" name="${key}" class="input-modern w-full" placeholder="${field.placeholder}" ${field.required ? 'required' : ''}>`}
+                                    </div>
+                                `).join('')}
+                                <div class="flex justify-end space-x-4">
+                                    <a href="{{ url('/deals') }}" class="btn-modern bg-slate-200 text-dark-600">Cancel</a>
+                                    <button type="submit" class="btn-modern bg-primary-600 text-white">Create Deal</button>
+                                </div>
+                            </form>
+                        </div>
+                    `;
+                    container.classList.remove('hidden');
+
+                    // Handle form submission
+                    document.getElementById('createDealForm').addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        const formData = new FormData(this);
+                        fetch('/api/deals', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert(data.message);
+                                container.classList.add('hidden');
+                                fetchDeals();
+                                fetchFeaturedDeals();
+                            } else {
+                                alert('Error: ' + (data.message || 'Failed to create deal'));
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('An error occurred. Please try again.');
+                        });
+                    });
+                }
+            })
+            .catch(error => console.error('Error fetching create form:', error));
+    });
+
+    // Initial load
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchDeals();
+        fetchFeaturedDeals();
+    });
+
+    // Search and filter
+    document.getElementById('searchDeals').addEventListener('input', fetchDeals);
+    document.getElementById('filterStatus').addEventListener('change', fetchDeals);
+</script>
+@endpush
 @endsection
