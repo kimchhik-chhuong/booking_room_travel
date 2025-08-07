@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\User;
 use App\Models\Package;
 use App\Models\Message;
+use App\Models\Traveler;
 use App\Models\Trip;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -40,9 +41,9 @@ class DashboardController extends Controller
             ->latest()
             ->take(5)
             ->get();
-            
+               
         // Get upcoming trips
-        $upcomingTrips = Trip::with(['destination', 'participants'])
+        $upcomingTrips = Traveler::with(['destination', 'participants'])
             ->where('start_date', '>', Carbon::now())
             ->orderBy('start_date')
             ->take(4)
