@@ -41,7 +41,7 @@ class DashboardController extends Controller
             ->latest()
             ->take(5)
             ->get();
-            
+               
         // Get upcoming trips
         $upcomingTrips = Traveler::with(['destination', 'participants'])
             ->where('start_date', '>', Carbon::now())
