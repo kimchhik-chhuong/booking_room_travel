@@ -1,9 +1,19 @@
-import 'package:flutter/material.dart';
 import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'dart:io' show Platform;
 
-class HistoryScreenState extends State<HistoryScreen> {
+class HistoryScreen extends StatefulWidget {
+  const HistoryScreen({Key? key}) : super(key: key);
+
+  @override
+  _HistoryScreenState createState() => _HistoryScreenState();
+}
+
+class _HistoryScreenState extends State<HistoryScreen> {
   List<dynamic> bookings = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -12,98 +22,51 @@ class HistoryScreenState extends State<HistoryScreen> {
   }
 
   Future<void> fetchBookings() async {
-    final response = await http.get(
-      Uri.parse(
-          'http://http://127.0.0.1:8000/api/booking-history'), // Adjust port if needed
-      headers: {'Authorization': 'Bearer YOUR_SANCTUM_TOKEN'},
-    );
+    final String baseUrl = dotenv.env['API_URL'] ?? 'http://localhost:8000/api';
+    final String apiUrl = Platform.isAndroid
+        ? baseUrl.replaceFirst('localhost', '10.0.2.2')
+        : baseUrl;
+    final uri = Uri.parse('$apiUrl/booking-history');
 
-    if (response.statusCode == 200) {
+    try {
+      final response = await http.get(uri);
+      if (response.statusCode == 200) {
+        setState(() {
+          bookings = List<dynamic>.from(jsonDecode(response.body));
+          _isLoading = false;
+        });
+      } else {
+        print('Failed to load booking history: ${response.statusCode}');
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error fetching booking history: $e');
       setState(() {
-        bookings = jsonDecode(response.body)['data'];
+        _isLoading = false;
       });
-    } else {
-      print('Failed to load bookings: ${response.body}');
     }
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: const Text('Travel History'),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Travel Already',
-              style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
+      appBar: AppBar(title: const Text('Booking History')),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : bookings.isEmpty
+          ? const Center(child: Text('No booking history found.'))
+          : ListView.builder(
+              itemCount: bookings.length,
+              itemBuilder: (context, index) {
+                final booking = bookings[index];
+                return ListTile(
+                  title: Text('Booking #${booking['id']}'),
+                  subtitle: Text('Date: ${booking['date']}'),
+                );
+              },
             ),
-            SizedBox(height: 16.0),
-            Expanded(
-              child: bookings.isEmpty
-                  ? Center(child: CircularProgressIndicator())
-                  : ListView.builder(
-                      itemCount: bookings.length,
-                      itemBuilder: (context, index) {
-                        final booking = bookings[index];
-                        final userName =
-                            booking['user']?['name'] ?? 'Unknown User';
-                        return Card(
-                          margin: EdgeInsets.symmetric(vertical: 8.0),
-                          elevation: 4.0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                          color: Color.fromARGB(255, 100, 100, 100),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Booking Ref: ${booking['booking_reference']}',
-                                  style: TextStyle(
-                                    fontSize: 20.0,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                Text(
-                                  'User: $userName',
-                                  style: TextStyle(color: Colors.white70),
-                                ),
-                                Text(
-                                  'Date: ${booking['booking_date']} - ${booking['travel_date']}',
-                                  style: TextStyle(color: Colors.white70),
-                                ),
-                                Text(
-                                  'Participants: ${booking['participants']}',
-                                  style: TextStyle(color: Colors.white70),
-                                ),
-                                Text(
-                                  'Total: ${booking['total_amount']} ${booking['currency']}',
-                                  style: TextStyle(
-                                    fontSize: 18.0,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.blue,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
-      ),
     );
   }
-}
-
-class HistoryScreen extends StatefulWidget {
-  @override
-  HistoryScreenState createState() => HistoryScreenState();
 }

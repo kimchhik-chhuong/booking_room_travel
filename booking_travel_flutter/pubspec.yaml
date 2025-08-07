@@ -17,6 +17,7 @@ dependencies:
   url_launcher: ^6.3.2
   path_provider: ^2.1.5
   permission_handler: ^12.0.1
+  flutter_dotenv: ^5.2.1
 
 dev_dependencies:
   flutter_test:
@@ -26,35 +27,35 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - lib/assets/f1.png
-    - lib/assets/f2.png
-    - lib/assets/f3.png
-    - lib/assets/room1.png
-    - lib/assets/room2.jpg
+    - assets/f1.png
+    - assets/f2.png
+    - assets/f3.png
+    - assets/room1.png
+    - assets/room2.jpg
 # province
-    - lib/assets/images/phnompenh.jpg
-    - lib/assets/images/bantaymeanchey.jpg
-    - lib/assets/images/batambong.jpg
-    - lib/assets/images/bantaymeanchey.jpg
-    - lib/assets/images/kaldal.jpg
-    - lib/assets/images/kampongchhnang.jpg
-    - lib/assets/images/kampongspue.jpg
-    - lib/assets/images/kampot.jpg
-    - lib/assets/images/kep.jpg
-    - lib/assets/images/siemreap.jpg
-    - lib/assets/images/kohkong.jpg
-    - lib/assets/images/kompong-thom.jpg
-    - lib/assets/images/kompongcham.jpg
-    - lib/assets/images/krojes.jpg
-    - lib/assets/images/oddar-Meanchey.jpg
-    - lib/assets/images/pailin.jpg
-    - lib/assets/images/preakvihea.jpg
-    - lib/assets/images/Preyveng.jpg
-    - lib/assets/images/pursat.jpg
-    - lib/assets/images/svayrieng.jpg
-    - lib/assets/images/syhanus.jpg
-    - lib/assets/images/takeo.jpg
-    - lib/assets/images/mundoulkiri.jpg
-    - lib/assets/images/ratanakiri.jpg
-    - lib/assets/images/steangtreang.jpg
+    - assets/images/phnompenh.jpg
+    - assets/images/bantaymeanchey.jpg
+    - assets/images/batambong.jpg
+    - assets/images/bantaymeanchey.jpg
+    - assets/images/kaldal.jpg
+    - assets/images/kampongchhnang.jpg
+    - assets/images/kampongspue.jpg
+    - assets/images/kampot.jpg
+    - assets/images/kep.jpg
+    - assets/images/siemreap.jpg
+    - assets/images/kohkong.jpg
+    - assets/images/kompong-thom.jpg
+    - assets/images/kompongcham.jpg
+    - assets/images/krojes.jpg
+    - assets/images/oddar-Meanchey.jpg
+    - assets/images/pailin.jpg
+    - assets/images/preakvihea.jpg
+    - assets/images/Preyveng.jpg
+    - assets/images/pursat.jpg
+    - assets/images/svayrieng.jpg
+    - assets/images/syhanus.jpg
+    - assets/images/takeo.jpg
+    - assets/images/mundoulkiri.jpg
+    - assets/images/ratanakiri.jpg
+    - assets/images/steangtreang.jpg
     # - lib/assets/images/tboungkhmum.jpg
