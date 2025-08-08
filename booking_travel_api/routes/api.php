@@ -83,16 +83,12 @@ Route::get('/deals/{id}', [DealController::class, 'show'])->name('deals.show');
 Route::put('/deals/{id}', [DealController::class, 'update'])->name('deals.update');
 Route::delete('/deals/{id}', [DealController::class, 'destroy'])->name('deals.destroy');
 
-<<<<<<< HEAD
-// Protected routes
-=======
 //message
 Route::get('/messages', [MessageController::class, 'index']);
 Route::get('/messages/{id}', [MessageController::class, 'show']);
 Route::post('/api/messages/send', [MessageController::class, 'store']);
 
 //
->>>>>>> 35ba67013ebc874f164aca9b3dd45891e852de59
 Route::middleware(['auth'])->group(function () {
     Route::resource('users', UserController::class);
     Route::resource('roles', RoleController::class);
