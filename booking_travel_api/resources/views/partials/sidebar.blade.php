@@ -74,14 +74,4 @@
             </a>
         </div>
     </nav>
-
-    <!-- Upgrade Section -->
-    <div class="absolute bottom-6 left-4 right-4">
-        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white text-center shadow-lg card-hover">
-            <h4 class="font-semibold mb-2">Enhance Your Travelie Experience!</h4>
-            <button class="bg-white text-blue-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors shadow-sm">
-                Upgrade Now
-            </button>
-        </div>
-    </div>
 </div>
