@@ -16,8 +16,15 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         User::factory()->create([
-            'username' => 'Test User',
+            'name' => 'Test User',
             'email' => 'test@example.com',
+        ]);
+
+        // Call the seeders for provinces, hotel metadata, and adventures
+        $this->call([
+            ProvinceSeeder::class,
+            HotelMetadataSeeder::class,
+            AdventureSeeder::class,
         ]);
     }
 }

@@ -15,7 +15,6 @@ void main() {
     theme: ThemeData(primarySwatch: Colors.blue),
     routes: {
       '/payment': (context) => PaymentScreen(),
-      // '/receipt': (context) => ReceiptScreen(),
     },
   ));
 }
@@ -258,9 +257,9 @@ class _BookingScreenState extends State<BookingScreen> {
     super.initState();
     _destinationController = TextEditingController();
     _hotelNameController = TextEditingController(text: widget.hotelName);
-    _bedsController = TextEditingController();
-    _peopleController = TextEditingController();
-    _selectedDate = null; // Initialize with null, will be set via date picker
+    _bedsController = TextEditingController(text: '1');
+    _peopleController = TextEditingController(text: '1');
+    _selectedDate = null;
   }
 
   @override
@@ -294,7 +293,6 @@ class _BookingScreenState extends State<BookingScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header Image
             ClipRRect(
               borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
               child: Image.asset(
@@ -397,7 +395,6 @@ class _BookingScreenState extends State<BookingScreen> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  // New Booking Form Section
                   _buildBookingForm(context),
                   const SizedBox(height: 20),
                   Center(
@@ -409,12 +406,18 @@ class _BookingScreenState extends State<BookingScreen> {
                           arguments: {
                             'hotelName': _hotelNameController.text,
                             'price': widget.price,
-                            'destination': _destinationController.text,
+                            'destination': _destinationController.text.isNotEmpty
+                                ? _destinationController.text
+                                : 'Unknown',
                             'date': _selectedDate != null
                                 ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'
-                                : '',
-                            'beds': _bedsController.text,
-                            'people': _peopleController.text,
+                                : 'Not selected',
+                            'beds': _bedsController.text.isNotEmpty
+                                ? _bedsController.text
+                                : '1',
+                            'people': _peopleController.text.isNotEmpty
+                                ? _peopleController.text
+                                : '1',
                           },
                         );
                       },
@@ -542,6 +545,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 Expanded(
                   child: TextField(
                     controller: _bedsController,
+                    keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -556,6 +560,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 Expanded(
                   child: TextField(
                     controller: _peopleController,
+                    keyboardType: TextInputType.number,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -578,7 +583,14 @@ class _BookingScreenState extends State<BookingScreen> {
 class PaymentScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)!.settings.arguments as Map<String, String>;
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ?? {
+      'hotelName': 'Unknown Hotel',
+      'price': '\$0',
+      'destination': 'Unknown',
+      'date': 'Not selected',
+      'beds': '1',
+      'people': '1',
+    };
 
     return Scaffold(
       appBar: AppBar(
@@ -607,10 +619,10 @@ class PaymentScreen extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) => ReceiptScreen(
-                      hotelName: args['hotelName']!,
-                      nights: (int.tryParse(args['beds'] ?? '1') ?? 1).toString(), // Assuming nights = beds
-                      guests: args['people']!,
-                      total: args['price']!,
+                      hotelName: args['hotelName'] ?? 'Unknown Hotel',
+                      nights: args['beds'] ?? '1',
+                      guests: args['people'] ?? '1',
+                      total: args['price'] ?? '\$0',
                     ),
                   ),
                 );
@@ -630,7 +642,7 @@ class PaymentScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBookingDetails(Map<String, String> args) {
+  Widget _buildBookingDetails(Map<String, dynamic> args) {
     return Container(
       padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -641,8 +653,8 @@ class PaymentScreen extends StatelessWidget {
       child: Column(
         children: [
           _buildRow('Hotel:', args['hotelName'] ?? 'Unknown'),
-          _buildRow('Nights:', (int.tryParse(args['beds'] ?? '1') ?? 1).toString()), // Assuming nights = beds
-          _buildRow('Guests:', args['people'] ?? 'Unknown'),
+          _buildRow('Nights:', args['beds'] ?? '1'),
+          _buildRow('Guests:', args['people'] ?? '1'),
           _buildRow('Total:', args['price'] ?? '\$0'),
           _buildRow('Destination:', args['destination'] ?? 'Unknown'),
           _buildRow('Date:', args['date'] ?? 'Not selected'),
@@ -678,6 +690,7 @@ class ReceiptScreen extends StatelessWidget {
   final String total;
 
   ReceiptScreen({
+    super.key,
     required this.hotelName,
     required this.nights,
     required this.guests,
