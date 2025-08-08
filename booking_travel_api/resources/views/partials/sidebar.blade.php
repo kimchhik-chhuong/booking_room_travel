@@ -74,4 +74,14 @@
             </a>
         </div>
     </nav>
+
+    <!-- logout -->
+    <div class="absolute bottom-6 left-4 right-4">
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit" class="w-full bg-red-500 text-white py-2 rounded-lg text-sm hover:bg-red-600 transition-colors flex items-center justify-center">
+                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+            </button>
+        </form>
+    </div>
 </div>
