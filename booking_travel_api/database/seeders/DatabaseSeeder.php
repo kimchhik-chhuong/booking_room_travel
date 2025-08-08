@@ -20,11 +20,11 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
 
-        // Call the seeders for provinces, hotel metadata, and adventures
-        $this->call([
-            ProvinceSeeder::class,
-            HotelMetadataSeeder::class,
-            AdventureSeeder::class,
-        ]);
+        // Removed calls to missing seeders to fix seeding error
+        // $this->call([
+        //     ProvinceSeeder::class,
+        //     HotelMetadataSeeder::class,
+        //     AdventureSeeder::class,
+        // ]);
     }
 }
