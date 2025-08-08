@@ -7,8 +7,9 @@ class UserService {
   static const String _currentUserKey = 'current_user';
   static const String _accessTokenKey = 'access_token';
 
-  static final String baseUrl =
-      dotenv.env['API_URL'] ?? 'http://localhost:8000/api';
+  // Base URL for your Laravel API
+  // Replace with your actual IP if testing on device/emulator
+  static String baseUrl = 'http://192.168.108.176:8000/api';
 
   /// Register
   static Future<bool> registerUser({

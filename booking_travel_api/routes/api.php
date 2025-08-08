@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookingHistoryController as ControllersBookingHistoryController;
 use App\Http\Controllers\DealController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 
@@ -54,6 +55,11 @@ Route::get('/deals/create', [DealController::class, 'create'])->name('deals.crea
 Route::get('/deals/{id}', [DealController::class, 'show'])->name('deals.show');
 Route::put('/deals/{id}', [DealController::class, 'update'])->name('deals.update');
 Route::delete('/deals/{id}', [DealController::class, 'destroy'])->name('deals.destroy');
+
+//message
+Route::get('/messages', [MessageController::class, 'index']);
+Route::get('/messages/{id}', [MessageController::class, 'show']);
+Route::post('/api/messages/send', [MessageController::class, 'store']);
 
 //
 Route::middleware(['auth'])->group(function () {
