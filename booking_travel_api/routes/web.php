@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\DealController;
+use App\Http\Controllers\PackageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -48,10 +49,7 @@ Route::middleware('auth')->group(function () {
 
     // Packages Routes
     Route::prefix('packages')->name('packages.')->group(function () {
-        Route::get('/', function () {
-            return view('packages.index');
-        })->name('index');
-        // Additional package routes can go here
+    Route::get('/', [PackageController::class, 'index'])->name('index');
     });
 
     // Bookings Routes

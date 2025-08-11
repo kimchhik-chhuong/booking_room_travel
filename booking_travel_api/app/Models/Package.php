@@ -2,47 +2,19 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Package extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'title',
-        'description',
-        'destination_id',
+        'location',
+        'duration',
         'price',
-        'duration_days',
-        'duration_nights',
-        'image',
+        'rating',
+        'bookings',
         'status',
-        'featured'
+        'image',
+        'category'
     ];
-
-    protected $casts = [
-        'price' => 'decimal:2',
-        'featured' => 'boolean'
-    ];
-
-    public function destination()
-    {
-        return $this->belongsTo(Destination::class);
-    }
-
-    public function bookings()
-    {
-        return $this->hasMany(Booking::class);
-    }
-
-    public function getDurationAttribute()
-    {
-        return "{$this->duration_days} Days";
-    }
-
-    public function getNightsAttribute()
-    {
-        return "{$this->duration_nights} nights";
-    }
 }
