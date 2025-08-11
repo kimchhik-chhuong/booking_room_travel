@@ -13,12 +13,17 @@ class ProvinceController extends Controller
      */
     public function index()
     {
-        $provinces = Province::all();
+        $provinces = Province::all()->map(function ($province) {
+            $province->image_url = $province->image ? asset('storage/' . $province->image) : null;
+            return $province;
+        });
+
         return response()->json([
             'status' => 'success',
             'data' => $provinces
         ], 200);
     }
+
 
     /**
      * Store a newly created province.
@@ -120,6 +125,15 @@ class ProvinceController extends Controller
     public function getAdventures(Province $province)
     {
         $adventures = $province->adventures()->get();
+
+        // Generate full URLs for images
+        $appUrl = config('app.url');
+        $adventures->each(function ($adventure) use ($appUrl) {
+            if ($adventure->image) {
+                $relativeUrl = \Illuminate\Support\Facades\Storage::url($adventure->image);
+                $adventure->image_url = $appUrl . $relativeUrl;
+            }
+        });
 
         return response()->json([
             'status' => 'success',

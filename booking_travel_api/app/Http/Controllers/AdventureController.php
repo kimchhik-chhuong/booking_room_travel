@@ -17,9 +17,13 @@ class AdventureController extends Controller
         $adventures = Adventure::with('province')->get();
 
         // Generate full URLs for images
-        $adventures->each(function ($adventure) {
-            if ($adventure->image) {
-                $adventure->image_url = Storage::url($adventure->image);
+        $appUrl = config('app.url');
+        $adventures->each(function ($adventure) use ($appUrl) {
+            if ($adventure->image && Storage::disk('public')->exists($adventure->image)) {
+                $adventure->image_url = $appUrl . Storage::url($adventure->image);
+            } else {
+                // Provide a default image URL if no image is set or file doesn't exist
+                $adventure->image_url = $appUrl . '/storage/adventures/default-adventure.jpg';
             }
         });
 
@@ -141,9 +145,13 @@ class AdventureController extends Controller
         $adventures = $province->adventures()->with('province')->get();
 
         // Generate full URLs for images
-        $adventures->each(function ($adventure) {
-            if ($adventure->image) {
-                $adventure->image_url = Storage::url($adventure->image);
+        $appUrl = config('app.url');
+        $adventures->each(function ($adventure) use ($appUrl) {
+            if ($adventure->image && Storage::disk('public')->exists($adventure->image)) {
+                $adventure->image_url = $appUrl . Storage::url($adventure->image);
+            } else {
+                // Provide a default image URL if no image is set or file doesn't exist
+                $adventure->image_url = $appUrl . '/storage/adventures/default-adventure.jpg';
             }
         });
 
