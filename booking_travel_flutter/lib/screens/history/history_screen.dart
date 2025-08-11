@@ -1,159 +1,230 @@
-import 'dart:io';
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
 
-class HistoryScreen extends StatefulWidget {
-  const HistoryScreen({super.key});
-
-  @override
-  State<HistoryScreen> createState() => _HistoryScreenState();
-}
-
-class _HistoryScreenState extends State<HistoryScreen> {
-  List<Booking> _bookings = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    fetchBookings();
-  }
-
-  Future<String?> _getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('token'); // Make sure the token key matches your login storage
-  }
-
-  Future<void> fetchBookings() async {
-    final String baseUrl = Platform.isAndroid ? 'http://10.0.2.2:8000' : 'http://127.0.0.1:8000';
-    final uri = Uri.parse('$baseUrl/api/booking-history');
-
-    final token = await _getToken();
-
-    if (token == null || token.isEmpty) {
-      setState(() {
-        _isLoading = false;
-      });
-      print('Token not found');
-      return;
-    }
-
-    try {
-      final response = await http.get(
-        uri,
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Accept': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = jsonDecode(response.body);
-        final List<dynamic> bookingList = responseData['data'] ?? [];
-
-        setState(() {
-          _bookings = bookingList.map((json) => Booking.fromJson(json)).toList();
-          _isLoading = false;
-        });
-      } else {
-        print('Error: ${response.statusCode}');
-        print('Body: ${response.body}');
-        setState(() => _isLoading = false);
-      }
-    } catch (e) {
-      print('Fetch error: $e');
-      setState(() => _isLoading = false);
-    }
-  }
+class HistoryScreen extends StatelessWidget {
+  // Sample booking history data
+  final List<Map<String, dynamic>> bookingHistory = [
+    {
+      'hotelName': 'Taj Hotel',
+      'date': DateTime.now().subtract(Duration(days: 2)),
+      'total': '\$200',
+      'status': 'Completed',
+      'imageUrl': 'assets/room1.jpg',
+    },
+    {
+      'hotelName': 'AR Hotel',
+      'date': DateTime.now().subtract(Duration(days: 5)),
+      'total': '\$180',
+      'status': 'Completed',
+      'imageUrl': 'assets/room2.jpg',
+    },
+    {
+      'hotelName': 'Al Rahman Hotel',
+      'date': DateTime.now().subtract(Duration(days: 10)),
+      'total': '\$220',
+      'status': 'Cancelled',
+      'imageUrl': 'assets/room3.jpg',
+    },
+    {
+      'hotelName': 'Upcoming Hotel',
+      'date': DateTime.now().add(Duration(days: 3)),
+      'total': '\$250',
+      'status': 'Upcoming',
+      'imageUrl': 'assets/room4.jpg',
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Travel History'),
-        backgroundColor: Colors.blueAccent,
+        title: Text('Booking History'),
+        centerTitle: true,
+        backgroundColor: Colors.blue,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Your Booking History',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
+      body: Column(
+        children: [
+          // Status Filter Chips
+          Container(
+            height: 60,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              children: [
+                FilterChip(
+                  label: Text('All'),
+                  selected: true,
+                  onSelected: (bool value) {},
+                ),
+                SizedBox(width: 8),
+                FilterChip(
+                  label: Text('Completed'),
+                  selected: false,
+                  onSelected: (bool value) {},
+                ),
+                SizedBox(width: 8),
+                FilterChip(
+                  label: Text('Upcoming'),
+                  selected: false,
+                  onSelected: (bool value) {},
+                ),
+                SizedBox(width: 8),
+                FilterChip(
+                  label: Text('Cancelled'),
+                  selected: false,
+                  onSelected: (bool value) {},
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: fetchBookings,
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _bookings.isEmpty
-                        ? const Center(child: Text('No travel history found.'))
-                        : ListView.builder(
-                            itemCount: _bookings.length,
-                            itemBuilder: (context, index) {
-                              final booking = _bookings[index];
-                              return BookingCard(booking: booking);
-                            },
-                          ),
-              ),
+          ),
+          Divider(height: 1),
+          Expanded(
+            child: ListView.builder(
+              padding: EdgeInsets.all(16),
+              itemCount: bookingHistory.length,
+              itemBuilder: (context, index) {
+                final booking = bookingHistory[index];
+                return _buildHistoryCard(booking, context);
+              },
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 3, // History tab selected
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.payment), label: 'Payment'),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        ],
       ),
     );
   }
-}
 
-class BookingCard extends StatelessWidget {
-  final Booking booking;
+  Widget _buildHistoryCard(Map<String, dynamic> booking, BuildContext context) {
+    final dateFormat = DateFormat('MMM dd, yyyy');
+    final timeFormat = DateFormat('hh:mm a');
 
-  const BookingCard({super.key, required this.booking});
-
-  @override
-  Widget build(BuildContext context) {
     return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      margin: const EdgeInsets.symmetric(vertical: 8),
+      margin: EdgeInsets.only(bottom: 16),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      elevation: 2,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(12),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              booking.hotelName,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.blueAccent,
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Hotel Image
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.asset(
+                    booking['imageUrl'],
+                    width: 80,
+                    height: 80,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: 80,
+                        height: 80,
+                        color: Colors.grey[200],
+                        child: Icon(Icons.broken_image),
+                      );
+                    },
+                  ),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Hotel Name
+                      Text(
+                        booking['hotelName'],
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      
+                      // Booking Date and Time
+                      Text(
+                        '${dateFormat.format(booking['date'])} at ${timeFormat.format(booking['date'])}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      
+                      // Price and Status
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            booking['total'],
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue,
+                            ),
+                          ),
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: _getStatusColor(booking['status'], isBackground: true),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              booking['status'],
+                              style: TextStyle(
+                                color: _getStatusColor(booking['status']),
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            _buildInfoRow(Icons.location_on, booking.location),
-            _buildInfoRow(Icons.calendar_month, '${booking.startDate} → ${booking.endDate}'),
-            _buildInfoRow(Icons.confirmation_number, 'Booking ID: ${booking.bookingId}'),
-            const Divider(),
+            SizedBox(height: 12),
+            
+            // Action Buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Total Price:',
-                  style: TextStyle(fontSize: 16),
+                // View Receipt Button
+                OutlinedButton(
+                  onPressed: () => _showReceiptDialog(context, booking),
+                  style: OutlinedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text('View Receipt'),
                 ),
-                Text(
-                  '\$${booking.totalPrice.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blueAccent,
+                
+                // Status Button
+                ElevatedButton(
+                  onPressed: () => _handleStatusButtonPress(context, booking),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _getButtonColor(booking['status']),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    _getButtonText(booking['status']),
+                    style: TextStyle(color: Colors.white),
                   ),
                 ),
               ],
@@ -164,45 +235,164 @@ class BookingCard extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: Colors.grey),
-          const SizedBox(width: 8),
-          Expanded(child: Text(text, style: const TextStyle(fontSize: 14))),
+  // Helper methods for cleaner code
+  Color _getStatusColor(String status, {bool isBackground = false}) {
+    switch (status) {
+      case 'Completed':
+        return isBackground ? Colors.green[50]! : Colors.green;
+      case 'Cancelled':
+        return isBackground ? Colors.red[50]! : Colors.red;
+      case 'Upcoming':
+        return isBackground ? Colors.orange[50]! : Colors.orange;
+      default:
+        return isBackground ? Colors.grey[200]! : Colors.grey;
+    }
+  }
+
+  Color _getButtonColor(String status) {
+    switch (status) {
+      case 'Completed':
+        return Colors.blue;
+      case 'Cancelled':
+        return Colors.grey;
+      case 'Upcoming':
+        return Colors.orange;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  String _getButtonText(String status) {
+    switch (status) {
+      case 'Completed':
+        return 'Paid';
+      case 'Cancelled':
+        return 'Cancelled';
+      case 'Upcoming':
+        return 'Upcoming';
+      default:
+        return status;
+    }
+  }
+
+  void _handleStatusButtonPress(BuildContext context, Map<String, dynamic> booking) {
+    switch (booking['status']) {
+      case 'Completed':
+        _showPaymentAlert(context, booking);
+        break;
+      case 'Cancelled':
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('This booking was cancelled'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        break;
+      case 'Upcoming':
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('This booking is upcoming'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        break;
+      default:
+        break;
+    }
+  }
+
+  void _showPaymentAlert(BuildContext context, Map<String, dynamic> booking) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Payment Confirmed'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Your payment for ${booking['hotelName']} has been completed.'),
+            SizedBox(height: 8),
+            Text('Amount: ${booking['total']}'),
+            SizedBox(height: 8),
+            Text('Date: ${DateFormat('MMM dd, yyyy').format(booking['date'])}'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('OK'),
+          ),
         ],
       ),
     );
   }
-}
 
-class Booking {
-  final String hotelName;
-  final String location;
-  final String startDate;
-  final String endDate;
-  final String bookingId;
-  final double totalPrice;
+  void _showReceiptDialog(BuildContext context, Map<String, dynamic> booking) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.check_circle, color: Colors.green, size: 60),
+              SizedBox(height: 16),
+              Text(
+                'Payment Receipt',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 16),
+              _buildReceiptItem('Hotel', booking['hotelName']),
+              _buildReceiptItem('Date', DateFormat('MMM dd, yyyy').format(booking['date'])),
+              _buildReceiptItem('Time', DateFormat('hh:mm a').format(booking['date'])),
+              _buildReceiptItem('Status', booking['status']),
+              _buildReceiptItem('Amount', booking['total']),
+              SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('Close'),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
-  Booking({
-    required this.hotelName,
-    required this.location,
-    required this.startDate,
-    required this.endDate,
-    required this.bookingId,
-    required this.totalPrice,
-  });
-
-  factory Booking.fromJson(Map<String, dynamic> json) {
-    return Booking(
-      hotelName: json['hotel_name'] ?? 'Unknown Hotel',
-      location: json['location'] ?? 'Unknown Location',
-      startDate: json['start_date'] ?? '',
-      endDate: json['end_date'] ?? '',
-      bookingId: json['booking_id'] ?? '',
-      totalPrice: (json['total_price'] ?? 0).toDouble(),
+  Widget _buildReceiptItem(String label, String value) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[600],
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 16,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

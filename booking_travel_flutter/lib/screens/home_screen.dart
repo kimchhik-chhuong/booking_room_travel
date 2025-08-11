@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'page/trips_page.dart';
-import 'page/hotels_page.dart' hide TripScreen;
+import 'page/hotels_page.dart' hide TripScreen, HotelsPage;
 import 'page/flights_page.dart';
 import 'page/offers_page.dart';
 import 'payment_screen.dart';
@@ -68,13 +68,13 @@ class HomePageContent extends StatelessWidget {
           context,
           hotelName: 'Grand Hyatt Resort',
           price: '\$1300/night',
-          imageUrl: 'assets/room2.jpg',
+          imageUrl: '../lib/assets/room2.jpg',
         ),
         _buildHotelCard(
           context,
           hotelName: 'Luxury Haven Inn',
           price: '\$150/night',
-          imageUrl: 'assets/room1.png',
+          imageUrl: '../lib/assets/room1.png',
         ),
         const SizedBox(height: 20),
       ],

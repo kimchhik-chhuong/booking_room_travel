@@ -176,15 +176,15 @@
                 </div>
                 <div class="flex items-center space-x-4">
                     <div class="relative">
-                        <input type="text" placeholder="Search packages..." class="input-modern pl-10 w-64">
+                        <input type="text" id="searchPackages" placeholder="Search packages..." class="input-modern pl-10 w-64">
                         <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-dark-400"></i>
                     </div>
-                    <select class="input-modern">
-                        <option>All Categories</option>
-                        <option>Beach</option>
-                        <option>Adventure</option>
-                        <option>Cultural</option>
-                        <option>Luxury</option>
+                    <select id="categoryFilter" class="input-modern">
+                        <option value="All">All Categories</option>
+                        <option value="Beach">Beach</option>
+                        <option value="Adventure">Adventure</option>
+                        <option value="Cultural">Cultural</option>
+                        <option value="Luxury">Luxury</option>
                     </select>
                     <button class="btn-modern">
                         <i class="fas fa-plus mr-2"></i> Add Package
@@ -192,20 +192,24 @@
                 </div>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="packagesContainer">
                 @php
                 $packages = [
-                    ['title' => 'Tokyo Cultural Adventure', 'location' => 'Tokyo, Japan', 'duration' => '7 Days', 'price' => '$2,450', 'rating' => '4.9', 'bookings' => 156, 'status' => 'Active', 'image' => 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GP7z1nSgCIj2SDO3HWgyYcov2Fgfii.png'],
-                    ['title' => 'Bali Beach Paradise', 'location' => 'Bali, Indonesia', 'duration' => '5 Days', 'price' => '$1,890', 'rating' => '4.8', 'bookings' => 203, 'status' => 'Active', 'image' => 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GP7z1nSgCIj2SDO3HWgyYcov2Fgfii.png'],
-                    ['title' => 'European Grand Tour', 'location' => 'Europe', 'duration' => '14 Days', 'price' => '$4,200', 'rating' => '4.7', 'bookings' => 89, 'status' => 'Active', 'image' => 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GP7z1nSgCIj2SDO3HWgyYcov2Fgfii.png'],
-                    ['title' => 'Safari Adventure', 'location' => 'Kenya', 'duration' => '8 Days', 'price' => '$3,650', 'rating' => '4.9', 'bookings' => 134, 'status' => 'Active', 'image' => 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GP7z1nSgCIj2SDO3HWgyYcov2Fgfii.png'],
-                    ['title' => 'New York City Break', 'location' => 'New York, USA', 'duration' => '4 Days', 'price' => '$1,299', 'rating' => '4.6', 'bookings' => 78, 'status' => 'Draft', 'image' => 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GP7z1nSgCIj2SDO3HWgyYcov2Fgfii.png'],
-                    ['title' => 'Swiss Alps Retreat', 'location' => 'Switzerland', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GP7z1nSgCIj2SDO3HWgyYcov2Fgfii.png']
+                    ['title' => 'Phnom Penh', 'location' => 'Phnom Penh, Cambodia', 'duration' => '7 Days', 'price' => '$250', 'rating' => '4.9', 'bookings' => 156, 'status' => 'Active', 'image' => 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GP7z1nSgCIj2SDO3HWgyYcov2Fgfii.png', 'category' => 'Cultural'],
+                    ['title' => 'Battambang', 'location' => 'Bali, Indonesia', 'duration' => '5 Days', 'price' => '$1,890', 'rating' => '4.8', 'bookings' => 203, 'status' => 'Active', 'image' => 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GP7z1nSgCIj2SDO3HWgyYcov2Fgfii.png', 'category' => 'Beach'],
+                    ['title' => 'Kompot', 'location' => 'Europe', 'duration' => '14 Days', 'price' => '$4,200', 'rating' => '4.7', 'bookings' => 89, 'status' => 'Active', 'image' => 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GP7z1nSgCIj2SDO3HWgyYcov2Fgfii.png', 'category' => 'Cultural'],
+                    ['title' => 'Kep', 'location' => 'Kenya', 'duration' => '8 Days', 'price' => '$3,650', 'rating' => '4.9', 'bookings' => 134, 'status' => 'Active', 'image' => 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GP7z1nSgCIj2SDO3HWgyYcov2Fgfii.png', 'category' => 'Adventure'],
+                    ['title' => 'New York City Break', 'location' => 'New York, USA', 'duration' => '4 Days', 'price' => '$1,299', 'rating' => '4.6', 'bookings' => 78, 'status' => 'Draft', 'image' => 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GP7z1nSgCIj2SDO3HWgyYcov2Fgfii.png', 'category' => 'Cultural'],
+                    ['title' => 'Swiss Alps Retreat', 'location' => 'Switzerland', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GP7z1nSgCIj2SDO3HWgyYcov2Fgfii.png', 'category' => 'Luxury']
                 ];
                 @endphp
                 
                 @foreach($packages as $package)
-                <div class="group cursor-pointer">
+                <div class="package-card group cursor-pointer" 
+                     data-title="{{ strtolower($package['title']) }}" 
+                     data-location="{{ strtolower($package['location']) }}" 
+                     data-category="{{ $package['category'] }}"
+                     data-status="{{ $package['status'] }}">
                     <div class="relative overflow-hidden rounded-2xl mb-6">
                         <img src="{{ $package['image'] }}" alt="{{ $package['title'] }}" class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
@@ -269,4 +273,76 @@
     <!-- Right Sidebar -->
     @include('partials.right-sidebar')
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Search functionality
+    const searchInput = document.getElementById('searchPackages');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const packageCards = document.querySelectorAll('.package-card');
+    
+    function filterPackages() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const category = categoryFilter.value;
+        
+        packageCards.forEach(card => {
+            const title = card.getAttribute('data-title');
+            const location = card.getAttribute('data-location');
+            const cardCategory = card.getAttribute('data-category');
+            const cardStatus = card.getAttribute('data-status');
+            
+            const matchesSearch = title.includes(searchTerm) || location.includes(searchTerm);
+            const matchesCategory = category === 'All' || cardCategory === category;
+            
+            if (matchesSearch && matchesCategory) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+    
+    // Event listeners for search and filter
+    searchInput.addEventListener('input', filterPackages);
+    categoryFilter.addEventListener('change', filterPackages);
+    
+    // Action buttons functionality
+    document.querySelectorAll('.package-card .fa-eye').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const packageTitle = this.closest('.package-card').querySelector('h4').textContent;
+            alert(`Viewing details for ${packageTitle}`);
+        });
+    });
+    
+    document.querySelectorAll('.package-card .fa-edit').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const packageTitle = this.closest('.package-card').querySelector('h4').textContent;
+            alert(`Editing package ${packageTitle}`);
+        });
+    });
+    
+    document.querySelectorAll('.package-card .fa-trash').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const packageTitle = this.closest('.package-card').querySelector('h4').textContent;
+            if (confirm(`Are you sure you want to delete ${packageTitle}?`)) {
+                alert(`Package ${packageTitle} deleted`);
+                this.closest('.package-card').remove();
+            }
+        });
+    });
+    
+    // Click on card to view details
+    document.querySelectorAll('.package-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const packageTitle = this.querySelector('h4').textContent;
+            alert(`Viewing details for ${packageTitle}`);
+        });
+    });
+});
+</script>
+@endpush
 @endsection

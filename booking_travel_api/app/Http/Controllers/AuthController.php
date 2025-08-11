@@ -56,14 +56,16 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        if (!Auth::attempt($credentials)) {
+        $user = User::where('email', $credentials['email'])->first();
+
+        if (!$user || !Hash::check($credentials['password'], $user->password)) {
             return $request->wantsJson()
                 ? response()->json(['message' => 'Invalid credentials'], 401)
                 : back()->withErrors(['email' => 'Invalid credentials'])->withInput();
         }
 
-        /** @var User $user */
-        $user = Auth::user();
+        // Manually log in the user
+        Auth::login($user);
 
         // Allow all roles to login for API requests
         if ($request->wantsJson()) {

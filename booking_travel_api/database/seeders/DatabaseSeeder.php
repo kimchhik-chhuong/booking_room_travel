@@ -16,8 +16,15 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         User::factory()->create([
-            'username' => 'Test User',
+            'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        // Removed calls to missing seeders to fix seeding error
+        // $this->call([
+        //     ProvinceSeeder::class,
+        //     HotelMetadataSeeder::class,
+        //     AdventureSeeder::class,
+        // ]);
     }
 }
