@@ -13,19 +13,7 @@ class Province extends Model
      */
     protected $fillable = [
         'name',
-        'description',
         'image',
-        'image_url',
-    ];
-
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array
-     */
-    protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
     /**
@@ -34,16 +22,5 @@ class Province extends Model
     public function adventures()
     {
         return $this->hasMany(Adventure::class);
-    }
-
-    /**
-     * Get the full image URL.
-     */
-    public function getImageUrlAttribute()
-    {
-        if ($this->image) {
-            return asset('storage/' . $this->image);
-        }
-        return null;
     }
 }

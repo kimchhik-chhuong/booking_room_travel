@@ -11,17 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-Schema::create('hotel_metadata', function (Blueprint $table) {
-    $table->id('hotel_id');
-    $table->string('name');
-    $table->text('address')->nullable();
-    $table->float('star_rating')->nullable();
-    $table->text('description')->nullable();
-    $table->string('image_url')->nullable();
-    $table->string('contact_phone')->nullable();
-    $table->string('website_url')->nullable();
-    $table->timestamps();
-});
+        Schema::create('hotel_metadata', function (Blueprint $table) {
+            $table->id('hotel_id');
+            $table->string('name');
+            $table->text('address')->nullable();
+            $table->float('star_rating')->nullable();
+            $table->text('description')->nullable();
+            $table->string('image_url')->nullable();
+            $table->string('contact_phone')->nullable();
+            $table->string('website_url')->nullable();
+            $table->string('map')->nullable();
+            $table->date('days')->nullable();
+            $table->decimal('price', 10, 2)->nullable();
+            $table->unsignedBigInteger('adventure_id');
+            $table->foreign('adventure_id')->references('id')->on('adventures')->onDelete('cascade');
+            $table->timestamps();
+        });
     }
 
     /**

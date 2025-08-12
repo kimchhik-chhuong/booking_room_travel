@@ -25,7 +25,7 @@ class HotelMetadataController extends Controller
         $validated = $request->validate([
             'destination_id' => 'required|exists:destinations,id',
             'hotel_name' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
+            //'price' => 'required|numeric|min:0',
             'description' => 'nullable|string',
             'rating' => 'nullable|numeric|min:0|max:5',
             'address' => 'nullable|string|max:255',

@@ -12,8 +12,7 @@ return [
     | in web browsers. You are free to adjust these settings as needed.
     |
     */
-
-    'paths' => ['api/*', 'storage/*'],
+    'paths' => ['api/*', 'sanctum/csrf-cookie', '*'],
 
     'allowed_methods' => ['*'],
 
