@@ -25,7 +25,6 @@ class HotelMetadataController extends Controller
         $validated = $request->validate([
             'destination_id' => 'required|exists:destinations,id',
             'hotel_name' => 'required|string|max:255',
-            //'price' => 'required|numeric|min:0',
             'description' => 'nullable|string',
             'rating' => 'nullable|numeric|min:0|max:5',
             'address' => 'nullable|string|max:255',
@@ -62,7 +61,6 @@ class HotelMetadataController extends Controller
         $validated = $request->validate([
             'destination_id' => 'sometimes|exists:destinations,id',
             'hotel_name' => 'sometimes|string|max:255',
-            'price' => 'sometimes|numeric|min:0',
             'description' => 'nullable|string',
             'rating' => 'nullable|numeric|min:0|max:5',
             'address' => 'nullable|string|max:255',
@@ -127,15 +125,17 @@ class HotelMetadataController extends Controller
     }
 
     /**
-     * Get hotels within price range.
+     * Get hotels with room types within price range.
      */
     public function getByPriceRange(Request $request)
     {
         $minPrice = $request->get('min_price', 0);
         $maxPrice = $request->get('max_price', 999999);
 
-        $hotels = HotelMetadata::with('destination')
-            ->whereBetween('price', [$minPrice, $maxPrice])
+        $hotels = HotelMetadata::with(['destination', 'roomTypes'])
+            ->whereHas('roomTypes', function($query) use ($minPrice, $maxPrice) {
+                $query->whereBetween('price', [$minPrice, $maxPrice]);
+            })
             ->get();
 
         return response()->json([

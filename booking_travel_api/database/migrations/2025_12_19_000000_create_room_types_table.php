@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Create room_types table first
         Schema::create('room_types', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('hotel_metadata_id');
@@ -26,10 +27,12 @@ return new class extends Migration
             $table->foreign('hotel_metadata_id')->references('hotel_id')->on('hotel_metadata')->onDelete('cascade');
         });
 
-        // Remove price column from hotel_metadata table
-        Schema::table('hotel_metadata', function (Blueprint $table) {
-            $table->dropColumn('price');
-        });
+        // Check if price column exists before attempting to drop it
+        if (Schema::hasColumn('hotel_metadata', 'price')) {
+            Schema::table('hotel_metadata', function (Blueprint $table) {
+                $table->dropColumn('price');
+            });
+        }
     }
 
     /**
@@ -39,9 +42,11 @@ return new class extends Migration
     {
         Schema::dropIfExists('room_types');
 
-        // Add price column back to hotel_metadata
-        Schema::table('hotel_metadata', function (Blueprint $table) {
-            $table->decimal('price', 10, 2)->nullable();
-        });
+        // Add price column back to hotel_metadata if it doesn't exist
+        if (!Schema::hasColumn('hotel_metadata', 'price')) {
+            Schema::table('hotel_metadata', function (Blueprint $table) {
+                $table->decimal('price', 10, 2)->nullable();
+            });
+        }
     }
 };

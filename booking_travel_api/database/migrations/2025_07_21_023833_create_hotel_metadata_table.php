@@ -23,8 +23,7 @@ return new class extends Migration
             $table->string('map')->nullable();
             $table->date('days')->nullable();
             $table->decimal('price', 10, 2)->nullable();
-            $table->unsignedBigInteger('adventure_id');
-            $table->foreign('adventure_id')->references('id')->on('adventures')->onDelete('cascade');
+            $table->unsignedBigInteger('adventure_id')->nullable();
             $table->timestamps();
         });
     }

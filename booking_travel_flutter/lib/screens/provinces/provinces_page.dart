@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:booking_travel_flutter/screens/adventures/adventures_page.dart';
+import 'package:booking_travel_flutter/screens/hotel/hotel_list_page.dart';
 
 class Province {
   final int id;
@@ -117,7 +119,32 @@ class _ProvincesPageState extends State<ProvincesPage> {
                 title: Text(province.name),
                 subtitle: Text(province.description),
                 trailing: const Icon(Icons.arrow_forward),
-                onTap: () => widget.onProvinceTap(province.toJson()),
+                onTap: () {
+                  // Navigate to adventures page for this province
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AdventuresPage(
+                        provinceId: province.id,
+                        provinceName: province.name,
+                        onAdventureTap: (adventure) {
+                          // When adventure is tapped, navigate to hotel list
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => HotelListPage(
+                                provinceId: province.id,
+                                provinceName: province.name,
+                                adventureId: adventure['id'],
+                                adventureName: adventure['name'],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  );
+                },
               );
             },
           );
