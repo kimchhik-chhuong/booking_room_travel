@@ -23,17 +23,26 @@ class HotelMetadataController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'destination_id' => 'required|exists:destinations,id',
-            'hotel_name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'rating' => 'nullable|numeric|min:0|max:5',
+            'name' => 'required|string|max:255',
             'address' => 'nullable|string|max:255',
-            'phone' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:255',
-            'website' => 'nullable|url|max:255',
+            'star_rating' => 'nullable|numeric|min:0|max:5',
+            'description' => 'nullable|string',
+            'image_url' => 'nullable|string|max:255',
+            'contact_phone' => 'nullable|string|max:20',
+            'website_url' => 'nullable|string|max:255',
+            'map' => 'nullable|string|max:255',
+            'adventure_id' => 'nullable|exists:adventures,id',
             'amenities' => 'nullable|array',
             'images' => 'nullable|array',
+            'image_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
+
+        if ($request->hasFile('image_file')) {
+            $image = $request->file('image_file');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $image->move(public_path('uploads/hotels'), $imageName);
+            $validated['image_url'] = url('uploads/hotels/' . $imageName);
+        }
 
         $hotel = HotelMetadata::create($validated);
 
