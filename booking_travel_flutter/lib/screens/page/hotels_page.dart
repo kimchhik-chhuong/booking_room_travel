@@ -4,6 +4,9 @@ void main() {
   runApp(MaterialApp(
     home: HotelsPage(),
     theme: ThemeData(primarySwatch: Colors.blue),
+    routes: {
+      '/payment': (context) => PaymentPage(),
+    },
   ));
 }
 
@@ -79,7 +82,7 @@ class HotelsPage extends StatelessWidget {
     return ListView.builder(
       padding: const EdgeInsets.all(8),
       shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
+      physics: NeverScrollableScrollPhysics(),
       itemCount: hotels.length,
       itemBuilder: (context, index) {
         final hotel = hotels[index];
@@ -161,16 +164,14 @@ class HotelsPage extends StatelessWidget {
                         const SizedBox(width: 4),
                         Text(
                           '$rating Reviews ($reviews)',
-                          style: TextStyle(
-                              fontSize: 14, color: Colors.grey[600]),
+                          style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                         ),
                       ],
                     ),
                     const SizedBox(height: 4),
                     Text(
                       description,
-                      style:
-                          TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -178,9 +179,7 @@ class HotelsPage extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(price,
-                            style:
-                                TextStyle(color: Colors.blue, fontSize: 16)),
+                        Text(price, style: TextStyle(color: Colors.blue, fontSize: 16)),
                         ElevatedButton(
                           onPressed: () {
                             Navigator.push(
@@ -188,8 +187,7 @@ class HotelsPage extends StatelessWidget {
                               MaterialPageRoute(
                                 builder: (context) => BookingScreen(
                                   hotelName: hotelName,
-                                  address:
-                                      '12 Eze Adele Road Rumuomasi Lagos Nigeria',
+                                  address: '12 Eze Adele Road Rumuomasi Lagos Nigeria',
                                   price: price,
                                   imageUrl: imageUrl,
                                   description: description,
@@ -218,7 +216,7 @@ class HotelsPage extends StatelessWidget {
   }
 }
 
-class BookingScreen extends StatelessWidget {
+class BookingScreen extends StatefulWidget {
   final String hotelName;
   final String address;
   final String price;
@@ -235,161 +233,182 @@ class BookingScreen extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    final isNetwork = imageUrl.startsWith('http');
+  _BookingScreenState createState() => _BookingScreenState();
+}
 
+class _BookingScreenState extends State<BookingScreen> {
+  late TextEditingController _destinationController;
+  late TextEditingController _hotelNameController;
+  late TextEditingController _bedsController;
+  late TextEditingController _peopleController;
+  DateTime? _selectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _destinationController = TextEditingController();
+    _hotelNameController = TextEditingController(text: widget.hotelName);
+    _bedsController = TextEditingController();
+    _peopleController = TextEditingController();
+    _selectedDate = null; // Initialize with null, will be set via date picker
+  }
+
+  @override
+  void dispose() {
+    _destinationController.dispose();
+    _hotelNameController.dispose();
+    _bedsController.dispose();
+    _peopleController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime now = DateTime.now();
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? now,
+      firstDate: now,
+      lastDate: DateTime(now.year + 1),
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header Image
-              ClipRRect(
-                borderRadius:
-                    const BorderRadius.vertical(bottom: Radius.circular(12)),
-                child: isNetwork
-                    ? Image.network(
-                        imageUrl,
-                        height: 200,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            height: 200,
-                            color: Colors.grey[300],
-                            child: const Icon(Icons.broken_image, size: 40),
-                          );
-                        },
-                      )
-                    : Image.asset(
-                        imageUrl,
-                        height: 200,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header Image
+            ClipRRect(
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
+              child: Image.asset(
+                widget.imageUrl,
+                height: 200,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    height: 200,
+                    color: Colors.grey[300],
+                    child: const Icon(Icons.broken_image, size: 40),
+                  );
+                },
               ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          hotelName,
-                          style: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          price,
-                          style: const TextStyle(
-                              fontSize: 18, color: Colors.green),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(Icons.star, size: 16, color: Colors.yellow[700]),
-                        const SizedBox(width: 4),
-                        Text(
-                          '4.9 (1,092 Reviews)',
-                          style: TextStyle(
-                              fontSize: 14, color: Colors.grey[600]),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      address,
-                      style:
-                          TextStyle(fontSize: 14, color: Colors.grey[600]),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      description,
-                      style:
-                          TextStyle(fontSize: 14, color: Colors.grey[600]),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Amenities',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                        TextButton(
-                          onPressed: () {},
-                          child:
-                              const Text('View All', style: TextStyle(color: Colors.blue)),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _buildAmenityIcon(Icons.local_cafe, 'Café'),
-                        _buildAmenityIcon(Icons.restaurant, 'Restaurant'),
-                        _buildAmenityIcon(Icons.local_dining, 'Garden'),
-                        _buildAmenityIcon(Icons.golf_course, 'Golf Course'),
-                        _buildAmenityIcon(Icons.wifi, 'Free WiFi'),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Gallery Photos',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
-                        TextButton(
-                          onPressed: () {},
-                          child:
-                              const Text('See All', style: TextStyle(color: Colors.blue)),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _buildGalleryImage('assets/room1.jpg'),
-                        _buildGalleryImage('assets/room2.jpg'),
-                        _buildGalleryImage('assets/room3.jpg'),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    Center(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Booking confirmed for $hotelName!'),
-                            ),
-                          );
-                          Navigator.pop(context);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 40, vertical: 15),
-                        ),
-                        child: const Text('Confirm Booking'),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        widget.hotelName,
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                       ),
+                      Text(
+                        widget.price,
+                        style: TextStyle(fontSize: 18, color: Colors.green),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(Icons.star, size: 16, color: Colors.yellow[700]),
+                      const SizedBox(width: 4),
+                      Text(
+                        '4.9 (1,092 Reviews)',
+                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    widget.address,
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    widget.description,
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Amenities',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      TextButton(
+                        onPressed: () {},
+                        child: Text('View All', style: TextStyle(color: Colors.blue)),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildAmenityIcon(Icons.local_cafe, 'Café'),
+                      _buildAmenityIcon(Icons.restaurant, 'Restaurant'),
+                      _buildAmenityIcon(Icons.local_dining, 'Garden'),
+                      _buildAmenityIcon(Icons.golf_course, 'Golf Course'),
+                      _buildAmenityIcon(Icons.wifi, 'Free WiFi'),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Gallery Photos',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      TextButton(
+                        onPressed: () {},
+                        child: Text('See All', style: TextStyle(color: Colors.blue)),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildGalleryImage('assets/room1.jpg'),
+                      _buildGalleryImage('assets/room2.jpg'),
+                      _buildGalleryImage('assets/room3.jpg'),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  // New Booking Form Section
+                  _buildBookingForm(context),
+                  const SizedBox(height: 20),
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/payment');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                      ),
+                      child: const Text('Confirm Booking'),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -423,6 +442,177 @@ class BookingScreen extends StatelessWidget {
               child: const Icon(Icons.broken_image, size: 40),
             );
           },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBookingForm(BuildContext context) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 4,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Destination',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _destinationController,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                hintText: 'Enter destination',
+                prefixIcon: Icon(Icons.location_on),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Hotel Name',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _hotelNameController,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                hintText: 'Enter hotel name',
+                prefixIcon: Icon(Icons.hotel),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Details',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: TextEditingController(
+                      text: _selectedDate != null
+                          ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'
+                          : '',
+                    ),
+                    onTap: () => _selectDate(context),
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      hintText: 'Select date',
+                      prefixIcon: Icon(Icons.calendar_today),
+                      labelText: 'Date',
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TextField(
+                    controller: _bedsController,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      hintText: '2',
+                      prefixIcon: Icon(Icons.bed),
+                      labelText: 'Beds',
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TextField(
+                    controller: _peopleController,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      hintText: '4',
+                      prefixIcon: Icon(Icons.people),
+                      labelText: 'People',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class PaymentPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Payment'),
+        backgroundColor: Colors.blue,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Payment Details',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 20),
+            TextField(
+              decoration: InputDecoration(
+                labelText: 'Card Number',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.credit_card),
+              ),
+            ),
+            SizedBox(height: 10),
+            TextField(
+              decoration: InputDecoration(
+                labelText: 'Expiry Date',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.calendar_today),
+              ),
+            ),
+            SizedBox(height: 10),
+            TextField(
+              decoration: InputDecoration(
+                labelText: 'CVV',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.lock),
+              ),
+            ),
+            SizedBox(height: 20),
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Payment Successful!')),
+                  );
+                  Navigator.pop(context); // Return to previous screen
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text('Pay Now'),
+              ),
+            ),
+          ],
         ),
       ),
     );

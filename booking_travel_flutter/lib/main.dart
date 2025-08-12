@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'screens/register.dart';
 import 'screens/login.dart';
@@ -11,7 +11,9 @@ import 'screens/search_screen.dart';
 import 'screens/profile_screen.dart';
 import 'services/user_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   runApp(const TravelBookingApp());
 }
 
@@ -93,16 +95,15 @@ class _SplashScreenState extends State<SplashScreen>
       CurvedAnimation(parent: _logoController, curve: Curves.easeInOut),
     );
 
-    _textFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _textController, curve: Curves.easeIn),
-    );
+    _textFadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _textController, curve: Curves.easeIn));
 
-    _textSlideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.5),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _textController, curve: Curves.easeOutCubic),
-    );
+    _textSlideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(
+          CurvedAnimation(parent: _textController, curve: Curves.easeOutCubic),
+        );
 
     _backgroundAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _backgroundController, curve: Curves.easeInOut),
@@ -143,11 +144,20 @@ class _SplashScreenState extends State<SplashScreen>
                 end: Alignment.bottomRight,
                 colors: [
                   Color.lerp(
-                      Colors.blue.shade900, Colors.purple.shade900, _backgroundAnimation.value)!,
+                    Colors.blue.shade900,
+                    Colors.purple.shade900,
+                    _backgroundAnimation.value,
+                  )!,
                   Color.lerp(
-                      Colors.blue.shade600, Colors.pink.shade600, _backgroundAnimation.value)!,
+                    Colors.blue.shade600,
+                    Colors.pink.shade600,
+                    _backgroundAnimation.value,
+                  )!,
                   Color.lerp(
-                      Colors.cyan.shade400, Colors.orange.shade400, _backgroundAnimation.value)!,
+                    Colors.cyan.shade400,
+                    Colors.orange.shade400,
+                    _backgroundAnimation.value,
+                  )!,
                 ],
                 stops: const [0.0, 0.5, 1.0],
               ),
