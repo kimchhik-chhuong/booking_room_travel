@@ -230,29 +230,29 @@
                 @php
                 $packages = [
                     [
-                        'title' => 'Tokyo Cultural Adventure',
-                        'duration' => '7 Days / 6 Nights',
-                        'price' => '$2,450',
-                        'rating' => '4.9',
-                        'image' => 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-uc6iPdsCHz79P4MzBqKKs5OHJDjOwt.png',
+                        'title' => 'Vat Phnoom',
+                        'duration' => '7 Days / 1 Nights',
+                        'price' => '$80',
+                        'rating' => '4.5',
+                        'image' => 'https://www.mingliangtravel.com/wp-content/uploads/2016/10/WatPhnom_PhnomPenh_2005_2.jpg',
                         'tag' => 'Popular',
                         'tagColor' => 'bg-red-500'
                     ],
                     [
-                        'title' => 'Bali Beach Paradise',
-                        'duration' => '5 Days / 4 Nights',
-                        'price' => '$1,890',
+                        'title' => 'Komponng Som Beach Paradise',
+                        'duration' => '7 Days / 1 Nights',
+                        'price' => '$100',
                         'rating' => '4.8',
-                        'image' => 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-uc6iPdsCHz79P4MzBqKKs5OHJDjOwt.png',
+                        'image' => 'https://t3.ftcdn.net/jpg/00/60/95/78/360_F_60957853_c8AVBMtpYs865M5ihn9WS2zE5mp8whEO.jpg',
                         'tag' => 'New',
                         'tagColor' => 'bg-emerald-500'
                     ],
                     [
-                        'title' => 'European Grand Tour',
-                        'duration' => '14 Days / 13 Nights',
-                        'price' => '$4,200',
+                        'title' => 'Museum',
+                        'duration' => '7 Days / 1 Nights',
+                        'price' => '$70',
                         'rating' => '4.7',
-                        'image' => 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-uc6iPdsCHz79P4MzBqKKs5OHJDjOwt.png',
+                        'image' => 'https://www.cambodiaacountryfullofcharm.com/wp-content/uploads/2022/11/musee-national-phnom-penh-cambodge-scaled-e1669642865121.jpg',
                         'tag' => 'Premium',
                         'tagColor' => 'bg-purple-500'
                     ]

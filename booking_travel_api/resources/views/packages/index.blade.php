@@ -82,7 +82,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 <div class="space-y-6">
                     <div class="relative overflow-hidden rounded-2xl">
-                        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GP7z1nSgCIj2SDO3HWgyYcov2Fgfii.png" alt="Tropical Paradise" class="w-full h-80 object-cover">
+                        <img src="https://i0.wp.com/www.cambodialifestyle.com/wp-content/uploads/2024/04/Siem-Reap-5.jpg?fit=1024%2C683&ssl=1">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                         <div class="absolute top-6 left-6 bg-red-500 text-white px-4 py-2 rounded-full text-sm font-semibold">
                             Most Popular
@@ -100,7 +100,7 @@
                     <div class="grid grid-cols-3 gap-4">
                         @for($i = 1; $i <= 3; $i++)
                         <div class="relative overflow-hidden rounded-xl cursor-pointer hover:scale-105 transition-transform">
-                            <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GP7z1nSgCIj2SDO3HWgyYcov2Fgfii.png" alt="Gallery {{ $i }}" class="w-full h-24 object-cover">
+                            <img src="https://myflyingleap.com/wp-content/uploads/2023/04/siem-reap-feature_depositphotos.jpg" alt="Gallery {{ $i }}" class="w-full h-24 object-cover">
                         </div>
                         @endfor
                     </div>
@@ -108,26 +108,26 @@
                 
                 <div class="space-y-8">
                     <div>
-                        <h2 class="text-4xl font-bold text-dark-800 mb-4">Tropical Paradise Retreat</h2>
+                        <h2 class="text-4xl font-bold text-dark-800 mb-4">Angkor Wat</h2>
                         <div class="flex items-center space-x-4 text-dark-500 mb-6">
                             <div class="flex items-center">
                                 <i class="fas fa-map-marker-alt text-primary-500 mr-2"></i>
-                                <span>Maldives</span>
+                                <span>Siem Reap</span>
                             </div>
                             <div class="flex items-center">
                                 <i class="fas fa-clock text-primary-500 mr-2"></i>
-                                <span>7 Days / 6 Nights</span>
+                                <span>7 Days / 1 Nights</span>
                             </div>
                         </div>
                         <p class="text-dark-600 leading-relaxed mb-8">
-                            Escape to a tropical haven where pristine beaches, crystal-clear waters, and luxurious overwater bungalows await. This all-inclusive package offers the perfect blend of relaxation and adventure in one of the world's most beautiful destinations.
+                            Siem Reap province is the tenth largest province in Cambodia. Having reached a population of one million in 2019, it ranks as the nation's fourth most populous province.
                         </p>
                     </div>
                     
                     <div class="grid grid-cols-2 gap-8">
                         <div>
                             <p class="text-dark-500 text-sm font-medium mb-2">Starting Price</p>
-                            <p class="text-4xl font-bold text-primary-600">$3,299</p>
+                            <p class="text-4xl font-bold text-primary-600">$80</p>
                             <p class="text-dark-500 text-sm">per person</p>
                         </div>
                         <div>
@@ -195,12 +195,24 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="packagesContainer">
                 @php
                 $packages = [
-                    ['title' => 'Phnom Penh', 'location' => 'Phnom Penh, Cambodia', 'duration' => '7 Days', 'price' => '$250', 'rating' => '4.9', 'bookings' => 156, 'status' => 'Active', 'image' => 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GP7z1nSgCIj2SDO3HWgyYcov2Fgfii.png', 'category' => 'Cultural'],
-                    ['title' => 'Battambang', 'location' => 'Bali, Indonesia', 'duration' => '5 Days', 'price' => '$1,890', 'rating' => '4.8', 'bookings' => 203, 'status' => 'Active', 'image' => 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GP7z1nSgCIj2SDO3HWgyYcov2Fgfii.png', 'category' => 'Beach'],
-                    ['title' => 'Kompot', 'location' => 'Europe', 'duration' => '14 Days', 'price' => '$4,200', 'rating' => '4.7', 'bookings' => 89, 'status' => 'Active', 'image' => 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GP7z1nSgCIj2SDO3HWgyYcov2Fgfii.png', 'category' => 'Cultural'],
-                    ['title' => 'Kep', 'location' => 'Kenya', 'duration' => '8 Days', 'price' => '$3,650', 'rating' => '4.9', 'bookings' => 134, 'status' => 'Active', 'image' => 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GP7z1nSgCIj2SDO3HWgyYcov2Fgfii.png', 'category' => 'Adventure'],
-                    ['title' => 'New York City Break', 'location' => 'New York, USA', 'duration' => '4 Days', 'price' => '$1,299', 'rating' => '4.6', 'bookings' => 78, 'status' => 'Draft', 'image' => 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GP7z1nSgCIj2SDO3HWgyYcov2Fgfii.png', 'category' => 'Cultural'],
-                    ['title' => 'Swiss Alps Retreat', 'location' => 'Switzerland', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GP7z1nSgCIj2SDO3HWgyYcov2Fgfii.png', 'category' => 'Luxury']
+                    ['title' => 'Phnom Penh', 'location' => 'Garden City Hotel, Cambodia', 'duration' => '7 Days', 'price' => '$250', 'rating' => '4.9', 'bookings' => 156, 'status' => 'Active', 'image' => 'https://ik.imgkit.net/3vlqs5axxjf/external/ik-seo/http://images.ntmllc.com/v4/hotel/U81/U81105/U81105_EXT_Z2DD62/Garden-City-Hotel-Exterior.JPG?tr=w-780%2Ch-437%2Cfo-auto', 'category' => 'Cultural'],
+                    ['title' => 'Battambang', 'location' => 'V CROWN HOTEL, Cambodia', 'duration' => '5 Days', 'price' => '$130', 'rating' => '4.8', 'bookings' => 203, 'status' => 'Active', 'image' => 'https://q-xx.bstatic.com/xdata/images/hotel/max500/430685389.jpg?k=9a2c933bd4c8ec0f4c1438ca63be07939ec45b3db549dd26a31c7aeb3ad1ee16&o=', 'category' => 'Beach'],
+                    ['title' => 'Kompot', 'location' => 'RiverTree Villa & Resort', 'duration' => '7 Days', 'price' => '$250', 'rating' => '4.7', 'bookings' => 89, 'status' => 'Active', 'image' => 'https://cf.bstatic.com/xdata/images/hotel/max1024x768/350284085.jpg?k=57b1872b633f1044b73f3c87d160936d64981ccaf3d6935b21a4f8717fe9ee1a&o=&hp=1', 'category' => 'Cultural'],
+                    ['title' => 'Kep', 'location' => 'Vakara Hotel', 'duration' => '7 Days', 'price' => '$230', 'rating' => '4.9', 'bookings' => 134, 'status' => 'Active', 'image' => 'https://cf.bstatic.com/xdata/images/hotel/max1024x768/373267903.jpg?k=24a5a08ae735e6b26e33f355265b854a4d15af8d671dac6f8c5718c41425047b&o=&hp=1', 'category' => 'Adventure'],
+                    ['title' => 'Pursat', 'location' => 'Pursat Riverside Hotel & Spa, Cambodia', 'duration' => '4 Days', 'price' => '$1,299', 'rating' => '4.6', 'bookings' => 78, 'status' => 'Draft', 'image' => 'https://cf.bstatic.com/xdata/images/hotel/max1024x768/296140217.jpg?k=ec31ffd80f3688c3773080f874d45b4407312249df72217c7e95343890e47f35&o=&hp=1', 'category' => 'Cultural'],
+                    ['title' => 'Prey Veng', 'location' => 'Arthur & Paul', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/4e/e4/fe/arthur-et-paul.jpg?w=500&h=-1&s=1', 'category' => 'Luxury'],
+                    ['title' => 'Prey Veng', 'location' => 'Arthur & Paul', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/4e/e4/fe/arthur-et-paul.jpg?w=500&h=-1&s=1', 'category' => 'Luxury'],
+                    ['title' => 'Prey Veng', 'location' => 'Arthur & Paul', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/4e/e4/fe/arthur-et-paul.jpg?w=500&h=-1&s=1', 'category' => 'Luxury'],
+                    ['title' => 'Prey Veng', 'location' => 'Arthur & Paul', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/4e/e4/fe/arthur-et-paul.jpg?w=500&h=-1&s=1', 'category' => 'Luxury'],
+                    ['title' => 'Prey Veng', 'location' => 'Arthur & Paul', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/4e/e4/fe/arthur-et-paul.jpg?w=500&h=-1&s=1', 'category' => 'Luxury'],
+                    ['title' => 'Prey Veng', 'location' => 'Arthur & Paul', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/4e/e4/fe/arthur-et-paul.jpg?w=500&h=-1&s=1', 'category' => 'Luxury'],
+                    ['title' => 'Prey Veng', 'location' => 'Arthur & Paul', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/4e/e4/fe/arthur-et-paul.jpg?w=500&h=-1&s=1', 'category' => 'Luxury'],
+                    ['title' => 'Prey Veng', 'location' => 'Arthur & Paul', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/4e/e4/fe/arthur-et-paul.jpg?w=500&h=-1&s=1', 'category' => 'Luxury'],
+                    ['title' => 'Prey Veng', 'location' => 'Arthur & Paul', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/4e/e4/fe/arthur-et-paul.jpg?w=500&h=-1&s=1', 'category' => 'Luxury'],
+                    ['title' => 'Prey Veng', 'location' => 'Arthur & Paul', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/4e/e4/fe/arthur-et-paul.jpg?w=500&h=-1&s=1', 'category' => 'Luxury'],
+                    ['title' => 'Prey Veng', 'location' => 'Arthur & Paul', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/4e/e4/fe/arthur-et-paul.jpg?w=500&h=-1&s=1', 'category' => 'Luxury'],
+                    ['title' => 'Prey Veng', 'location' => 'Arthur & Paul', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/4e/e4/fe/arthur-et-paul.jpg?w=500&h=-1&s=1', 'category' => 'Luxury'],
+                    ['title' => 'Prey Veng', 'location' => 'Arthur & Paul', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/4e/e4/fe/arthur-et-paul.jpg?w=500&h=-1&s=1', 'category' => 'Luxury'],
                 ];
                 @endphp
                 
