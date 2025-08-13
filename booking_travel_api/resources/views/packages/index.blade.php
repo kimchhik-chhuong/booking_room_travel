@@ -1,347 +1,257 @@
-@extends('layouts.dashboard')
+@extends('layouts.app')
 
-@section('title', 'Packages')
-@section('page-title', 'Travel Packages')
-@section('page-subtitle', 'Manage your travel packages and create new offerings.')
+@section('title', 'Travel Packages')
+@section('meta_description', 'Discover amazing travel packages and destinations. Book your perfect vacation with our curated selection of tours and experiences.')
 
 @section('content')
-<div class="min-h-screen bg-gray-50">
-    <!-- Sidebar -->
-    @include('partials.sidebar')
-
-    <!-- Header -->
-    @include('partials.header')
-
-    <!-- Main Content -->
-    <div class="ml-72 mr-80 p-8">
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-            <div class="stat-card">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-dark-500 text-sm font-medium mb-2">Total Packages</p>
-                        <p class="text-3xl font-bold text-dark-800">47</p>
-                        <p class="text-emerald-600 text-sm font-medium mt-2">+3 this month</p>
-                    </div>
-                    <div class="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center">
-                        <i class="fas fa-box text-white text-xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-dark-500 text-sm font-medium mb-2">Active Packages</p>
-                        <p class="text-3xl font-bold text-dark-800">42</p>
-                        <p class="text-emerald-600 text-sm font-medium mt-2">89% active rate</p>
-                    </div>
-                    <div class="w-14 h-14 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl flex items-center justify-center">
-                        <i class="fas fa-check-circle text-white text-xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-dark-500 text-sm font-medium mb-2">Avg. Rating</p>
-                        <p class="text-3xl font-bold text-dark-800">4.8</p>
-                        <p class="text-emerald-600 text-sm font-medium mt-2">+0.2 this month</p>
-                    </div>
-                    <div class="w-14 h-14 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-2xl flex items-center justify-center">
-                        <i class="fas fa-star text-white text-xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-dark-500 text-sm font-medium mb-2">Total Revenue</p>
-                        <p class="text-3xl font-bold text-dark-800">$234K</p>
-                        <p class="text-emerald-600 text-sm font-medium mt-2">+18% this month</p>
-                    </div>
-                    <div class="w-14 h-14 bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl flex items-center justify-center">
-                        <i class="fas fa-dollar-sign text-white text-xl"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Featured Package -->
-        <div class="card-modern p-8 mb-12">
-            <div class="flex items-center justify-between mb-8">
-                <div>
-                    <h3 class="text-2xl font-bold text-dark-800 mb-2">Featured Package</h3>
-                    <p class="text-dark-500">Our most popular travel experience</p>
-                </div>
-                <button class="btn-modern">Edit Package</button>
-            </div>
-            
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                <div class="space-y-6">
-                    <div class="relative overflow-hidden rounded-2xl">
-                        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GP7z1nSgCIj2SDO3HWgyYcov2Fgfii.png" alt="Tropical Paradise" class="w-full h-80 object-cover">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                        <div class="absolute top-6 left-6 bg-red-500 text-white px-4 py-2 rounded-full text-sm font-semibold">
-                            Most Popular
-                        </div>
-                        <div class="absolute bottom-6 left-6 right-6">
-                            <div class="flex items-center text-white mb-2">
-                                @for($i = 0; $i < 5; $i++)
-                                    <i class="fas fa-star text-yellow-400"></i>
-                                @endfor
-                                <span class="ml-2 font-medium">4.9 (234 reviews)</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-3 gap-4">
-                        @for($i = 1; $i <= 3; $i++)
-                        <div class="relative overflow-hidden rounded-xl cursor-pointer hover:scale-105 transition-transform">
-                            <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GP7z1nSgCIj2SDO3HWgyYcov2Fgfii.png" alt="Gallery {{ $i }}" class="w-full h-24 object-cover">
-                        </div>
-                        @endfor
-                    </div>
-                </div>
+<div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <!-- Hero Section -->
+    <div class="relative bg-gradient-to-r from-blue-600 to-purple-700 text-white py-20">
+        <div class="absolute inset-0 bg-black opacity-20"></div>
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <h1 class="text-4xl md:text-6xl font-bold mb-6">Discover Amazing Destinations</h1>
+                <p class="text-xl md:text-2xl mb-8 opacity-90">Find your perfect travel experience from our curated collection</p>
                 
-                <div class="space-y-8">
-                    <div>
-                        <h2 class="text-4xl font-bold text-dark-800 mb-4">Tropical Paradise Retreat</h2>
-                        <div class="flex items-center space-x-4 text-dark-500 mb-6">
-                            <div class="flex items-center">
-                                <i class="fas fa-map-marker-alt text-primary-500 mr-2"></i>
-                                <span>Maldives</span>
-                            </div>
-                            <div class="flex items-center">
-                                <i class="fas fa-clock text-primary-500 mr-2"></i>
-                                <span>7 Days / 6 Nights</span>
-                            </div>
+                <!-- Search Bar -->
+                <div class="max-w-2xl mx-auto">
+                    <form method="GET" action="{{ route('packages.index') }}" class="flex flex-col md:flex-row gap-4">
+                        <div class="flex-1 relative">
+                            <input type="text" name="search" value="{{ request('search') }}" 
+                                   placeholder="Search destinations, activities..." 
+                                   class="w-full px-6 py-4 rounded-full text-gray-800 text-lg focus:outline-none focus:ring-4 focus:ring-white/30">
+                            <i class="fas fa-search absolute right-6 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                         </div>
-                        <p class="text-dark-600 leading-relaxed mb-8">
-                            Escape to a tropical haven where pristine beaches, crystal-clear waters, and luxurious overwater bungalows await. This all-inclusive package offers the perfect blend of relaxation and adventure in one of the world's most beautiful destinations.
-                        </p>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-8">
-                        <div>
-                            <p class="text-dark-500 text-sm font-medium mb-2">Starting Price</p>
-                            <p class="text-4xl font-bold text-primary-600">$3,299</p>
-                            <p class="text-dark-500 text-sm">per person</p>
-                        </div>
-                        <div>
-                            <p class="text-dark-500 text-sm font-medium mb-2">Bookings</p>
-                            <p class="text-4xl font-bold text-dark-800">234</p>
-                            <p class="text-emerald-600 text-sm">+12 this week</p>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-6">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
-                                <i class="fas fa-check text-emerald-600"></i>
-                            </div>
-                            <span class="text-dark-700 font-medium">All-Inclusive</span>
-                        </div>
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                                <i class="fas fa-bed text-blue-600"></i>
-                            </div>
-                            <span class="text-dark-700 font-medium">Luxury Resort</span>
-                        </div>
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                                <i class="fas fa-spa text-purple-600"></i>
-                            </div>
-                            <span class="text-dark-700 font-medium">Spa Treatments</span>
-                        </div>
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 bg-cyan-100 rounded-xl flex items-center justify-center">
-                                <i class="fas fa-water text-cyan-600"></i>
-                            </div>
-                            <span class="text-dark-700 font-medium">Water Sports</span>
-                        </div>
-                    </div>
+                        <button type="submit" class="px-8 py-4 bg-white text-blue-600 rounded-full font-semibold hover:bg-gray-100 transition-colors">
+                            Search
+                        </button>
+                    </form>
                 </div>
-            </div>
-        </div>
-
-        <!-- All Packages -->
-        <div class="card-modern p-8">
-            <div class="flex items-center justify-between mb-8">
-                <div>
-                    <h3 class="text-2xl font-bold text-dark-800 mb-2">All Packages</h3>
-                    <p class="text-dark-500">Browse and manage your travel packages</p>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <div class="relative">
-                        <input type="text" id="searchPackages" placeholder="Search packages..." class="input-modern pl-10 w-64">
-                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-dark-400"></i>
-                    </div>
-                    <select id="categoryFilter" class="input-modern">
-                        <option value="All">All Categories</option>
-                        <option value="Beach">Beach</option>
-                        <option value="Adventure">Adventure</option>
-                        <option value="Cultural">Cultural</option>
-                        <option value="Luxury">Luxury</option>
-                    </select>
-                    <button class="btn-modern">
-                        <i class="fas fa-plus mr-2"></i> Add Package
-                    </button>
-                </div>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="packagesContainer">
-                @php
-                $packages = [
-                    ['title' => 'Phnom Penh', 'location' => 'Phnom Penh, Cambodia', 'duration' => '7 Days', 'price' => '$250', 'rating' => '4.9', 'bookings' => 156, 'status' => 'Active', 'image' => 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GP7z1nSgCIj2SDO3HWgyYcov2Fgfii.png', 'category' => 'Cultural'],
-                    ['title' => 'Battambang', 'location' => 'Bali, Indonesia', 'duration' => '5 Days', 'price' => '$1,890', 'rating' => '4.8', 'bookings' => 203, 'status' => 'Active', 'image' => 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GP7z1nSgCIj2SDO3HWgyYcov2Fgfii.png', 'category' => 'Beach'],
-                    ['title' => 'Kompot', 'location' => 'Europe', 'duration' => '14 Days', 'price' => '$4,200', 'rating' => '4.7', 'bookings' => 89, 'status' => 'Active', 'image' => 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GP7z1nSgCIj2SDO3HWgyYcov2Fgfii.png', 'category' => 'Cultural'],
-                    ['title' => 'Kep', 'location' => 'Kenya', 'duration' => '8 Days', 'price' => '$3,650', 'rating' => '4.9', 'bookings' => 134, 'status' => 'Active', 'image' => 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GP7z1nSgCIj2SDO3HWgyYcov2Fgfii.png', 'category' => 'Adventure'],
-                    ['title' => 'New York City Break', 'location' => 'New York, USA', 'duration' => '4 Days', 'price' => '$1,299', 'rating' => '4.6', 'bookings' => 78, 'status' => 'Draft', 'image' => 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GP7z1nSgCIj2SDO3HWgyYcov2Fgfii.png', 'category' => 'Cultural'],
-                    ['title' => 'Swiss Alps Retreat', 'location' => 'Switzerland', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GP7z1nSgCIj2SDO3HWgyYcov2Fgfii.png', 'category' => 'Luxury']
-                ];
-                @endphp
-                
-                @foreach($packages as $package)
-                <div class="package-card group cursor-pointer" 
-                     data-title="{{ strtolower($package['title']) }}" 
-                     data-location="{{ strtolower($package['location']) }}" 
-                     data-category="{{ $package['category'] }}"
-                     data-status="{{ $package['status'] }}">
-                    <div class="relative overflow-hidden rounded-2xl mb-6">
-                        <img src="{{ $package['image'] }}" alt="{{ $package['title'] }}" class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                        <div class="absolute top-4 right-4">
-                            <span class="badge-modern {{ $package['status'] === 'Active' ? 'bg-emerald-500 text-white' : 'bg-yellow-500 text-white' }}">
-                                {{ $package['status'] }}
-                            </span>
-                        </div>
-                        <div class="absolute bottom-4 left-4 right-4">
-                            <div class="flex items-center justify-between text-white">
-                                <div class="flex items-center">
-                                    @for($i = 0; $i < 5; $i++)
-                                        <i class="fas fa-star text-yellow-400 text-sm"></i>
-                                    @endfor
-                                    <span class="ml-2 text-sm font-medium">{{ $package['rating'] }}</span>
-                                </div>
-                                <span class="text-sm">{{ $package['bookings'] }} bookings</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="space-y-4">
-                        <div>
-                            <h4 class="text-xl font-bold text-dark-800 mb-2 group-hover:text-primary-600 transition-colors">{{ $package['title'] }}</h4>
-                            <div class="flex items-center text-dark-500 text-sm space-x-4 mb-3">
-                                <div class="flex items-center">
-                                    <i class="fas fa-map-marker-alt mr-1"></i>
-                                    <span>{{ $package['location'] }}</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <i class="fas fa-clock mr-1"></i>
-                                    <span>{{ $package['duration'] }}</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <span class="text-2xl font-bold text-primary-600">{{ $package['price'] }}</span>
-                                <span class="text-dark-500 text-sm ml-1">per person</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <button class="p-2 text-dark-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="p-2 text-dark-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="p-2 text-dark-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                @endforeach
             </div>
         </div>
     </div>
 
-    <!-- Right Sidebar -->
-    @include('partials.right-sidebar')
+    <!-- Filters Section -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+            <form method="GET" action="{{ route('packages.index') }}" class="space-y-6">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-800">Filter Packages</h3>
+                    <button type="button" onclick="toggleFilters()" class="md:hidden text-blue-600 font-medium">
+                        <i class="fas fa-filter mr-2"></i> Filters
+                    </button>
+                </div>
+
+                <div id="filters-content" class="hidden md:block">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                        <!-- Category Filter -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                            <select name="category" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">All Categories</option>
+                                @foreach($categories ?? [] as $category)
+                                    <option value="{{ $category->slug }}" {{ request('category') === $category->slug ? 'selected' : '' }}>
+                                        {{ $category->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Destination Filter -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Destination</label>
+                            <select name="destination" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">All Destinations</option>
+                                @foreach($destinations ?? [] as $destination)
+                                    <option value="{{ $destination->slug }}" {{ request('destination') === $destination->slug ? 'selected' : '' }}>
+                                        {{ $destination->name }}, {{ $destination->country }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Price Range -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Max Price</label>
+                            <select name="max_price" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">Any Price</option>
+                                <option value="1000" {{ request('max_price') === '1000' ? 'selected' : '' }}>Under $1,000</option>
+                                <option value="2500" {{ request('max_price') === '2500' ? 'selected' : '' }}>Under $2,500</option>
+                                <option value="5000" {{ request('max_price') === '5000' ? 'selected' : '' }}>Under $5,000</option>
+                                <option value="10000" {{ request('max_price') === '10000' ? 'selected' : '' }}>Under $10,000</option>
+                            </select>
+                        </div>
+
+                        <!-- Duration -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Duration</label>
+                            <select name="duration" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">Any Duration</option>
+                                <option value="1-3" {{ request('duration') === '1-3' ? 'selected' : '' }}>1-3 Days</option>
+                                <option value="4-7" {{ request('duration') === '4-7' ? 'selected' : '' }}>4-7 Days</option>
+                                <option value="8-14" {{ request('duration') === '8-14' ? 'selected' : '' }}>1-2 Weeks</option>
+                                <option value="15+" {{ request('duration') === '15+' ? 'selected' : '' }}>2+ Weeks</option>
+                            </select>
+                        </div>
+
+                        <!-- Sort -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                            <select name="sort" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="latest" {{ request('sort') === 'latest' ? 'selected' : '' }}>Latest</option>
+                                <option value="price_low" {{ request('sort') === 'price_low' ? 'selected' : '' }}>Price: Low to High</option>
+                                <option value="price_high" {{ request('sort') === 'price_high' ? 'selected' : '' }}>Price: High to Low</option>
+                                <option value="rating" {{ request('sort') === 'rating' ? 'selected' : '' }}>Highest Rated</option>
+                                <option value="popular" {{ request('sort') === 'popular' ? 'selected' : '' }}>Most Popular</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between mt-6">
+                        <div class="flex items-center space-x-4">
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" name="featured" value="1" class="rounded border-gray-300" {{ request('featured') ? 'checked' : '' }}>
+                                <span class="text-sm text-gray-700">Featured Only</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" name="popular" value="1" class="rounded border-gray-300" {{ request('popular') ? 'checked' : '' }}>
+                                <span class="text-sm text-gray-700">Popular Only</span>
+                            </label>
+                        </div>
+                        
+                        <div class="flex items-center space-x-4">
+                            <a href="{{ route('packages.index') }}" class="text-gray-500 hover:text-gray-700">Clear All</a>
+                            <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                Apply Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Results Header -->
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">
+                    @if(request('search'))
+                        Search Results for "{{ request('search') }}"
+                    @else
+                        All Packages
+                    @endif
+                </h2>
+                <p class="text-gray-600 mt-1">
+                    {{ $packages->total() ?? 0 }} packages found
+                </p>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <button onclick="setView('grid')" id="grid-view" class="p-2 rounded-lg bg-blue-600 text-white">
+                        <i class="fas fa-th-large"></i>
+                    </button>
+                    <button onclick="setView('list')" id="list-view" class="p-2 rounded-lg text-gray-600 hover:bg-gray-100">
+                        <i class="fas fa-list"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Packages Grid -->
+        <div id="packages-container">
+            @if(isset($packages) && $packages->count() > 0)
+                <div id="packages-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    @foreach($packages as $package)
+                        @include('packages.partials.package-card', ['package' => $package])
+                    @endforeach
+                </div>
+
+                <div id="packages-list" class="hidden space-y-6">
+                    @foreach($packages as $package)
+                        @include('packages.partials.package-list-item', ['package' => $package])
+                    @endforeach
+                </div>
+
+                <!-- Pagination -->
+                <div class="mt-12 flex justify-center">
+                    {{ $packages->appends(request()->query())->links() }}
+                </div>
+            @else
+                <!-- No Results -->
+                <div class="text-center py-16">
+                    <div class="max-w-md mx-auto">
+                        <i class="fas fa-search text-6xl text-gray-300 mb-6"></i>
+                        <h3 class="text-2xl font-semibold text-gray-800 mb-4">No packages found</h3>
+                        <p class="text-gray-600 mb-8">
+                            @if(request()->hasAny(['search', 'category', 'destination', 'max_price', 'duration']))
+                                Try adjusting your filters or search terms to find what you're looking for.
+                            @else
+                                We're working on adding new packages. Check back soon!
+                            @endif
+                        </p>
+                        @if(request()->hasAny(['search', 'category', 'destination', 'max_price', 'duration']))
+                            <a href="{{ route('packages.index') }}" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                <i class="fas fa-times mr-2"></i> Clear Filters
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            @endif
+        </div>
+    </div>
+
+    <!-- Newsletter Section -->
+    <div class="bg-gradient-to-r from-blue-600 to-purple-700 text-white py-16">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h3 class="text-3xl font-bold mb-4">Stay Updated with New Packages</h3>
+            <p class="text-xl mb-8 opacity-90">Get notified about exclusive deals and new destinations</p>
+            <form class="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+                <input type="email" placeholder="Enter your email" 
+                       class="flex-1 px-6 py-3 rounded-full text-gray-800 focus:outline-none focus:ring-4 focus:ring-white/30">
+                <button type="submit" class="px-8 py-3 bg-white text-blue-600 rounded-full font-semibold hover:bg-gray-100 transition-colors">
+                    Subscribe
+                </button>
+            </form>
+        </div>
+    </div>
 </div>
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Search functionality
-    const searchInput = document.getElementById('searchPackages');
-    const categoryFilter = document.getElementById('categoryFilter');
-    const packageCards = document.querySelectorAll('.package-card');
-    
-    function filterPackages() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const category = categoryFilter.value;
-        
-        packageCards.forEach(card => {
-            const title = card.getAttribute('data-title');
-            const location = card.getAttribute('data-location');
-            const cardCategory = card.getAttribute('data-category');
-            const cardStatus = card.getAttribute('data-status');
-            
-            const matchesSearch = title.includes(searchTerm) || location.includes(searchTerm);
-            const matchesCategory = category === 'All' || cardCategory === category;
-            
-            if (matchesSearch && matchesCategory) {
-                card.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
-        });
+function toggleFilters() {
+    const content = document.getElementById('filters-content');
+    content.classList.toggle('hidden');
+}
+
+function setView(view) {
+    const gridView = document.getElementById('packages-grid');
+    const listView = document.getElementById('packages-list');
+    const gridBtn = document.getElementById('grid-view');
+    const listBtn = document.getElementById('list-view');
+
+    if (view === 'grid') {
+        gridView.classList.remove('hidden');
+        listView.classList.add('hidden');
+        gridBtn.classList.add('bg-blue-600', 'text-white');
+        gridBtn.classList.remove('text-gray-600', 'hover:bg-gray-100');
+        listBtn.classList.remove('bg-blue-600', 'text-white');
+        listBtn.classList.add('text-gray-600', 'hover:bg-gray-100');
+    } else {
+        gridView.classList.add('hidden');
+        listView.classList.remove('hidden');
+        listBtn.classList.add('bg-blue-600', 'text-white');
+        listBtn.classList.remove('text-gray-600', 'hover:bg-gray-100');
+        gridBtn.classList.remove('bg-blue-600', 'text-white');
+        gridBtn.classList.add('text-gray-600', 'hover:bg-gray-100');
     }
     
-    // Event listeners for search and filter
-    searchInput.addEventListener('input', filterPackages);
-    categoryFilter.addEventListener('change', filterPackages);
-    
-    // Action buttons functionality
-    document.querySelectorAll('.package-card .fa-eye').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const packageTitle = this.closest('.package-card').querySelector('h4').textContent;
-            alert(`Viewing details for ${packageTitle}`);
-        });
-    });
-    
-    document.querySelectorAll('.package-card .fa-edit').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const packageTitle = this.closest('.package-card').querySelector('h4').textContent;
-            alert(`Editing package ${packageTitle}`);
-        });
-    });
-    
-    document.querySelectorAll('.package-card .fa-trash').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const packageTitle = this.closest('.package-card').querySelector('h4').textContent;
-            if (confirm(`Are you sure you want to delete ${packageTitle}?`)) {
-                alert(`Package ${packageTitle} deleted`);
-                this.closest('.package-card').remove();
-            }
-        });
-    });
-    
-    // Click on card to view details
-    document.querySelectorAll('.package-card').forEach(card => {
-        card.addEventListener('click', function() {
-            const packageTitle = this.querySelector('h4').textContent;
-            alert(`Viewing details for ${packageTitle}`);
-        });
-    });
+    localStorage.setItem('packages-view', view);
+}
+
+// Restore view preference
+document.addEventListener('DOMContentLoaded', function() {
+    const savedView = localStorage.getItem('packages-view') || 'grid';
+    setView(savedView);
 });
 </script>
 @endpush
