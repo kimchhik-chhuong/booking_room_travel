@@ -1,17 +1,100 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
+import '../history/history_screen.dart' show HistoryScreen;
+
+// Define a global list to store booking history. This is a simple
+// way to share state between different screens without a full state
+// management solution.
+List<Map<String, dynamic>> globalBookingHistory = [
+  // Initial sample data
+  {
+    'hotelName': 'Taj Hotel',
+    'date': DateTime.now().subtract(Duration(days: 2)),
+    'total': '\$200',
+    'status': 'Completed',
+    'imageUrl': 'assets/room2.jpg',
+    'showAlert': false,
+  },
+];
 
 void main() {
-  runApp(MaterialApp(
-    home: HotelsPage(),
-    theme: ThemeData(primarySwatch: Colors.blue),
-    routes: {
-      '/payment': (context) => PaymentPage(),
-    },
-  ));
+  runApp(const MyApp());
 }
 
-class HotelsPage extends StatelessWidget {
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Hotel Booking App',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: const HotelsPage(),
+      routes: {
+        '/payment': (context) => PaymentPage(),
+      },
+    );
+  }
+}
+
+class HotelsPage extends StatefulWidget {
   const HotelsPage({Key? key}) : super(key: key);
+
+  @override
+  _HotelsPageState createState() => _HotelsPageState();
+}
+
+class _HotelsPageState extends State<HotelsPage> {
+  // Use a different map for local booking state to avoid conflicts with global list
+  Map<String, bool> _isBooked = {};
+  int _currentIndex = 0;
+
+  final List<Widget> _pages = [
+    const HotelListPage(),
+    const Center(child: Text('Payment Page')),
+    const Center(child: Text('Search Page')),
+    HistoryScreen(),
+    const Center(child: Text('Profile Page')),
+  ];
+
+  void _onTabTapped(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _pages[_currentIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: _currentIndex,
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey,
+        onTap: _onTabTapped,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.payment), label: 'Payment'),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
+          BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        ],
+      ),
+    );
+  }
+}
+
+class HotelListPage extends StatefulWidget {
+  const HotelListPage({Key? key}) : super(key: key);
+
+  @override
+  _HotelListPageState createState() => _HotelListPageState();
+}
+
+class _HotelListPageState extends State<HotelListPage> {
+  Map<String, bool> _isBooked = {};
 
   @override
   Widget build(BuildContext context) {
@@ -61,39 +144,60 @@ class HotelsPage extends StatelessWidget {
         'reviews': 20,
         'description': 'The ONOMO Hotels chain established...',
       },
-      {
-        'name': 'Al Rahman Hotel',
-        'price': '\$200/Night',
-        'imageUrl': 'assets/room2.jpg',
-        'rating': 4.5,
-        'reviews': 20,
-        'description': 'The ONOMO Hotels chain established...',
-      },
-      {
-        'name': 'Oberoy Hotel',
-        'price': '\$200/Night',
-        'imageUrl': 'assets/room2.jpg',
-        'rating': 4.5,
-        'reviews': 20,
-        'description': 'The ONOMO Hotels chain established...',
-      },
     ];
 
     return ListView.builder(
       padding: const EdgeInsets.all(8),
       shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
+      physics: const NeverScrollableScrollPhysics(),
       itemCount: hotels.length,
       itemBuilder: (context, index) {
         final hotel = hotels[index];
+        final hotelName = hotel['name'] as String;
+        _isBooked.putIfAbsent(hotelName, () => false);
         return _buildHotelCard(
           context,
-          hotelName: hotel['name'] as String,
+          hotelName: hotelName,
           price: hotel['price'] as String,
           imageUrl: hotel['imageUrl'] as String,
           rating: (hotel['rating'] as double?) ?? 0.0,
           reviews: (hotel['reviews'] as int?) ?? 0,
           description: hotel['description'] as String,
+          isBooked: _isBooked[hotelName]!,
+          onBookToggle: () async {
+            if (!_isBooked[hotelName]!) {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BookingScreen(
+                    hotelName: hotelName,
+                    address: '12 Eze Adele Road Rumuomasi Lagos Nigeria',
+                    price: hotel['price'] as String,
+                    imageUrl: hotel['imageUrl'] as String,
+                    description: hotel['description'] as String,
+                  ),
+                ),
+              );
+
+              // Check if the booking was successful and add to history
+              if (result != null && result is Map<String, dynamic>) {
+                setState(() {
+                  _isBooked[hotelName] = true;
+                  globalBookingHistory.add(result);
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('${hotelName} booked successfully!')),
+                );
+              }
+            } else {
+              // Unbook logic if needed
+              setState(() {
+                _isBooked[hotelName] = false;
+                // Remove from globalBookingHistory if you want
+                globalBookingHistory.removeWhere((item) => item['hotelName'] == hotelName);
+              });
+            }
+          },
         );
       },
     );
@@ -105,8 +209,9 @@ class HotelsPage extends StatelessWidget {
       required String imageUrl,
       required double rating,
       required int reviews,
-      required String description}) {
-    final isNetwork = imageUrl.startsWith('http');
+      required String description,
+      required bool isBooked,
+      required VoidCallback onBookToggle}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Card(
@@ -118,27 +223,20 @@ class HotelsPage extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: isNetwork
-                  ? Image.network(
-                      imageUrl,
-                      height: 120,
-                      width: 120,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          height: 120,
-                          width: 120,
-                          color: Colors.grey[300],
-                          child: const Icon(Icons.broken_image, size: 40),
-                        );
-                      },
-                    )
-                  : Image.asset(
-                      imageUrl,
-                      height: 120,
-                      width: 120,
-                      fit: BoxFit.cover,
-                    ),
+              child: Image.asset(
+                imageUrl,
+                height: 120,
+                width: 120,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    height: 120,
+                    width: 120,
+                    color: Colors.grey[300],
+                    child: const Icon(Icons.broken_image, size: 40),
+                  );
+                },
+              ),
             ),
             Expanded(
               child: Padding(
@@ -180,28 +278,12 @@ class HotelsPage extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(price, style: TextStyle(color: Colors.blue, fontSize: 16)),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => BookingScreen(
-                                  hotelName: hotelName,
-                                  address: '12 Eze Adele Road Rumuomasi Lagos Nigeria',
-                                  price: price,
-                                  imageUrl: imageUrl,
-                                  description: description,
-                                ),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
+                        IconButton(
+                          icon: Icon(
+                            isBooked ? Icons.undo : Icons.bookmark,
+                            color: Colors.blue,
                           ),
-                          child: const Text('Book now'),
+                          onPressed: onBookToggle,
                         ),
                       ],
                     ),
@@ -250,7 +332,7 @@ class _BookingScreenState extends State<BookingScreen> {
     _hotelNameController = TextEditingController(text: widget.hotelName);
     _bedsController = TextEditingController();
     _peopleController = TextEditingController();
-    _selectedDate = null; // Initialize with null, will be set via date picker
+    _selectedDate = null;
   }
 
   @override
@@ -280,13 +362,16 @@ class _BookingScreenState extends State<BookingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Book Your Stay'),
+        backgroundColor: Colors.blue,
+      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header Image
             ClipRRect(
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
+              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
               child: Image.asset(
                 widget.imageUrl,
                 height: 200,
@@ -306,18 +391,9 @@ class _BookingScreenState extends State<BookingScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        widget.hotelName,
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        widget.price,
-                        style: TextStyle(fontSize: 18, color: Colors.green),
-                      ),
-                    ],
+                  Text(
+                    widget.hotelName,
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
                   Row(
@@ -344,13 +420,13 @@ class _BookingScreenState extends State<BookingScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
+                      const Text(
                         'Amenities',
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       TextButton(
                         onPressed: () {},
-                        child: Text('View All', style: TextStyle(color: Colors.blue)),
+                        child: const Text('View All', style: TextStyle(color: Colors.blue)),
                       ),
                     ],
                   ),
@@ -365,42 +441,81 @@ class _BookingScreenState extends State<BookingScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Gallery Photos',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      TextButton(
-                        onPressed: () {},
-                        child: Text('See All', style: TextStyle(color: Colors.blue)),
-                      ),
-                    ],
+                  // Form fields for booking details
+                  const Text('Booking Details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _hotelNameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Hotel Name',
+                      border: OutlineInputBorder(),
+                    ),
+                    readOnly: true,
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildGalleryImage('assets/room1.jpg'),
-                      _buildGalleryImage('assets/room2.jpg'),
-                      _buildGalleryImage('assets/room3.jpg'),
-                    ],
+                  const SizedBox(height: 16),
+                  GestureDetector(
+                    onTap: () => _selectDate(context),
+                    child: InputDecorator(
+                      decoration: const InputDecoration(
+                        labelText: 'Check-in Date',
+                        border: OutlineInputBorder(),
+                        suffixIcon: Icon(Icons.calendar_today),
+                      ),
+                      child: Text(
+                        _selectedDate == null
+                            ? 'Select Date'
+                            : DateFormat('yyyy-MM-dd').format(_selectedDate!),
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 20),
-                  // New Booking Form Section
-                  _buildBookingForm(context),
-                  const SizedBox(height: 20),
-                  Center(
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _bedsController,
+                    decoration: const InputDecoration(
+                      labelText: 'Number of Beds',
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _peopleController,
+                    decoration: const InputDecoration(
+                      labelText: 'Number of People',
+                      border: OutlineInputBorder(),
+                      
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/payment');
+                      onPressed: () async {
+                        // Navigate to payment page and get result
+                        final paymentSuccess = await Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => PaymentPage()),
+                        );
+                        // If payment was successful, return the booking data
+                        if (paymentSuccess == true) {
+                          final newBooking = {
+                            'hotelName': widget.hotelName,
+                            'date': DateTime.now(),
+                            'total': widget.price,
+                            'status': 'Completed',
+                            'imageUrl': widget.imageUrl,
+                            'showAlert': true, // Set to true to show alert on history screen
+                          };
+                          Navigator.pop(context, newBooking);
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                       ),
                       child: const Text('Confirm Booking'),
                     ),
@@ -423,133 +538,6 @@ class _BookingScreenState extends State<BookingScreen> {
       ],
     );
   }
-
-  Widget _buildGalleryImage(String imageUrl) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Image.asset(
-          imageUrl,
-          height: 80,
-          width: 80,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              height: 80,
-              width: 80,
-              color: Colors.grey[300],
-              child: const Icon(Icons.broken_image, size: 40),
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBookingForm(BuildContext context) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 4,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Destination',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _destinationController,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                hintText: 'Enter destination',
-                prefixIcon: Icon(Icons.location_on),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Hotel Name',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _hotelNameController,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                hintText: 'Enter hotel name',
-                prefixIcon: Icon(Icons.hotel),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Details',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: TextEditingController(
-                      text: _selectedDate != null
-                          ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'
-                          : '',
-                    ),
-                    onTap: () => _selectDate(context),
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      hintText: 'Select date',
-                      prefixIcon: Icon(Icons.calendar_today),
-                      labelText: 'Date',
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    controller: _bedsController,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      hintText: '2',
-                      prefixIcon: Icon(Icons.bed),
-                      labelText: 'Beds',
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    controller: _peopleController,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      hintText: '4',
-                      prefixIcon: Icon(Icons.people),
-                      labelText: 'People',
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class PaymentPage extends StatelessWidget {
@@ -557,7 +545,7 @@ class PaymentPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Payment'),
+        title: const Text('Payment'),
         backgroundColor: Colors.blue,
       ),
       body: Padding(
@@ -565,51 +553,52 @@ class PaymentPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Payment Details',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 20),
-            TextField(
+            const SizedBox(height: 20),
+            const TextField(
               decoration: InputDecoration(
                 labelText: 'Card Number',
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.credit_card),
               ),
             ),
-            SizedBox(height: 10),
-            TextField(
+            const SizedBox(height: 10),
+            const TextField(
               decoration: InputDecoration(
                 labelText: 'Expiry Date',
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.calendar_today),
               ),
             ),
-            SizedBox(height: 10),
-            TextField(
+            const SizedBox(height: 10),
+            const TextField(
               decoration: InputDecoration(
                 labelText: 'CVV',
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.lock),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Center(
               child: ElevatedButton(
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Payment Successful!')),
+                    const SnackBar(content: Text('Payment Successful!')),
                   );
-                  Navigator.pop(context); // Return to previous screen
+                  // Pass true back to indicate successful payment
+                  Navigator.pop(context, true);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
-                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: Text('Pay Now'),
+                child: const Text('Pay Now'),
               ),
             ),
           ],
