@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:booking_travel_flutter/screens/adventures/adventures_page.dart';
-import 'package:booking_travel_flutter/screens/hotel/hotel_list_page.dart';
+import '../adventures/adventures_page.dart';
 
 class Province {
   final int id;
@@ -25,31 +24,23 @@ class Province {
       imageUrl: json['image_url'] ?? '',
     );
   }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'description': description,
-      'image_url': imageUrl,
-    };
-  }
 }
 
 class ProvincesPage extends StatefulWidget {
   final Function(Map<String, dynamic>) onProvinceTap;
 
   const ProvincesPage({
-    Key? key,
+    super.key,
     required this.onProvinceTap,
-  }) : super(key: key);
+  });
 
   @override
-  _ProvincesPageState createState() => _ProvincesPageState();
+  State<ProvincesPage> createState() => _ProvincesPageState();
 }
 
 class _ProvincesPageState extends State<ProvincesPage> {
   late Future<List<Province>> _provincesFuture;
+  bool _isRefreshing = false;
 
   @override
   void initState() {
@@ -58,17 +49,166 @@ class _ProvincesPageState extends State<ProvincesPage> {
   }
 
   Future<List<Province>> fetchProvinces() async {
-    final response = await http.get(
-      Uri.parse('http://localhost:8000/api/provinces'),
-    );
+    try {
+      final response = await http.get(
+        Uri.parse('http://localhost:8000/api/provinces'),
+      );
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      return List<Province>.from(
-          data['data'].map((json) => Province.fromJson(json)));
-    } else {
-      throw Exception('Failed to load provinces');
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return List<Province>.from(
+            data['data'].map((json) => Province.fromJson(json)));
+      } else {
+        throw Exception('Failed to load provinces: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching provinces: $e');
     }
+  }
+
+  Future<void> _refreshProvinces() async {
+    setState(() {
+      _isRefreshing = true;
+    });
+    try {
+      final provinces = await fetchProvinces();
+      setState(() {
+        _provincesFuture = Future.value(provinces);
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to refresh: ${e.toString()}')),
+        );
+      }
+    } finally {
+      setState(() {
+        _isRefreshing = false;
+      });
+    }
+  }
+
+  Widget _buildProvinceCard(Province province) {
+    return Card(
+      elevation: 4,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AdventuresPage(
+                provinceId: province.id,
+                provinceName: province.name,
+                onAdventureTap: (adventure) {
+                  // Handle adventure tap
+                },
+              ),
+            ),
+          );
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(12)),
+              child: province.imageUrl.isNotEmpty
+                  ? Image.network(
+                      province.imageUrl,
+                      height: 150,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        height: 150,
+                        color: Colors.grey[300],
+                        child: const Icon(Icons.image_not_supported,
+                            size: 50, color: Colors.grey),
+                      ),
+                    )
+                  : Container(
+                      height: 150,
+                      color: Colors.grey[300],
+                      child: const Icon(Icons.image_not_supported,
+                          size: 50, color: Colors.grey),
+                    ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    province.name,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    province.description,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.explore_outlined, size: 80, color: Colors.grey),
+          const SizedBox(height: 16),
+          const Text(
+            'No provinces available',
+            style: TextStyle(fontSize: 18, color: Colors.grey),
+          ),
+          const SizedBox(height: 8),
+          ElevatedButton(
+            onPressed: _refreshProvinces,
+            child: const Text('Retry'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(String error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, size: 80, color: Colors.red),
+          const SizedBox(height: 16),
+          Text(
+            'Error: $error',
+            style: const TextStyle(color: Colors.red),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _refreshProvinces,
+            child: const Text('Retry'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -78,77 +218,32 @@ class _ProvincesPageState extends State<ProvincesPage> {
         title: const Text('Provinces'),
         backgroundColor: Colors.deepPurple,
         foregroundColor: Colors.white,
+        elevation: 0,
       ),
-      body: FutureBuilder<List<Province>>(
-        future: _provincesFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No provinces available'));
-          }
+      body: RefreshIndicator(
+        onRefresh: _refreshProvinces,
+        child: FutureBuilder<List<Province>>(
+          future: _provincesFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting &&
+                !_isRefreshing) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return _buildErrorState(snapshot.error.toString());
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return _buildEmptyState();
+            }
 
-          final provinces = snapshot.data!;
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: provinces.length,
-            itemBuilder: (context, index) {
-              final province = provinces[index];
-              return ListTile(
-                leading: province.imageUrl.isNotEmpty
-                    ? Image.network(
-                        province.imageUrl,
-                        width: 60,
-                        height: 60,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          width: 60,
-                          height: 60,
-                          color: Colors.grey[300],
-                          child: const Icon(Icons.image_not_supported),
-                        ),
-                      )
-                    : Container(
-                        width: 60,
-                        height: 60,
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.image_not_supported),
-                      ),
-                title: Text(province.name),
-                subtitle: Text(province.description),
-                trailing: const Icon(Icons.arrow_forward),
-                onTap: () {
-                  // Navigate to adventures page for this province
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AdventuresPage(
-                        provinceId: province.id,
-                        provinceName: province.name,
-                        onAdventureTap: (adventure) {
-                          // When adventure is tapped, navigate to hotel list
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => HotelListPage(
-                                provinceId: province.id,
-                                provinceName: province.name,
-                                adventureId: adventure['id'],
-                                adventureName: adventure['name'],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  );
-                },
-              );
-            },
-          );
-        },
+            final provinces = snapshot.data!;
+            return ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              itemCount: provinces.length,
+              itemBuilder: (context, index) {
+                return _buildProvinceCard(provinces[index]);
+              },
+            );
+          },
+        ),
       ),
     );
   }

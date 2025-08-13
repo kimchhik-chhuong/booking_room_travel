@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:booking_travel/models/hotel_model.dart';
+import 'package:booking_travel/services/hotel_service.dart';
+import 'package:booking_travel/screens/hotel/hotel_detail_page.dart';
 
 class HotelListPage extends StatefulWidget {
   final int provinceId;
@@ -9,40 +10,47 @@ class HotelListPage extends StatefulWidget {
   final int? adventureId;
 
   const HotelListPage({
-    Key? key,
+    super.key,
     required this.provinceId,
     required this.provinceName,
     this.adventureName,
     this.adventureId,
-  }) : super(key: key);
+  });
 
   @override
-  _HotelListPageState createState() => _HotelListPageState();
+  State<HotelListPage> createState() => _HotelListPageState();
 }
 
 class _HotelListPageState extends State<HotelListPage> {
-  late Future<List<Map<String, dynamic>>> _hotelsFuture;
+  late Future<List<Hotel>> _hotelsFuture;
 
   @override
   void initState() {
     super.initState();
-    _hotelsFuture = fetchHotels();
+    _hotelsFuture = _fetchHotels();
   }
 
-  Future<List<Map<String, dynamic>>> fetchHotels() async {
-    String url =
-        'http://localhost:8000/api/hotelmetadata?province_id=${widget.provinceId}';
-    if (widget.adventureId != null) {
-      url += '&adventure_id=${widget.adventureId}';
+  Future<List<Hotel>> _fetchHotels() async {
+    try {
+      if (widget.adventureId != null) {
+        return await HotelService.fetchHotelsByAdventure(widget.adventureId!);
+      } else {
+        return await HotelService.fetchHotelsByProvince(widget.provinceId);
+      }
+    } catch (e) {
+      throw Exception('Failed to load hotels: $e');
     }
-    final response = await http.get(Uri.parse(url));
+  }
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      return List<Map<String, dynamic>>.from(data['data'] ?? []);
-    } else {
-      throw Exception('Failed to load hotels');
-    }
+  void _navigateToHotelDetail(Hotel hotel) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HotelDetailPage(
+          hotel: hotel,
+        ),
+      ),
+    );
   }
 
   @override
@@ -54,7 +62,7 @@ class _HotelListPageState extends State<HotelListPage> {
             : 'Hotels in ${widget.provinceName}'),
         backgroundColor: Colors.orange,
       ),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
+      body: FutureBuilder<List<Hotel>>(
         future: _hotelsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -74,21 +82,16 @@ class _HotelListPageState extends State<HotelListPage> {
               return Card(
                 margin: const EdgeInsets.only(bottom: 16),
                 child: InkWell(
-                  onTap: () {
-                    // Handle hotel tap - show hotel details or booking
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Selected: ${hotel['name']}')),
-                    );
-                  },
+                  onTap: () => _navigateToHotelDetail(hotel),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (hotel['image'] != null)
+                      if (hotel.image != null)
                         ClipRRect(
                           borderRadius: const BorderRadius.vertical(
                               top: Radius.circular(8)),
                           child: Image.network(
-                            hotel['image'],
+                            hotel.image!,
                             height: 150,
                             width: double.infinity,
                             fit: BoxFit.cover,
@@ -106,7 +109,7 @@ class _HotelListPageState extends State<HotelListPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              hotel['name'] ?? 'Hotel',
+                              hotel.name,
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -114,8 +117,7 @@ class _HotelListPageState extends State<HotelListPage> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              hotel['description'] ??
-                                  'No description available',
+                              hotel.description,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -124,10 +126,10 @@ class _HotelListPageState extends State<HotelListPage> {
                               children: [
                                 const Icon(Icons.star,
                                     color: Colors.amber, size: 16),
-                                Text(' ${hotel['rating'] ?? 'N/A'}'),
+                                Text(' ${hotel.rating ?? 'N/A'}'),
                                 const Spacer(),
                                 Text(
-                                  '\$${hotel['price_range'] ?? 'N/A'}/night',
+                                  '\$${hotel.priceRange ?? 'N/A'}/night',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: Colors.blue,

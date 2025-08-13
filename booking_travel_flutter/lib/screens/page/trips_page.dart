@@ -42,12 +42,13 @@ class _TripsPageState extends State<TripsPage> {
                 'name': item['name'],
                 'image': assetPath,
                 'page': AdventuresPage(
-                    provinceId: item['id'],
-                    provinceName: item['name'],
-                    onAdventureTap: (adventure) {
-                      // Handle adventure tap
-                      print('Selected adventure: ${adventure['name']}');
-                    }),
+                  provinceId: item['id'],
+                  provinceName: item['name'],
+                  onAdventureTap: (adventure) {
+                    // Handle adventure tap
+                    print('Selected adventure: ${adventure['name']}');
+                  },
+                ),
               };
             }).toList();
             filteredProvinces = provinces;
