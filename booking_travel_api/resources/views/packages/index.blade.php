@@ -1,81 +1,30 @@
-@extends('layouts.dashboard')
+{{-- resources/views/packages/index.blade.php --}}
+@extends('layouts.app')
 
-@section('title', 'Packages')
-@section('page-title', 'Travel Packages')
-@section('page-subtitle', 'Manage your travel packages and create new offerings.')
+@section('title', 'Packages Dashboard')
 
 @section('content')
-<div class="min-h-screen bg-gray-50">
-    <!-- Sidebar -->
-    @include('partials.sidebar')
+<div class="container">
+    <h1 class="my-4">📦 Packages Dashboard</h1>
 
-    <!-- Header -->
-    @include('partials.header')
-
-    <!-- Main Content -->
-    <div class="ml-72 mr-80 p-8">
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-            <div class="stat-card">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-dark-500 text-sm font-medium mb-2">Total Packages</p>
-                        <p class="text-3xl font-bold text-dark-800">47</p>
-                        <p class="text-emerald-600 text-sm font-medium mt-2">+3 this month</p>
-                    </div>
-                    <div class="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center">
-                        <i class="fas fa-box text-white text-xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-dark-500 text-sm font-medium mb-2">Active Packages</p>
-                        <p class="text-3xl font-bold text-dark-800">42</p>
-                        <p class="text-emerald-600 text-sm font-medium mt-2">89% active rate</p>
-                    </div>
-                    <div class="w-14 h-14 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl flex items-center justify-center">
-                        <i class="fas fa-check-circle text-white text-xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-dark-500 text-sm font-medium mb-2">Avg. Rating</p>
-                        <p class="text-3xl font-bold text-dark-800">4.8</p>
-                        <p class="text-emerald-600 text-sm font-medium mt-2">+0.2 this month</p>
-                    </div>
-                    <div class="w-14 h-14 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-2xl flex items-center justify-center">
-                        <i class="fas fa-star text-white text-xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-dark-500 text-sm font-medium mb-2">Total Revenue</p>
-                        <p class="text-3xl font-bold text-dark-800">$234K</p>
-                        <p class="text-emerald-600 text-sm font-medium mt-2">+18% this month</p>
-                    </div>
-                    <div class="w-14 h-14 bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl flex items-center justify-center">
-                        <i class="fas fa-dollar-sign text-white text-xl"></i>
-                    </div>
+    {{-- Statistics --}}
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-header">Total Packages</div>
+                <div class="card-body">
+                    <h4 class="card-title">{{ $totalPackages }}</h4>
                 </div>
             </div>
         </div>
 
-        <!-- Featured Package -->
-        <div class="card-modern p-8 mb-12">
-            <div class="flex items-center justify-between mb-8">
-                <div>
-                    <h3 class="text-2xl font-bold text-dark-800 mb-2">Featured Package</h3>
-                    <p class="text-dark-500">Our most popular travel experience</p>
+        <div class="col-md-4">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">New This Month</div>
+                <div class="card-body">
+                    <h4 class="card-title">{{ $newThisMonth }}</h4>
                 </div>
+<<<<<<< HEAD
                 <button class="btn-modern">Edit Package</button>
             </div>
             
@@ -278,83 +227,43 @@
                     </div>
                 </div>
                 @endforeach
+=======
+>>>>>>> main
             </div>
         </div>
     </div>
 
-    <!-- Right Sidebar -->
-    @include('partials.right-sidebar')
+    {{-- Packages Table --}}
+    <div class="card">
+        <div class="card-header">
+            Package List
+        </div>
+        <div class="card-body">
+            @if($packages->count() > 0)
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Package Name</th>
+                            <th>Price</th>
+                            <th>Created At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($packages as $package)
+                            <tr>
+                                <td>{{ $package->id }}</td>
+                                <td>{{ $package->name }}</td>
+                                <td>${{ number_format($package->price, 2) }}</td>
+                                <td>{{ $package->created_at->format('Y-m-d') }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @else
+                <p class="text-muted">No packages available.</p>
+            @endif
+        </div>
+    </div>
 </div>
-
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Search functionality
-    const searchInput = document.getElementById('searchPackages');
-    const categoryFilter = document.getElementById('categoryFilter');
-    const packageCards = document.querySelectorAll('.package-card');
-    
-    function filterPackages() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const category = categoryFilter.value;
-        
-        packageCards.forEach(card => {
-            const title = card.getAttribute('data-title');
-            const location = card.getAttribute('data-location');
-            const cardCategory = card.getAttribute('data-category');
-            const cardStatus = card.getAttribute('data-status');
-            
-            const matchesSearch = title.includes(searchTerm) || location.includes(searchTerm);
-            const matchesCategory = category === 'All' || cardCategory === category;
-            
-            if (matchesSearch && matchesCategory) {
-                card.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-    }
-    
-    // Event listeners for search and filter
-    searchInput.addEventListener('input', filterPackages);
-    categoryFilter.addEventListener('change', filterPackages);
-    
-    // Action buttons functionality
-    document.querySelectorAll('.package-card .fa-eye').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const packageTitle = this.closest('.package-card').querySelector('h4').textContent;
-            alert(`Viewing details for ${packageTitle}`);
-        });
-    });
-    
-    document.querySelectorAll('.package-card .fa-edit').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const packageTitle = this.closest('.package-card').querySelector('h4').textContent;
-            alert(`Editing package ${packageTitle}`);
-        });
-    });
-    
-    document.querySelectorAll('.package-card .fa-trash').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const packageTitle = this.closest('.package-card').querySelector('h4').textContent;
-            if (confirm(`Are you sure you want to delete ${packageTitle}?`)) {
-                alert(`Package ${packageTitle} deleted`);
-                this.closest('.package-card').remove();
-            }
-        });
-    });
-    
-    // Click on card to view details
-    document.querySelectorAll('.package-card').forEach(card => {
-        card.addEventListener('click', function() {
-            const packageTitle = this.querySelector('h4').textContent;
-            alert(`Viewing details for ${packageTitle}`);
-        });
-    });
-});
-</script>
-@endpush
 @endsection
