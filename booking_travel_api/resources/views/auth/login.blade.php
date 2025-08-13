@@ -4,184 +4,124 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login</title>
-
-   Bootstrap 5.3 
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
-
-   Optional: Bootstrap Icons for subtle UI polish 
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
-    rel="stylesheet"
-  />
-
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <style>
     :root {
-      /* Refine primary color and accents */
-      --bs-primary: #7c3aed;
-      --bs-primary-rgb: 124, 58, 237;
-
-      /* Optional: nicer focus ring color */
-      --focus-ring: rgba(124, 58, 237, 0.35);
+      --overlay: rgba(255, 255, 255, 0.28);
+      --overlay-strong: rgba(255, 255, 255, 0.42);
+      --bg: #0b0b0b;
     }
 
-    /* Soft gradient background */
+    html, body {
+      height: 100%;
+    }
+
     body {
-      min-height: 100vh;
-      background:
-        radial-gradient(1200px 600px at 10% -10%, rgba(124, 58, 237, 0.08), transparent 60%),
-        radial-gradient(1000px 500px at 100% 0%, rgba(16, 185, 129, 0.08), transparent 50%),
-        linear-gradient(180deg, #f9fafb 0%, #ffffff 100%);
-    }
-
-    /* Centered container */
-    .auth-wrapper {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
-
-    /* Card with subtle glass look and shadow */
-    .auth-card {
-      width: 100%;
-      max-width: 460px;
-      border: 0;
-      border-radius: 18px;
-      background: rgba(255, 255, 255, 0.9);
-      backdrop-filter: saturate(160%) blur(8px);
-      box-shadow:
-        0 10px 25px rgba(16, 24, 40, 0.06),
-        0 2px 8px rgba(16, 24, 40, 0.03);
-    }
-
-    /* Header styles */
-    .auth-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 6px;
-    }
-    .auth-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #7c3aed, #10b981);
-      color: #fff;
-      box-shadow: 0 6px 14px rgba(124, 58, 237, 0.25);
-    }
-    .auth-title {
-      font-weight: 700;
-      letter-spacing: -0.02em;
       margin: 0;
-    }
-    .auth-subtitle {
-      color: #6b7280;
-      font-size: 0.95rem;
-      margin-bottom: 20px;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      color: #fff;
+      background: #000;
     }
 
-    /* Floating labels polish */
-    .form-floating > label {
-      color: #6b7280;
-    }
-    .form-control,
-    .form-control:focus {
-      box-shadow: none;
-    }
-    .form-control:focus {
-      border-color: rgba(var(--bs-primary-rgb), 0.5);
-      outline: 0;
-      box-shadow: 0 0 0 0.25rem var(--focus-ring);
+    /* Fullscreen hero with background image */
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 2rem;
+      align-items: center;
+      padding: 2rem;
+      background: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1920&auto=format&fit=crop')
+        center/cover no-repeat;
     }
 
-    /* Primary button enhancements */
-    .btn-primary {
-      --bs-btn-bg: var(--bs-primary);
-      --bs-btn-border-color: var(--bs-primary);
-      --bs-btn-hover-bg: #6d28d9;
-      --bs-btn-hover-border-color: #6d28d9;
-      --bs-btn-focus-shadow-rgb: var(--bs-primary-rgb);
-      --bs-btn-active-bg: #5b21b6;
-      --bs-btn-active-border-color: #5b21b6;
-      border-radius: 12px;
-      padding: 0.75rem 1rem;
-      font-weight: 600;
+    /* Dark gradient overlay for readability */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to right, rgba(0,0,0,.45), rgba(0,0,0,.25) 60%, rgba(0,0,0,.25));
     }
 
-    /* Alert rounding */
-    .alert {
-      border-radius: 12px;
+    /* Login card styling */
+    .login-card {
+      position: relative;
+      z-index: 1;
+      background: var(--overlay);
+      border-radius: 14px;
+      padding: 28px;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border: 1px solid rgba(255,255,255,.6);
+      max-width: 520px;
     }
 
-    /* Small helper links */
-    .helper {
-      font-size: 0.9rem;
-      color: #6b7280;
+    @media (max-width: 992px) {
+      .hero {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+      }
+      .hero .card-area { order: -1; }
+    }
+
+    /* Right side hero text */
+    .hero-copy {
+      color: #fff;
+      text-align: right;
+      padding-right: 2rem;
+    }
+    .hero-copy h1 {
+      font-size: 48px;
+      line-height: 1.05;
+      font-weight: 900;
+      letter-spacing: .5px;
+      margin: 0 0 1rem;
+      text-transform: uppercase;
+    }
+
+    /* Small screens adjustments */
+    @media (max-width: 600px) {
+      .hero-copy h1 { font-size: 28px; text-align: left; }
+      .login-card { width: 100%; }
+      .hero-copy { text-align: left; padding: 0; }
     }
   </style>
 </head>
 <body>
-  <div class="auth-wrapper">
-    <div class="auth-card p-4 p-sm-5">
-      <div class="auth-header">
-        <div class="auth-badge">
-          <i class="bi bi-shield-lock" aria-hidden="true"></i>
-        </div>
-        <h2 class="auth-title h3">Login</h2>
+  <section class="hero" aria-label="Login with background image">
+    <div class="card-area d-flex align-items-center justify-content-center">
+      <div class="login-card w-100">
+        <h2 class="mb-3">Login to Your Account</h2>
+        @if(session('error'))
+          <div class="alert alert-danger" role="alert">{{ session('error') }}</div>
+        @endif
+        <form method="POST" action="{{ route('login.post') }}" novalidate>
+          @csrf
+          <div class="mb-3">
+            <label for="email" class="form-label visually-hidden">Email address</label>
+            <input type="email" class="form-control" id="email" name="email" placeholder="Email address" required autofocus />
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label visually-hidden">Password</label>
+            <input type="password" class="form-control" id="password" name="password" placeholder="Password" required />
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Login</button>
+        </form>
       </div>
-      <p class="auth-subtitle">Welcome back! Please enter your credentials to continue.</p>
-
-      @if(session('error'))
-        <div class="alert alert-danger d-flex align-items-start gap-2" role="alert">
-          <i class="bi bi-exclamation-triangle-fill mt-1" aria-hidden="true"></i>
-          <div>{{ session('error') }}</div>
-        </div>
-      @endif
-
-      <form method="POST" action="{{ route('login.post') }}" novalidate>
-        @csrf
-
-        <div class="form-floating mb-3">
-          <input
-            type="email"
-            class="form-control"
-            id="email"
-            name="email"
-            placeholder="name@example.com"
-            required
-            autofocus
-          />
-          <label for="email"><i class="bi bi-envelope me-2" aria-hidden="true"></i>Email address</label>
-        </div>
-
-        <div class="form-floating mb-4">
-          <input
-            type="password"
-            class="form-control"
-            id="password"
-            name="password"
-            placeholder="••••••••"
-            required
-          />
-          <label for="password"><i class="bi bi-lock me-2" aria-hidden="true"></i>Password</label>
-        </div>
-
-        <button type="submit" class="btn btn-primary w-100">
-          <i class="bi bi-box-arrow-in-right me-2" aria-hidden="true"></i>Login
-        </button>
-
-        <div class="text-center mt-3 helper">
-          Tip: Make sure your email is correct before submitting.
-        </div>
-      </form>
     </div>
-  </div>
+
+    <div class="hero-copy" aria-label="Hero text">
+      <div class="wrapper" style="max-width:600px; margin: 0 auto;">
+        <h1 style="font-weight:900; margin:0 0 1rem;">THE GOAL OF LIFE IS<br> LIVING IN AGREEMENT<br> WITH NATURE.</h1>
+        <div class="d-flex justify-content-end gap-3" aria-label="Social links">
+          <a href="#" class="btn btn-light btn-sm" aria-label="Facebook">f</a>
+          <a href="#" class="btn btn-light btn-sm" aria-label="Instagram">@</a>
+          <a href="#" class="btn btn-light btn-sm" aria-label="LinkedIn">in</a>
+          <a href="#" class="btn btn-light btn-sm" aria-label="Twitter">t</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
