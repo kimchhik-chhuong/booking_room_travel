@@ -22,10 +22,12 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\AdventureController;
 
+// Authentication routes
 Route::post('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// Public routes
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
@@ -60,6 +62,7 @@ Route::get('/hotelmetadata/price-range', [HotelMetadataController::class, 'getBy
 Route::get('/hotelmetadata/top-rated', [HotelMetadataController::class, 'getTopRated']);
 Route::get('/hotelmetadata/paginate', [HotelMetadataController::class, 'paginate']);
 
+// Resource routes
 Route::apiResource('booking', BookingController::class);
 Route::apiResource('destination', DestinationController::class);
 Route::apiResource('hotelbooking', HotelBookingController::class);
@@ -83,17 +86,17 @@ Route::get('/deals/{id}', [DealController::class, 'show'])->name('deals.show');
 Route::put('/deals/{id}', [DealController::class, 'update'])->name('deals.update');
 Route::delete('/deals/{id}', [DealController::class, 'destroy'])->name('deals.destroy');
 
-//message
+// Message routes
 Route::get('/messages', [MessageController::class, 'index']);
 Route::get('/messages/{id}', [MessageController::class, 'show']);
-Route::post('/api/messages/send', [MessageController::class, 'store']);
+Route::post('/messages/send', [MessageController::class, 'store']);
 
-//
-Route::middleware(['auth'])->group(function () {
+// Protected routes
+Route::middleware(['auth:sanctum'])->group(function () {
     Route::resource('users', UserController::class);
     Route::resource('roles', RoleController::class);
 
-    Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    Route::get('/user', function (Request $request) {
         return $request->user();
     });
 });
