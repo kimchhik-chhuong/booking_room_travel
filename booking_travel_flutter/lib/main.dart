@@ -1,3 +1,4 @@
+import 'package:booking_travel/screens/message/message_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -42,6 +43,7 @@ class TravelBookingApp extends StatelessWidget {
         '/onboarding': (context) => OnboardingScreen(),
         '/home': (context) => HomeScreen(),
         '/payment': (context) => PaymentScreen(),
+        // '/message': (context) => MessageScreen(),
         '/search': (context) => SearchScreen(),
         '/profile': (context) => ProfileScreen(),
       },
