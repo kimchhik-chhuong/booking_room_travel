@@ -10,7 +10,15 @@ class UserService {
   static final String baseUrl =
       dotenv.env['API_URL'] ?? 'http://localhost:8000/api';
 
-  /// Register
+  // Cached SharedPreferences instance
+  static late SharedPreferences _prefs;
+
+  /// Initialize SharedPreferences once before using the service
+  static Future<void> init() async {
+    _prefs = await SharedPreferences.getInstance();
+  }
+
+  /// Register a new user
   static Future<bool> registerUser({
     required String name,
     required String email,
@@ -46,7 +54,7 @@ class UserService {
     }
   }
 
-  /// Login
+  /// Login user
   static Future<Map<String, dynamic>?> loginUser({
     required String email,
     required String password,
@@ -66,9 +74,8 @@ class UserService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString(_accessTokenKey, data['access_token']);
-        await prefs.setString(_currentUserKey, jsonEncode(data['user']));
+        await _prefs.setString(_accessTokenKey, data['access_token']);
+        await _prefs.setString(_currentUserKey, jsonEncode(data['user']));
         return data['user'];
       } else {
         final error = jsonDecode(response.body);
@@ -81,36 +88,33 @@ class UserService {
     }
   }
 
-  /// Get Current User
+  /// Get current logged-in user info
   static Future<Map<String, dynamic>?> getCurrentUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userJson = prefs.getString(_currentUserKey);
+    final userJson = _prefs.getString(_currentUserKey);
     if (userJson != null) {
       return jsonDecode(userJson);
     }
     return null;
   }
 
-  /// Get Access Token
+  /// Get stored access token
   static Future<String?> getAccessToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_accessTokenKey);
+    return _prefs.getString(_accessTokenKey);
   }
 
-  /// Logout
+  /// Logout user by clearing stored data
   static Future<void> logoutUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_currentUserKey);
-    await prefs.remove(_accessTokenKey);
+    await _prefs.remove(_currentUserKey);
+    await _prefs.remove(_accessTokenKey);
   }
 
-  /// Check Login Status
+  /// Check if user is logged in
   static Future<bool> isLoggedIn() async {
     final user = await getCurrentUser();
     return user != null;
   }
 
-  /// Placeholder: Update profile
+  /// Placeholder for updating user profile (not implemented)
   static Future<void> updateUserProfile({
     required String name,
     required String email,
@@ -120,11 +124,10 @@ class UserService {
     print("Update profile (not implemented yet)");
   }
 
-  /// Placeholder: Save new user data
+  /// Save updated user data locally
   static Future<void> updateUser(Map<String, dynamic>? currentUser) async {
-    final prefs = await SharedPreferences.getInstance();
     if (currentUser != null) {
-      await prefs.setString(_currentUserKey, jsonEncode(currentUser));
+      await _prefs.setString(_currentUserKey, jsonEncode(currentUser));
     }
   }
 }

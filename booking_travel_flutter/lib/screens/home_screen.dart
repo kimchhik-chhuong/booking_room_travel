@@ -188,7 +188,7 @@ class HomePageContent extends StatelessWidget {
     ];
     final pages = [
       const TripsPage(),
-      const HotelsPage(),
+      // const HotelsPage(),
       const FlightsPage(),
       const OffersPage(),
     ];

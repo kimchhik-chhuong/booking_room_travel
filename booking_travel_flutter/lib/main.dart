@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'screens/register.dart';
 import 'screens/login.dart';
@@ -13,7 +12,10 @@ import 'services/user_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env");
+
+  // Initialize UserService here before runApp
+  await UserService.init();
+
   runApp(const TravelBookingApp());
 }
 
@@ -40,8 +42,8 @@ class TravelBookingApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
         '/onboarding': (context) => OnboardingScreen(),
-        '/home': (context) => HomeScreen(),
-        '/payment': (context) => PaymentScreen(),
+        '/home': (context) => const HomeScreen(),
+        '/payment': (context) => const PaymentScreen(),
         '/search': (context) => SearchScreen(),
         '/profile': (context) => ProfileScreen(),
       },
@@ -56,8 +58,7 @@ class SplashScreen extends StatefulWidget {
   _SplashScreenState createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
-    with TickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
   late AnimationController _logoController;
   late AnimationController _textController;
   late AnimationController _backgroundController;
@@ -95,15 +96,16 @@ class _SplashScreenState extends State<SplashScreen>
       CurvedAnimation(parent: _logoController, curve: Curves.easeInOut),
     );
 
-    _textFadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _textController, curve: Curves.easeIn));
+    _textFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _textController, curve: Curves.easeIn),
+    );
 
-    _textSlideAnimation =
-        Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(
-          CurvedAnimation(parent: _textController, curve: Curves.easeOutCubic),
-        );
+    _textSlideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.5),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(parent: _textController, curve: Curves.easeOutCubic),
+    );
 
     _backgroundAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _backgroundController, curve: Curves.easeInOut),
@@ -122,12 +124,13 @@ class _SplashScreenState extends State<SplashScreen>
     await Future.delayed(const Duration(milliseconds: 2500));
 
     bool isLoggedIn = await UserService.isLoggedIn();
-    if (mounted) {
-      if (isLoggedIn) {
-        Navigator.pushReplacementNamed(context, '/home');
-      } else {
-        Navigator.pushReplacementNamed(context, '/onboarding');
-      }
+
+    if (!mounted) return;
+
+    if (isLoggedIn) {
+      Navigator.pushReplacementNamed(context, '/home');
+    } else {
+      Navigator.pushReplacementNamed(context, '/onboarding');
     }
   }
 
@@ -143,21 +146,9 @@ class _SplashScreenState extends State<SplashScreen>
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color.lerp(
-                    Colors.blue.shade900,
-                    Colors.purple.shade900,
-                    _backgroundAnimation.value,
-                  )!,
-                  Color.lerp(
-                    Colors.blue.shade600,
-                    Colors.pink.shade600,
-                    _backgroundAnimation.value,
-                  )!,
-                  Color.lerp(
-                    Colors.cyan.shade400,
-                    Colors.orange.shade400,
-                    _backgroundAnimation.value,
-                  )!,
+                  Color.lerp(Colors.blue.shade900, Colors.purple.shade900, _backgroundAnimation.value)!,
+                  Color.lerp(Colors.blue.shade600, Colors.pink.shade600, _backgroundAnimation.value)!,
+                  Color.lerp(Colors.cyan.shade400, Colors.orange.shade400, _backgroundAnimation.value)!,
                 ],
                 stops: const [0.0, 0.5, 1.0],
               ),
