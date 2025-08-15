@@ -10,6 +10,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\RestaurantMetadataController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\TravelerController;
+use App\Http\Controllers\RoomTypeController;
 use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -86,14 +87,18 @@ Route::get('/hotelmetadata/price-range', [HotelMetadataController::class, 'getBy
 Route::get('/hotelmetadata/top-rated', [HotelMetadataController::class, 'getTopRated']);
 Route::get('/hotelmetadata/paginate', [HotelMetadataController::class, 'paginate']);
 
+// Room Type Routes
+Route::apiResource('roomtypes', RoomTypeController::class);
+Route::get('/hotels/{hotel}/roomtypes', [RoomTypeController::class, 'getByHotel']);
+Route::post('/roomtypes/{roomType}/check-availability', [RoomTypeController::class, 'checkAvailability']);
+Route::patch('/roomtypes/{roomType}/availability', [RoomTypeController::class, 'updateAvailability']);
+
 // Resource routes
 Route::apiResource('booking', BookingController::class);
 Route::apiResource('destination', DestinationController::class);
 Route::apiResource('hotelbooking', HotelBookingController::class);
-Route::apiResource('notification', NotificationController::class);
-Route::apiResource('payment', PaymentController::class);
-Route::apiResource('restaurantmetadata', RestaurantMetadataController::class);
-Route::apiResource('review', ReviewController::class);
+Route::patch('/hotelbooking/{hotelBooking}/cancel', [HotelBookingController::class, 'cancel']);
+Route::get('/users/{userId}/hotelbookings', [HotelBookingController::class, 'getByUser']);
 
 // Travelers
 Route::get('/travelers', [TravelerController::class, 'index']);
