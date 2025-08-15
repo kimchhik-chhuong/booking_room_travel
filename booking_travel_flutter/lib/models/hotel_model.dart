@@ -27,16 +27,16 @@ class Hotel {
 
   factory Hotel.fromJson(Map<String, dynamic> json) {
     return Hotel(
-      id: json['id'] ?? 0,
+      id: json['hotel_id'] ?? json['id'] ?? 0,
       name: json['name'] ?? '',
       description: json['description'] ?? '',
-      image: json['image'],
-      rating: json['rating'] != null
-          ? double.tryParse(json['rating'].toString())
+      image: json['image_url'] ?? json['image'],
+      rating: json['star_rating'] != null
+          ? double.tryParse(json['star_rating'].toString())
           : null,
       priceRange: json['price_range'],
       address: json['address'],
-      phone: json['phone'],
+      phone: json['contact_phone'] ?? json['phone'],
       email: json['email'],
       provinceId: json['province_id'] ?? 0,
       provinceName: json['province_name'] ?? '',

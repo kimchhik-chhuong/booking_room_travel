@@ -27,17 +27,30 @@ class _HotelListPageState extends State<HotelListPage> {
   @override
   void initState() {
     super.initState();
+    print('HotelListPage initState:');
+    print('  - provinceId: ${widget.provinceId}');
+    print('  - provinceName: ${widget.provinceName}');
+    print('  - adventureName: ${widget.adventureName}');
+    print('  - adventureId: ${widget.adventureId}');
     _hotelsFuture = _fetchHotels();
   }
 
   Future<List<Hotel>> _fetchHotels() async {
+    print('_fetchHotels called');
     try {
       if (widget.adventureId != null) {
-        return await HotelService.fetchHotelsByAdventure(widget.adventureId!);
+        print('Fetching hotels by adventure ID: ${widget.adventureId}');
+        final hotels = await HotelService.fetchHotelsByAdventure(widget.adventureId!);
+        print('Fetched ${hotels.length} hotels by adventure');
+        return hotels;
       } else {
-        return await HotelService.fetchHotelsByProvince(widget.provinceId);
+        print('Fetching hotels by province ID: ${widget.provinceId}');
+        final hotels = await HotelService.fetchHotelsByProvince(widget.provinceId);
+        print('Fetched ${hotels.length} hotels by province');
+        return hotels;
       }
     } catch (e) {
+      print('Error fetching hotels: $e');
       throw Exception('Failed to load hotels: $e');
     }
   }

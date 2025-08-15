@@ -75,20 +75,39 @@ class _AdventuresPageState extends State<AdventuresPage> {
   }
 
   void _handleAdventureTap(Map<String, dynamic> adventure) {
+    print('Adventure tapped: ${adventure['name']} (ID: ${adventure['id']})');
+    print('Province ID: ${widget.provinceId}, Province Name: ${widget.provinceName}');
+    print('Adventure ID: ${adventure['id']}, Adventure Name: ${adventure['name']}');
+    
     if (widget.onAdventureTap != null) {
+      print('Using onAdventureTap callback');
       widget.onAdventureTap!(adventure);
     } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HotelListPage(
-            provinceId: widget.provinceId,
-            provinceName: widget.provinceName,
-            adventureName: adventure['name'],
-            adventureId: adventure['id'],
+      print('Navigating to HotelListPage...');
+      try {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) {
+              print('Building HotelListPage with:');
+              print('  - provinceId: ${widget.provinceId}');
+              print('  - provinceName: ${widget.provinceName}');
+              print('  - adventureName: ${adventure['name']}');
+              print('  - adventureId: ${adventure['id']}');
+              
+              return HotelListPage(
+                provinceId: widget.provinceId,
+                provinceName: widget.provinceName,
+                adventureName: adventure['name'],
+                adventureId: adventure['id'],
+              );
+            },
           ),
-        ),
-      );
+        );
+        print('Navigation initiated successfully');
+      } catch (e) {
+        print('Navigation error: $e');
+      }
     }
   }
 

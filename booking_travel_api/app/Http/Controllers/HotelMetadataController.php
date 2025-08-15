@@ -11,9 +11,24 @@ class HotelMetadataController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $hotels = HotelMetadata::with('destination')->get();
+        $query = HotelMetadata::with('destination');
+
+        // Filter by adventure_id if provided
+        if ($request->has('adventure_id') && $request->adventure_id) {
+            $query->where('adventure_id', $request->adventure_id);
+        }
+
+        // Filter by province_id if provided (through destination relationship)
+        if ($request->has('province_id') && $request->province_id) {
+            $query->whereHas('destination', function ($q) use ($request) {
+                $q->where('province_id', $request->province_id);
+            });
+        }
+
+        $hotels = $query->get();
+        
         return response()->json(['status' => 'success', 'data' => $hotels], 200);
     }
 
