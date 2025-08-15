@@ -104,9 +104,6 @@ class _ProvincesPageState extends State<ProvincesPage> {
               builder: (context) => AdventuresPage(
                 provinceId: province.id,
                 provinceName: province.name,
-                onAdventureTap: (adventure) {
-                  // Handle adventure tap
-                },
               ),
             ),
           );

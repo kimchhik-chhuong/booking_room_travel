@@ -44,10 +44,6 @@ class _TripsPageState extends State<TripsPage> {
                 'page': AdventuresPage(
                   provinceId: item['id'],
                   provinceName: item['name'],
-                  onAdventureTap: (adventure) {
-                    // Handle adventure tap
-                    print('Selected adventure: ${adventure['name']}');
-                  },
                 ),
               };
             }).toList();
