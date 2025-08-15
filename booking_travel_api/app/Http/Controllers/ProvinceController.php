@@ -126,12 +126,16 @@ class ProvinceController extends Controller
     {
         $adventures = $province->adventures()->get();
 
-        // Generate full URLs for images
-        $appUrl = config('app.url');
-        $adventures->each(function ($adventure) use ($appUrl) {
-            if ($adventure->image) {
-                $relativeUrl = \Illuminate\Support\Facades\Storage::url($adventure->image);
-                $adventure->image_url = $appUrl . $relativeUrl;
+        // Generate URLs that use our API route with CORS headers
+        $adventures->each(function ($adventure) {
+            if ($adventure->image_url) {
+                // Extract just the filename from the image_url path
+                $imagePath = str_replace('uploads/adventures/', '', $adventure->image_url);
+                // Use our API route that serves images with CORS headers
+                $adventure->image_url = url("/api/images/adventures/{$imagePath}");
+            } else {
+                // Use our API route for default image
+                $adventure->image_url = url('/api/images/adventures/default-adventure.jpg');
             }
         });
 
