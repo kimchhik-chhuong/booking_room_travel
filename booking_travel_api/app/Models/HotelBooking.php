@@ -11,7 +11,7 @@ class HotelBooking extends Model
         'hotel_id',
         'check_in_date',
         'check_out_date',
-        'room_type',
+        'room_type_id',
         'num_rooms',
         'num_guests',
         'price_per_night',
@@ -38,7 +38,7 @@ class HotelBooking extends Model
 
     public function roomType()
     {
-        return $this->belongsTo(RoomType::class, 'room_type');
+        return $this->belongsTo(RoomType::class, 'room_type_id');
     }
 
     /**
@@ -63,5 +63,13 @@ class HotelBooking extends Model
     public function getFormattedTotalPriceAttribute()
     {
         return '$' . number_format($this->total_hotel_price, 2);
+    }
+
+    /**
+     * Check if booking can be cancelled
+     */
+    public function getCanCancelAttribute()
+    {
+        return in_array($this->status, ['pending', 'confirmed']);
     }
 }

@@ -23,4 +23,12 @@ class Province extends Model
     {
         return $this->hasMany(Adventure::class);
     }
+
+    /**
+     * Get all hotels for the province.
+     */
+    public function hotels()
+    {
+        return $this->hasMany(HotelMetadata::class);
+    }
 }

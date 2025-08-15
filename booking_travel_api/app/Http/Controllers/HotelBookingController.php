@@ -13,7 +13,7 @@ class HotelBookingController extends Controller
      */
     public function index(Request $request)
     {
-        $query = HotelBooking::with(['hotelMetadata', 'booking', 'booking.user']);
+        $query = HotelBooking::with(['hotelMetadata', 'booking', 'booking.user', 'roomType']);
 
         // Filter by user if provided
         if ($request->has('user_id') && $request->user_id) {
@@ -52,7 +52,7 @@ class HotelBookingController extends Controller
             'hotel_id' => 'required|exists:hotel_metadata,hotel_id',
             'check_in_date' => 'required|date|after_or_equal:today',
             'check_out_date' => 'required|date|after:check_in_date',
-            'room_type' => 'required|exists:room_types,id',
+            'room_type_id' => 'required|exists:room_types,id',
             'num_rooms' => 'required|integer|min:1',
             'num_guests' => 'required|integer|min:1',
             'price_per_night' => 'required|numeric|min:0',
@@ -61,7 +61,7 @@ class HotelBookingController extends Controller
         ]);
 
         // Check room availability
-        $roomType = RoomType::find($validated['room_type']);
+        $roomType = RoomType::find($validated['room_type_id']);
         if ($roomType->available_rooms < $validated['num_rooms']) {
             return response()->json([
                 'status' => 'error',
@@ -104,7 +104,7 @@ class HotelBookingController extends Controller
             'hotel_id' => 'sometimes|exists:hotel_metadata,hotel_id',
             'check_in_date' => 'sometimes|date|after_or_equal:today',
             'check_out_date' => 'sometimes|date|after:check_in_date',
-            'room_type' => 'sometimes|exists:room_types,id',
+            'room_type_id' => 'sometimes|exists:room_types,id',
             'num_rooms' => 'sometimes|integer|min:1',
             'num_guests' => 'sometimes|integer|min:1',
             'price_per_night' => 'sometimes|numeric|min:0',
@@ -113,9 +113,9 @@ class HotelBookingController extends Controller
         ]);
 
         // Handle room type change and availability
-        if (isset($validated['room_type']) && $validated['room_type'] != $hotelBooking->room_type) {
-            $oldRoomType = RoomType::find($hotelBooking->room_type);
-            $newRoomType = RoomType::find($validated['room_type']);
+        if (isset($validated['room_type_id']) && $validated['room_type_id'] != $hotelBooking->room_type_id) {
+            $oldRoomType = RoomType::find($hotelBooking->room_type_id);
+            $newRoomType = RoomType::find($validated['room_type_id']);
 
             // Check new room availability
             if ($newRoomType->available_rooms < ($validated['num_rooms'] ?? $hotelBooking->num_rooms)) {
@@ -135,7 +135,7 @@ class HotelBookingController extends Controller
 
         // Handle room quantity change
         if (isset($validated['num_rooms']) && $validated['num_rooms'] != $hotelBooking->num_rooms) {
-            $roomType = RoomType::find($hotelBooking->room_type);
+            $roomType = RoomType::find($hotelBooking->room_type_id);
             $roomDifference = $validated['num_rooms'] - $hotelBooking->num_rooms;
 
             if ($roomDifference > 0 && $roomType->available_rooms < $roomDifference) {
@@ -166,7 +166,7 @@ class HotelBookingController extends Controller
     public function destroy(HotelBooking $hotelBooking)
     {
         // Return rooms to availability
-        $roomType = RoomType::find($hotelBooking->room_type);
+        $roomType = RoomType::find($hotelBooking->room_type_id);
         $roomType->increment('available_rooms', $hotelBooking->num_rooms);
 
         $hotelBooking->delete();
@@ -190,7 +190,7 @@ class HotelBookingController extends Controller
         }
 
         // Return rooms to availability
-        $roomType = RoomType::find($hotelBooking->room_type);
+        $roomType = RoomType::find($hotelBooking->room_type_id);
         $roomType->increment('available_rooms', $hotelBooking->num_rooms);
 
         $hotelBooking->update(['status' => 'cancelled']);
