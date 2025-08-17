@@ -326,7 +326,7 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<double> _textFadeAnimation;
   late Animation<Offset> _textSlideAnimation;
   late Animation<double> _backgroundAnimation;
-
+  
   @override
   void initState() {
     super.initState();
