@@ -33,9 +33,9 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 // Booking History Routes
-Route::get('/booking-history', [BookingHistoryController::class, 'index']);
-Route::get('/booking-history/{id}', [BookingHistoryController::class, 'show']);
-Route::get('/booking-history/statistics', [BookingHistoryController::class, 'statistics']);
+Route::get('/booking-history', [BookingHistoryController::class, 'index']); 
+Route::get('/booking-history/{id}', [BookingHistoryController::class, 'show']);  
+Route::get('/booking-history/statistics', [BookingHistoryController::class, 'statistics']); 
 
 // Province Routes
 Route::get('/provinces', [ProvinceController::class, 'index']);
