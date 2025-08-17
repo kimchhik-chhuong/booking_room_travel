@@ -91,6 +91,9 @@ Route::get('/messages', [MessageController::class, 'index']);
 Route::get('/messages/{id}', [MessageController::class, 'show']);
 Route::post('/messages/send', [MessageController::class, 'store']);
 
+//notification
+Route::get('/notifications/count', [NotificationController::class, 'count'])->middleware('auth:api');
+
 // Protected routes
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::resource('users', UserController::class);

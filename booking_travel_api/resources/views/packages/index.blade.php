@@ -1,5 +1,5 @@
 {{-- resources/views/packages/index.blade.php --}}
-@extends('layouts.app')
+@extends('layouts.dashboard')
 
 @section('title', 'Packages Dashboard')
 
@@ -24,7 +24,6 @@
                 <div class="card-body">
                     <h4 class="card-title">{{ $newThisMonth }}</h4>
                 </div>
-<<<<<<< HEAD
                 <button class="btn-modern">Edit Package</button>
             </div>
             
@@ -142,41 +141,18 @@
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="packagesContainer">
-                @php
-                $packages = [
-                    ['title' => 'Phnom Penh', 'location' => 'Garden City Hotel, Cambodia', 'duration' => '7 Days', 'price' => '$250', 'rating' => '4.9', 'bookings' => 156, 'status' => 'Active', 'image' => 'https://ik.imgkit.net/3vlqs5axxjf/external/ik-seo/http://images.ntmllc.com/v4/hotel/U81/U81105/U81105_EXT_Z2DD62/Garden-City-Hotel-Exterior.JPG?tr=w-780%2Ch-437%2Cfo-auto', 'category' => 'Cultural'],
-                    ['title' => 'Battambang', 'location' => 'V CROWN HOTEL, Cambodia', 'duration' => '5 Days', 'price' => '$130', 'rating' => '4.8', 'bookings' => 203, 'status' => 'Active', 'image' => 'https://q-xx.bstatic.com/xdata/images/hotel/max500/430685389.jpg?k=9a2c933bd4c8ec0f4c1438ca63be07939ec45b3db549dd26a31c7aeb3ad1ee16&o=', 'category' => 'Beach'],
-                    ['title' => 'Kompot', 'location' => 'RiverTree Villa & Resort', 'duration' => '7 Days', 'price' => '$250', 'rating' => '4.7', 'bookings' => 89, 'status' => 'Active', 'image' => 'https://cf.bstatic.com/xdata/images/hotel/max1024x768/350284085.jpg?k=57b1872b633f1044b73f3c87d160936d64981ccaf3d6935b21a4f8717fe9ee1a&o=&hp=1', 'category' => 'Cultural'],
-                    ['title' => 'Kep', 'location' => 'Vakara Hotel', 'duration' => '7 Days', 'price' => '$230', 'rating' => '4.9', 'bookings' => 134, 'status' => 'Active', 'image' => 'https://cf.bstatic.com/xdata/images/hotel/max1024x768/373267903.jpg?k=24a5a08ae735e6b26e33f355265b854a4d15af8d671dac6f8c5718c41425047b&o=&hp=1', 'category' => 'Adventure'],
-                    ['title' => 'Pursat', 'location' => 'Pursat Riverside Hotel & Spa, Cambodia', 'duration' => '4 Days', 'price' => '$1,299', 'rating' => '4.6', 'bookings' => 78, 'status' => 'Draft', 'image' => 'https://cf.bstatic.com/xdata/images/hotel/max1024x768/296140217.jpg?k=ec31ffd80f3688c3773080f874d45b4407312249df72217c7e95343890e47f35&o=&hp=1', 'category' => 'Cultural'],
-                    ['title' => 'Prey Veng', 'location' => 'Arthur & Paul', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/4e/e4/fe/arthur-et-paul.jpg?w=500&h=-1&s=1', 'category' => 'Luxury'],
-                    ['title' => 'Prey Veng', 'location' => 'Arthur & Paul', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/4e/e4/fe/arthur-et-paul.jpg?w=500&h=-1&s=1', 'category' => 'Luxury'],
-                    ['title' => 'Prey Veng', 'location' => 'Arthur & Paul', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/4e/e4/fe/arthur-et-paul.jpg?w=500&h=-1&s=1', 'category' => 'Luxury'],
-                    ['title' => 'Prey Veng', 'location' => 'Arthur & Paul', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/4e/e4/fe/arthur-et-paul.jpg?w=500&h=-1&s=1', 'category' => 'Luxury'],
-                    ['title' => 'Prey Veng', 'location' => 'Arthur & Paul', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/4e/e4/fe/arthur-et-paul.jpg?w=500&h=-1&s=1', 'category' => 'Luxury'],
-                    ['title' => 'Prey Veng', 'location' => 'Arthur & Paul', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/4e/e4/fe/arthur-et-paul.jpg?w=500&h=-1&s=1', 'category' => 'Luxury'],
-                    ['title' => 'Prey Veng', 'location' => 'Arthur & Paul', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/4e/e4/fe/arthur-et-paul.jpg?w=500&h=-1&s=1', 'category' => 'Luxury'],
-                    ['title' => 'Prey Veng', 'location' => 'Arthur & Paul', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/4e/e4/fe/arthur-et-paul.jpg?w=500&h=-1&s=1', 'category' => 'Luxury'],
-                    ['title' => 'Prey Veng', 'location' => 'Arthur & Paul', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/4e/e4/fe/arthur-et-paul.jpg?w=500&h=-1&s=1', 'category' => 'Luxury'],
-                    ['title' => 'Prey Veng', 'location' => 'Arthur & Paul', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/4e/e4/fe/arthur-et-paul.jpg?w=500&h=-1&s=1', 'category' => 'Luxury'],
-                    ['title' => 'Prey Veng', 'location' => 'Arthur & Paul', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/4e/e4/fe/arthur-et-paul.jpg?w=500&h=-1&s=1', 'category' => 'Luxury'],
-                    ['title' => 'Prey Veng', 'location' => 'Arthur & Paul', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/4e/e4/fe/arthur-et-paul.jpg?w=500&h=-1&s=1', 'category' => 'Luxury'],
-                    ['title' => 'Prey Veng', 'location' => 'Arthur & Paul', 'duration' => '6 Days', 'price' => '$2,890', 'rating' => '4.8', 'bookings' => 167, 'status' => 'Active', 'image' => 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/4e/e4/fe/arthur-et-paul.jpg?w=500&h=-1&s=1', 'category' => 'Luxury'],
-                ];
-                @endphp
-                
                 @foreach($packages as $package)
                 <div class="package-card group cursor-pointer" 
-                     data-title="{{ strtolower($package['title']) }}" 
-                     data-location="{{ strtolower($package['location']) }}" 
-                     data-category="{{ $package['category'] }}"
-                     data-status="{{ $package['status'] }}">
+                     data-title="{{ strtolower($package->title ?? '') }}" 
+                     data-location="{{ strtolower($package->location ?? '') }}" 
+                     data-category="{{ $package->category ?? '' }}"
+                     data-status="{{ $package->status ?? 'Active' }}">
                     <div class="relative overflow-hidden rounded-2xl mb-6">
-                        <img src="{{ $package['image'] }}" alt="{{ $package['title'] }}" class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500">
+                        <img src="{{ $package->image ?? 'https://via.placeholder.com/400x300' }}" alt="{{ $package->title ?? 'Package' }}" class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                         <div class="absolute top-4 right-4">
-                            <span class="badge-modern {{ $package['status'] === 'Active' ? 'bg-emerald-500 text-white' : 'bg-yellow-500 text-white' }}">
-                                {{ $package['status'] }}
+                            <span class="badge-modern {{ ($package->status ?? 'Active') === 'Active' ? 'bg-emerald-500 text-white' : 'bg-yellow-500 text-white' }}">
+                                {{ $package->status ?? 'Active' }}
                             </span>
                         </div>
                         <div class="absolute bottom-4 left-4 right-4">
@@ -185,31 +161,31 @@
                                     @for($i = 0; $i < 5; $i++)
                                         <i class="fas fa-star text-yellow-400 text-sm"></i>
                                     @endfor
-                                    <span class="ml-2 text-sm font-medium">{{ $package['rating'] }}</span>
+                                    <span class="ml-2 text-sm font-medium">{{ $package->rating ?? '4.5' }}</span>
                                 </div>
-                                <span class="text-sm">{{ $package['bookings'] }} bookings</span>
+                                <span class="text-sm">{{ $package->bookings ?? 0 }} bookings</span>
                             </div>
                         </div>
                     </div>
                     
                     <div class="space-y-4">
                         <div>
-                            <h4 class="text-xl font-bold text-dark-800 mb-2 group-hover:text-primary-600 transition-colors">{{ $package['title'] }}</h4>
+                            <h4 class="text-xl font-bold text-dark-800 mb-2 group-hover:text-primary-600 transition-colors">{{ $package->title ?? 'Package' }}</h4>
                             <div class="flex items-center text-dark-500 text-sm space-x-4 mb-3">
                                 <div class="flex items-center">
                                     <i class="fas fa-map-marker-alt mr-1"></i>
-                                    <span>{{ $package['location'] }}</span>
+                                    <span>{{ $package->location ?? 'N/A' }}</span>
                                 </div>
                                 <div class="flex items-center">
                                     <i class="fas fa-clock mr-1"></i>
-                                    <span>{{ $package['duration'] }}</span>
+                                    <span>{{ $package->duration ?? 'N/A' }}</span>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="flex items-center justify-between">
                             <div>
-                                <span class="text-2xl font-bold text-primary-600">{{ $package['price'] }}</span>
+                                <span class="text-2xl font-bold text-primary-600">${{ number_format($package->price ?? 0, 2) }}</span>
                                 <span class="text-dark-500 text-sm ml-1">per person</span>
                             </div>
                             <div class="flex items-center space-x-2">
@@ -227,8 +203,6 @@
                     </div>
                 </div>
                 @endforeach
-=======
->>>>>>> main
             </div>
         </div>
     </div>
@@ -239,7 +213,7 @@
             Package List
         </div>
         <div class="card-body">
-            @if($packages->count() > 0)
+            @if($packages && $packages->count() > 0)
                 <table class="table table-bordered">
                     <thead>
                         <tr>
@@ -252,10 +226,10 @@
                     <tbody>
                         @foreach($packages as $package)
                             <tr>
-                                <td>{{ $package->id }}</td>
-                                <td>{{ $package->name }}</td>
-                                <td>${{ number_format($package->price, 2) }}</td>
-                                <td>{{ $package->created_at->format('Y-m-d') }}</td>
+                                <td>{{ $package->id ?? '' }}</td>
+                                <td>{{ $package->name ?? $package->title ?? 'N/A' }}</td>
+                                <td>${{ number_format($package->price ?? 0, 2) }}</td>
+                                <td>{{ isset($package->created_at) ? $package->created_at->format('Y-m-d') : 'N/A' }}</td>
                             </tr>
                         @endforeach
                     </tbody>

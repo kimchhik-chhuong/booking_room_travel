@@ -6,6 +6,7 @@ import 'payment_screen.dart';
 import 'search_screen.dart';
 import 'profile_screen.dart';
 import 'history/history_screen.dart';
+import 'message_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -22,6 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
     SearchScreen(),
     HistoryScreen(),
     ProfileScreen(),
+    MessageScreen(),
   ];
 
   @override
@@ -45,6 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
               icon: Icon(Icons.card_travel), label: 'Historys'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          BottomNavigationBarItem(icon: Icon(Icons.message), label: 'Message'),
         ],
       ),
     );
