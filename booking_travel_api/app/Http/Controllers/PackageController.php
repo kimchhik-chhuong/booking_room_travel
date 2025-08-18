@@ -4,13 +4,18 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Package;
+use App\Models\Province;
 use Illuminate\Support\Facades\Schema;
 
 class PackageController extends Controller
 {
     public function index()
     {
-        // Get counts
+        // Get provinces with counts of related hotels and adventures
+        $provinces = Province::withCount(['hotels', 'adventures'])
+            ->paginate(12); // 12 items per page
+
+        // Get package statistics (keeping existing functionality)
         $totalPackages = Package::count();
         $newThisMonth  = Package::whereMonth('created_at', now()->month)->count();
 
@@ -37,7 +42,14 @@ class PackageController extends Controller
             'activePackages',
             'inactivePackages',
             'averageRating',
-            'packages'
+            'packages',
+            'provinces' // Add provinces to the view
         ));
+    }
+
+    public function showProvince($id)
+    {
+        $province = Province::with(['hotels', 'adventures'])->findOrFail($id);
+        return view('packages.province', compact('province'));
     }
 }

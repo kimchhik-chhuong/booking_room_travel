@@ -49,7 +49,8 @@ Route::middleware('auth')->group(function () {
 
     // Packages Routes
     Route::prefix('packages')->name('packages.')->group(function () {
-    Route::get('/', [PackageController::class, 'index'])->name('index');
+        Route::get('/', [PackageController::class, 'index'])->name('index');
+        Route::get('/province/{id}', [PackageController::class, 'showProvince'])->name('province');
     });
 
     // Bookings Routes
