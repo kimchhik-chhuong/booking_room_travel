@@ -1,6 +1,5 @@
 {{-- resources/views/packages/index.blade.php --}}
 @extends('layouts.dashboard')
-
 @section('title', 'Packages Dashboard')
 
 @section('content')
