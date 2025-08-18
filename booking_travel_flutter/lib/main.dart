@@ -264,7 +264,7 @@ import 'screens/login.dart';
 import 'screens/onboarding.dart';
 import 'screens/home_screen.dart';
 import 'screens/payment_screen.dart';
-import 'screens/search_screen.dart';
+// import 'screens/search_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/message_screen.dart'; // ✅ Added this line
 import 'services/user_service.dart';
@@ -301,7 +301,7 @@ class TravelBookingApp extends StatelessWidget {
         '/home': (context) => HomeScreen(),
         '/payment': (context) => PaymentScreen(),
         '/message': (context) => MessageScreen(), // ✅ New route
-        '/search': (context) => SearchScreen(),
+        // '/search': (context) => SearchScreen(),
         '/profile': (context) => ProfileScreen(),
       },
     );
@@ -326,7 +326,7 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<double> _textFadeAnimation;
   late Animation<Offset> _textSlideAnimation;
   late Animation<double> _backgroundAnimation;
-
+  
   @override
   void initState() {
     super.initState();
