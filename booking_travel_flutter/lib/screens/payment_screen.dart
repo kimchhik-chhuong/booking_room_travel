@@ -7,7 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:typed_data';
-import 'dart:html' as html;
+// import 'dart:html' as html;
 
 void main() {
   runApp(MaterialApp(
@@ -759,12 +759,12 @@ class ReceiptScreen extends StatelessWidget {
       ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       Uint8List pngBytes = byteData!.buffer.asUint8List();
 
-      final blob = html.Blob([pngBytes], 'image/png');
-      final url = html.Url.createObjectUrlFromBlob(blob);
-      final anchor = html.AnchorElement(href: url)
-        ..setAttribute('download', 'receipt_${DateTime.now().millisecondsSinceEpoch}.png')
-        ..click();
-      html.Url.revokeObjectUrl(url);
+      // final blob = html.Blob([pngBytes], 'image/png');
+      // final url = html.Url.createObjectUrlFromBlob(blob);
+      // final anchor = html.AnchorElement(href: url)
+      //   ..setAttribute('download', 'receipt_${DateTime.now().millisecondsSinceEpoch}.png')
+      //   ..click();
+      // html.Url.revokeObjectUrl(url);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Receipt download started')),
