@@ -1,242 +1,384 @@
-{{-- resources/views/packages/index.blade.php --}}
 @extends('layouts.dashboard')
 @section('title', 'Packages Dashboard')
 
 @section('content')
-<div class="container">
-    <h1 class="my-4">📦 Packages Dashboard</h1>
+<div class="min-h-screen">
+    <!-- Sidebar -->
+    @include('partials.sidebar')
 
-    {{-- Statistics --}}
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card text-white bg-primary mb-3">
-                <div class="card-header">Total Packages</div>
-                <div class="card-body">
-                    <h4 class="card-title">{{ $totalPackages }}</h4>
+    <!-- Header -->
+    @include('partials.header')
+
+    <!-- Main Content -->
+    <div class="md:pl-64 flex flex-col">
+        <main class="flex-1">
+            <div class="py-6">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+                    <!-- Page header -->
+                    <div class="mb-8">
+                        <h1 class="text-2xl font-semibold text-gray-900">Explore Provinces</h1>
+                        <p class="mt-1 text-sm text-gray-600">Discover amazing destinations across Cambodia</p>
+                    </div>
+                    <div class="flex items-center justify-end">
+                        <button onclick="openModal('create')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition-colors duration-300">
+                            Add Province
+                        </button>
+                    </div>
+
+                    <!-- Provinces Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
+                        @forelse($provinces as $province)
+                        <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 province-card">
+                            <a href="{{ route('packages.province', $province->id) }}" class="block">
+                                @if($province->image_url)
+                                <div class="h-48 overflow-hidden">
+                                    <img src="{{ $province->image_url }}" 
+                                         alt="{{ $province->name }}" 
+                                         class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300">
+                                </div>
+                                @else
+                                <div class="h-48 bg-gray-200 flex items-center justify-center">
+                                    <span class="text-gray-400">No image available</span>
+                                </div>
+                                @endif
+                                <div class="p-4">
+                                    <h3 class="text-lg font-medium text-gray-900 group-hover:text-indigo-600">{{ $province->name }}</h3>
+                                    <div class="mt-2 flex justify-between items-center">
+                                        <span class="text-sm text-gray-500">
+                                            {{ $province->hotels_count ?? 0 }} {{ Str::plural('Hotel', $province->hotels_count ?? 0) }}
+                                        </span>
+                                        <span class="text-sm text-gray-500">
+                                            {{ $province->adventures_count ?? 0 }} {{ Str::plural('Adventure', $province->adventures_count ?? 0) }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </a>
+                            <div class="px-4 pb-4 flex justify-end space-x-2">
+                                <button onclick="openModal('edit', {{ $province->id }})" 
+                                        class="text-indigo-600 hover:text-indigo-900">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                </button>
+                                <button onclick="openDeleteModal({{ $province->id }})" 
+                                        class="text-red-600 hover:text-red-900">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        @empty
+                        <div class="col-span-full text-center py-12">
+                            <p class="text-gray-500">No provinces available at the moment.</p>
+                        </div>
+                        @endforelse
+                    </div>
+
+                    <!-- Pagination -->
+                    @if($provinces->hasPages())
+                    <div class="mt-8">
+                        {{ $provinces->links() }}
+                    </div>
+                    @endif
                 </div>
             </div>
-        </div>
+        </main>
+    </div>
+</div>
 
-        <div class="col-md-4">
-            <div class="card text-white bg-success mb-3">
-                <div class="card-header">New This Month</div>
-                <div class="card-body">
-                    <h4 class="card-title">{{ $newThisMonth }}</h4>
-                </div>
-                <button class="btn-modern">Edit Package</button>
-            </div>
-            
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                <div class="space-y-6">
-                    <div class="relative overflow-hidden rounded-2xl">
-                        <img src="https://i0.wp.com/www.cambodialifestyle.com/wp-content/uploads/2024/04/Siem-Reap-5.jpg?fit=1024%2C683&ssl=1">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                        <div class="absolute top-6 left-6 bg-red-500 text-white px-4 py-2 rounded-full text-sm font-semibold">
-                            Most Popular
-                        </div>
-                        <div class="absolute bottom-6 left-6 right-6">
-                            <div class="flex items-center text-white mb-2">
-                                @for($i = 0; $i < 5; $i++)
-                                    <i class="fas fa-star text-yellow-400"></i>
-                                @endfor
-                                <span class="ml-2 font-medium">4.9 (234 reviews)</span>
+<!-- Create/Edit Modal -->
+<div id="provinceModal" class="fixed inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <form id="provinceForm" action="{{ route('packages.provinces.store') }}" method="POST" enctype="multipart/form-data" class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                @csrf
+                <div class="sm:flex sm:items-start">
+                    <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                            Add New Province
+                        </h3>
+                        <div class="mt-5">
+                            <div id="formErrors" class="hidden bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded">
+                                <ul id="errorList" class="list-disc pl-5 space-y-1">
+                                    <!-- Errors will be inserted here by JavaScript -->
+                                </ul>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-3 gap-4">
-                        @for($i = 1; $i <= 3; $i++)
-                        <div class="relative overflow-hidden rounded-xl cursor-pointer hover:scale-105 transition-transform">
-                            <img src="https://myflyingleap.com/wp-content/uploads/2023/04/siem-reap-feature_depositphotos.jpg" alt="Gallery {{ $i }}" class="w-full h-24 object-cover">
-                        </div>
-                        @endfor
-                    </div>
-                </div>
-                
-                <div class="space-y-8">
-                    <div>
-                        <h2 class="text-4xl font-bold text-dark-800 mb-4">Angkor Wat</h2>
-                        <div class="flex items-center space-x-4 text-dark-500 mb-6">
-                            <div class="flex items-center">
-                                <i class="fas fa-map-marker-alt text-primary-500 mr-2"></i>
-                                <span>Siem Reap</span>
+                            
+                            <div class="mb-4">
+                                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Province Name <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" name="name" id="name" value="{{ old('name') }}" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                       required>
+                                <div id="name-error" class="mt-1 text-sm text-red-500"></div>
                             </div>
-                            <div class="flex items-center">
-                                <i class="fas fa-clock text-primary-500 mr-2"></i>
-                                <span>7 Days / 1 Nights</span>
-                            </div>
-                        </div>
-                        <p class="text-dark-600 leading-relaxed mb-8">
-                            Siem Reap province is the tenth largest province in Cambodia. Having reached a population of one million in 2019, it ranks as the nation's fourth most populous province.
-                        </p>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-8">
-                        <div>
-                            <p class="text-dark-500 text-sm font-medium mb-2">Starting Price</p>
-                            <p class="text-4xl font-bold text-primary-600">$80</p>
-                            <p class="text-dark-500 text-sm">per person</p>
-                        </div>
-                        <div>
-                            <p class="text-dark-500 text-sm font-medium mb-2">Bookings</p>
-                            <p class="text-4xl font-bold text-dark-800">234</p>
-                            <p class="text-emerald-600 text-sm">+12 this week</p>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-6">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
-                                <i class="fas fa-check text-emerald-600"></i>
-                            </div>
-                            <span class="text-dark-700 font-medium">All-Inclusive</span>
-                        </div>
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                                <i class="fas fa-bed text-blue-600"></i>
-                            </div>
-                            <span class="text-dark-700 font-medium">Luxury Resort</span>
-                        </div>
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                                <i class="fas fa-spa text-purple-600"></i>
-                            </div>
-                            <span class="text-dark-700 font-medium">Spa Treatments</span>
-                        </div>
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 bg-cyan-100 rounded-xl flex items-center justify-center">
-                                <i class="fas fa-water text-cyan-600"></i>
-                            </div>
-                            <span class="text-dark-700 font-medium">Water Sports</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- All Packages -->
-        <div class="card-modern p-8">
-            <div class="flex items-center justify-between mb-8">
-                <div>
-                    <h3 class="text-2xl font-bold text-dark-800 mb-2">All Packages</h3>
-                    <p class="text-dark-500">Browse and manage your travel packages</p>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <div class="relative">
-                        <input type="text" id="searchPackages" placeholder="Search packages..." class="input-modern pl-10 w-64">
-                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-dark-400"></i>
+                            <div class="mb-4">
+                                <label for="description" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Description
+                                </label>
+                                <textarea name="description" id="description" rows="3"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">{{ old('description') }}</textarea>
+                                <div id="description-error" class="mt-1 text-sm text-red-500"></div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="image" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Province Image
+                                </label>
+                                <div class="mt-1 flex items-center">
+                                    <input type="file" name="image" id="image" 
+                                           class="block w-full text-sm text-gray-500
+                                                  file:mr-4 file:py-2 file:px-4
+                                                  file:rounded-md file:border-0
+                                                  file:text-sm file:font-medium
+                                                  file:bg-indigo-50 file:text-indigo-700
+                                                  hover:file:bg-indigo-100">
+                                </div>
+                                <p class="mt-1 text-xs text-gray-500">Upload an image (JPG, PNG, GIF) - Max 2MB</p>
+                                <div id="image-error" class="mt-1 text-sm text-red-500"></div>
+                            </div>
+                        </div>
                     </div>
-                    <select id="categoryFilter" class="input-modern">
-                        <option value="All">All Categories</option>
-                        <option value="Beach">Beach</option>
-                        <option value="Adventure">Adventure</option>
-                        <option value="Cultural">Cultural</option>
-                        <option value="Luxury">Luxury</option>
-                    </select>
-                    <button class="btn-modern">
-                        <i class="fas fa-plus mr-2"></i> Add Package
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Save Province
+                    </button>
+                    <button type="button" onclick="closeModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cancel
                     </button>
                 </div>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="packagesContainer">
-                @foreach($packages as $package)
-                <div class="package-card group cursor-pointer" 
-                     data-title="{{ strtolower($package->title ?? '') }}" 
-                     data-location="{{ strtolower($package->location ?? '') }}" 
-                     data-category="{{ $package->category ?? '' }}"
-                     data-status="{{ $package->status ?? 'Active' }}">
-                    <div class="relative overflow-hidden rounded-2xl mb-6">
-                        <img src="{{ $package->image ?? 'https://via.placeholder.com/400x300' }}" alt="{{ $package->title ?? 'Package' }}" class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                        <div class="absolute top-4 right-4">
-                            <span class="badge-modern {{ ($package->status ?? 'Active') === 'Active' ? 'bg-emerald-500 text-white' : 'bg-yellow-500 text-white' }}">
-                                {{ $package->status ?? 'Active' }}
-                            </span>
-                        </div>
-                        <div class="absolute bottom-4 left-4 right-4">
-                            <div class="flex items-center justify-between text-white">
-                                <div class="flex items-center">
-                                    @for($i = 0; $i < 5; $i++)
-                                        <i class="fas fa-star text-yellow-400 text-sm"></i>
-                                    @endfor
-                                    <span class="ml-2 text-sm font-medium">{{ $package->rating ?? '4.5' }}</span>
-                                </div>
-                                <span class="text-sm">{{ $package->bookings ?? 0 }} bookings</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="space-y-4">
-                        <div>
-                            <h4 class="text-xl font-bold text-dark-800 mb-2 group-hover:text-primary-600 transition-colors">{{ $package->title ?? 'Package' }}</h4>
-                            <div class="flex items-center text-dark-500 text-sm space-x-4 mb-3">
-                                <div class="flex items-center">
-                                    <i class="fas fa-map-marker-alt mr-1"></i>
-                                    <span>{{ $package->location ?? 'N/A' }}</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <i class="fas fa-clock mr-1"></i>
-                                    <span>{{ $package->duration ?? 'N/A' }}</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <span class="text-2xl font-bold text-primary-600">${{ number_format($package->price ?? 0, 2) }}</span>
-                                <span class="text-dark-500 text-sm ml-1">per person</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <button class="p-2 text-dark-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <button class="p-2 text-dark-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="p-2 text-dark-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                @endforeach
-            </div>
-        </div>
-    </div>
-
-    {{-- Packages Table --}}
-    <div class="card">
-        <div class="card-header">
-            Package List
-        </div>
-        <div class="card-body">
-            @if($packages && $packages->count() > 0)
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Package Name</th>
-                            <th>Price</th>
-                            <th>Created At</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($packages as $package)
-                            <tr>
-                                <td>{{ $package->id ?? '' }}</td>
-                                <td>{{ $package->name ?? $package->title ?? 'N/A' }}</td>
-                                <td>${{ number_format($package->price ?? 0, 2) }}</td>
-                                <td>{{ isset($package->created_at) ? $package->created_at->format('Y-m-d') : 'N/A' }}</td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            @else
-                <p class="text-muted">No packages available.</p>
-            @endif
+            </form>
         </div>
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 overflow-y-auto hidden" aria-labelledby="deleteModalTitle" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeDeleteModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="deleteModalTitle">
+                            Delete Province
+                        </h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-500">Are you sure you want to delete this province? This action cannot be undone.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <form id="deleteForm" method="POST" class="inline-flex w-full sm:ml-3 sm:w-auto">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Delete
+                    </button>
+                </form>
+                <button type="button" onclick="closeDeleteModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+    let currentModal = null;
+    
+    function openModal(action, id = null) {
+        const modal = document.getElementById('provinceModal');
+        const form = document.getElementById('provinceForm');
+        
+        // Reset form and clear any previous errors
+        form.reset();
+        const errorMessages = document.querySelectorAll('.text-red-500');
+        errorMessages.forEach(el => el.remove());
+        
+        // Set form action based on action type
+        if (action === 'edit' && id) {
+            // For edit, we'll handle this later
+            form.action = `/packages/provinces/${id}`;
+            form.insertAdjacentHTML('beforeend', '<input type="hidden" name="_method" value="PUT">');
+            document.querySelector('#modal-title').textContent = 'Edit Province';
+            // Here you would fetch the province data and populate the form
+        } else {
+            // For create
+            form.action = '{{ route('packages.provinces.store') }}';
+            const methodInput = form.querySelector('input[name="_method"]');
+            if (methodInput) methodInput.remove();
+            document.querySelector('#modal-title').textContent = 'Add New Province';
+        }
+        
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+        currentModal = 'province';
+    }
+    
+    function closeModal() {
+        const modal = document.getElementById('provinceModal');
+        modal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+        currentModal = null;
+    }
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        if (event.target.classList.contains('bg-gray-500')) {
+            closeModal();
+        }
+    };
+    
+    // Handle form submission
+    document.getElementById('provinceForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const form = this;
+        const formData = new FormData(form);
+        
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+            
+            if (response.ok) {
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                } else {
+                    window.location.reload();
+                }
+            } else {
+                // Handle validation errors
+                const errorList = document.getElementById('errorList');
+                const formErrors = document.getElementById('formErrors');
+                
+                // Clear previous errors
+                errorList.innerHTML = '';
+                document.querySelectorAll('[id$="-error"]').forEach(el => el.textContent = '');
+                
+                if (data.errors) {
+                    // Add errors to the error list
+                    Object.entries(data.errors).forEach(([field, messages]) => {
+                        const errorElement = document.createElement('li');
+                        errorElement.textContent = messages[0];
+                        errorList.appendChild(errorElement);
+                        
+                        // Add error message under the specific field
+                        const fieldError = document.getElementById(`${field}-error`);
+                        if (fieldError) {
+                            fieldError.textContent = messages[0];
+                        }
+                    });
+                    
+                    formErrors.classList.remove('hidden');
+                } else if (data.message) {
+                    // Handle other types of errors
+                    const errorElement = document.createElement('li');
+                    errorElement.textContent = data.message;
+                    errorList.appendChild(errorElement);
+                    formErrors.classList.remove('hidden');
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        }
+    });
+
+    function openDeleteModal(id) {
+        const modal = document.getElementById('deleteModal');
+        const form = document.getElementById('deleteForm');
+        
+        // Set the form action to delete the specific province
+        form.action = `/packages/provinces/${id}`;
+        
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+    }
+    
+    function closeDeleteModal() {
+        const modal = document.getElementById('deleteModal');
+        modal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    }
+    
+    // Handle delete form submission
+    document.getElementById('deleteForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const form = this;
+        
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ _method: 'DELETE' })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.redirect) {
+                window.location.href = data.redirect;
+            } else if (data.success) {
+                window.location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while deleting the province.');
+        });
+    });
+</script>
+@endpush
+
+@push('styles')
+<style>
+    /* Custom styles for the province cards */
+    .province-card {
+        transition: all 0.3s ease;
+    }
+    .province-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    /* Modal styles */
+    .modal {
+        transition: opacity 0.25s ease;
+    }
+    
+    /* Animation for modal */
+    @keyframes modalFadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .modal-content {
+        animation: modalFadeIn 0.3s ease-out;
+    }
+</style>
+@endpush
 @endsection

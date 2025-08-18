@@ -45,7 +45,7 @@ class PaymentService {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final responseData = jsonDecode(response.body);
-        
+
         if (responseData['status'] == 'success') {
           return {
             'success': true,
@@ -68,7 +68,7 @@ class PaymentService {
       }
     } catch (e) {
       print('Payment processing error: $e');
-      
+
       // For demo purposes, simulate payment processing
       if (paymentMethod == 'pay_at_hotel') {
         return {
@@ -78,7 +78,7 @@ class PaymentService {
           'message': 'Payment will be collected at hotel',
         };
       }
-      
+
       // Simulate successful payment for demo
       await Future.delayed(const Duration(seconds: 2));
       return {
@@ -161,7 +161,7 @@ class PaymentService {
           return List<Map<String, dynamic>>.from(responseData['data']);
         }
       }
-      
+
       return [];
     } catch (e) {
       print('Error fetching payment history: $e');
@@ -200,7 +200,7 @@ class PaymentService {
     final parts = expiry.split('/');
     final month = int.tryParse(parts[0]);
     final year = int.tryParse('20${parts[1]}');
-    
+
     if (month == null || year == null || month < 1 || month > 12) {
       return {
         'valid': false,
@@ -210,7 +210,7 @@ class PaymentService {
 
     final now = DateTime.now();
     final expiryDate = DateTime(year, month);
-    
+
     if (expiryDate.isBefore(now)) {
       return {
         'valid': false,
