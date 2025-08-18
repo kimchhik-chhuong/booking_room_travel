@@ -23,9 +23,9 @@
                         <p class="mt-1 text-sm text-gray-600">Discover amazing destinations across Cambodia</p>
                     </div>
                     <div class="flex items-center justify-end">
-                        <a href="{{ route('packages.provinces.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition-colors duration-300">
+                        <button onclick="openModal('create')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition-colors duration-300">
                             Add Province
-                        </a>
+                        </button>
                     </div>
 
                     <!-- Provinces Grid -->
@@ -96,58 +96,62 @@
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeModal()"></div>
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
         <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <form id="provinceForm" action="{{ route('packages.provinces.store') }}" method="POST" enctype="multipart/form-data" class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                @csrf
                 <div class="sm:flex sm:items-start">
-                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modalTitle">Add New Province</h3>
-                        <div class="mt-2">
-                            <form id="provinceForm" method="POST" enctype="multipart/form-data">
-                                @csrf
-                                <input type="hidden" name="_method" id="formMethod" value="POST">
-                                <input type="hidden" name="province_id" id="provinceId">
-                                
-                                <div class="space-y-4">
-                                    <div>
-                                        <label for="name" class="block text-sm font-medium text-gray-700">Province Name <span class="text-red-500">*</span></label>
-                                        <input type="text" name="name" id="name" required
-                                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                    </div>
-                                    
-                                    <div>
-                                        <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-                                        <textarea name="description" id="description" rows="3"
-                                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"></textarea>
-                                    </div>
-                                    
-                                    <div>
-                                        <label for="image" class="block text-sm font-medium text-gray-700">Image</label>
-                                        <input type="file" name="image" id="image" accept="image/*"
-                                               class="mt-1 block w-full text-sm text-gray-500
-                                                      file:mr-4 file:py-2 file:px-4
-                                                      file:rounded-md file:border-0
-                                                      file:text-sm file:font-semibold
-                                                      file:bg-indigo-50 file:text-indigo-700
-                                                      hover:file:bg-indigo-100">
-                                        <p class="mt-1 text-xs text-gray-500">Upload an image (JPG, PNG, GIF) - Max 2MB</p>
-                                        <div id="imagePreview" class="mt-2"></div>
-                                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                            Add New Province
+                        </h3>
+                        <div class="mt-5">
+                            @if ($errors->any())
+                                <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded">
+                                    <ul class="list-disc pl-5 space-y-1">
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
                                 </div>
-                                
-                                <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
-                                    <button type="button" onclick="closeModal()"
-                                            class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-1 sm:text-sm">
-                                        Cancel
-                                    </button>
-                                    <button type="submit"
-                                            class="mt-3 w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-2 sm:text-sm">
-                                        Save
-                                    </button>
+                            @endif
+                            
+                            <div class="mb-4">
+                                <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Province Name <span class="text-red-500">*</span></label>
+                                <input type="text" name="name" id="name" value="{{ old('name') }}" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                       required>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                <textarea name="description" id="description" rows="3"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">{{ old('description') }}</textarea>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="image" class="block text-sm font-medium text-gray-700 mb-1">Province Image</label>
+                                <div class="mt-1 flex items-center">
+                                    <input type="file" name="image" id="image" 
+                                           class="block w-full text-sm text-gray-500
+                                                  file:mr-4 file:py-2 file:px-4
+                                                  file:rounded-md file:border-0
+                                                  file:text-sm file:font-medium
+                                                  file:bg-indigo-50 file:text-indigo-700
+                                                  hover:file:bg-indigo-100">
                                 </div>
-                            </form>
+                                <p class="mt-1 text-xs text-gray-500">Upload an image (JPG, PNG, GIF) - Max 2MB</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Save Province
+                    </button>
+                    <button type="button" onclick="closeModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cancel
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -186,6 +190,82 @@
     </div>
 </div>
 
+@push('scripts')
+<script>
+    let currentModal = null;
+    
+    function openModal(action, id = null) {
+        const modal = document.getElementById('provinceModal');
+        const form = document.getElementById('provinceForm');
+        
+        // Reset form and clear any previous errors
+        form.reset();
+        const errorMessages = document.querySelectorAll('.text-red-500');
+        errorMessages.forEach(el => el.remove());
+        
+        // Set form action based on action type
+        if (action === 'edit' && id) {
+            // For edit, we'll handle this later
+            form.action = `/packages/provinces/${id}`;
+            form.insertAdjacentHTML('beforeend', '<input type="hidden" name="_method" value="PUT">');
+            document.querySelector('#modal-title').textContent = 'Edit Province';
+            // Here you would fetch the province data and populate the form
+        } else {
+            // For create
+            form.action = '{{ route('packages.provinces.store') }}';
+            const methodInput = form.querySelector('input[name="_method"]');
+            if (methodInput) methodInput.remove();
+            document.querySelector('#modal-title').textContent = 'Add New Province';
+        }
+        
+        modal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+        currentModal = 'province';
+    }
+    
+    function closeModal() {
+        const modal = document.getElementById('provinceModal');
+        modal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+        currentModal = null;
+    }
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        if (event.target.classList.contains('bg-gray-500')) {
+            closeModal();
+        }
+    };
+    
+    // Handle form submission
+    document.getElementById('provinceForm').addEventListener('submit', function(e) {
+        const form = this;
+        const formData = new FormData(form);
+        
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.redirect) {
+                window.location.href = data.redirect;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+        
+        e.preventDefault();
+    });
+</script>
+@endpush
+
 @push('styles')
 <style>
     /* Custom styles for the province cards */
@@ -211,95 +291,5 @@
         animation: modalFadeIn 0.3s ease-out;
     }
 </style>
-@endpush
-
-@push('scripts')
-<script>
-    let currentModal = null;
-    
-    function openModal(action, id = null) {
-        const modal = document.getElementById('provinceModal');
-        const form = document.getElementById('provinceForm');
-        const title = document.getElementById('modalTitle');
-        const methodInput = document.getElementById('formMethod');
-        const provinceId = document.getElementById('provinceId');
-        
-        if (action === 'edit' && id) {
-            // Set form action for editing
-            form.action = `/admin/provinces/${id}`;
-            methodInput.value = 'PUT';
-            title.textContent = 'Edit Province';
-            provinceId.value = id;
-            
-            // Here you would fetch the province data and fill the form
-            // For example:
-            // fetch(`/api/provinces/${id}`)
-            //     .then(response => response.json())
-            //     .then(data => {
-            //         document.getElementById('name').value = data.name;
-            //         document.getElementById('description').value = data.description || '';
-            //         // Handle image preview if needed
-            //     });
-        } else {
-            // Set form action for creating new
-            form.action = '/admin/provinces';
-            methodInput.value = 'POST';
-            title.textContent = 'Add New Province';
-            form.reset();
-            document.getElementById('imagePreview').innerHTML = '';
-        }
-        
-        currentModal = 'province';
-        modal.classList.remove('hidden');
-        document.body.classList.add('overflow-hidden');
-    }
-    
-    function openDeleteModal(id) {
-        const modal = document.getElementById('deleteModal');
-        const form = document.getElementById('deleteForm');
-        
-        form.action = `/admin/provinces/${id}`;
-        currentModal = 'delete';
-        modal.classList.remove('hidden');
-        document.body.classList.add('overflow-hidden');
-    }
-    
-    function closeModal() {
-        const modal = currentModal === 'delete' ? 
-            document.getElementById('deleteModal') : 
-            document.getElementById('provinceModal');
-            
-        modal.classList.add('hidden');
-        document.body.classList.remove('overflow-hidden');
-        currentModal = null;
-    }
-    
-    // Close modal when clicking outside
-    window.onclick = function(event) {
-        if (currentModal) {
-            const modal = document.getElementById(currentModal + 'Modal');
-            if (event.target === modal) {
-                closeModal();
-            }
-        }
-    }
-    
-    // Handle image preview
-    document.getElementById('image').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const preview = document.getElementById('imagePreview');
-                preview.innerHTML = `
-                    <div class="mt-2">
-                        <img src="${e.target.result}" alt="Preview" class="h-32 w-32 object-cover rounded">
-                    </div>
-                `;
-            }
-            reader.readAsDataURL(file);
-        }
-    });
-</script>
 @endpush
 @endsection
