@@ -131,7 +131,7 @@ class BookingHistoryController extends Controller
                 'pending_bookings' => $pendingBookings,
                 'cancelled_bookings' => $cancelledBookings,
                 'total_spent' => $totalSpent,
-            ]
+            ]  
         ]);
     }
 }
