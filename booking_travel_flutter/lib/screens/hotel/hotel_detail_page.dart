@@ -3,6 +3,10 @@ import 'package:booking_travel/models/hotel_model.dart';
 import 'package:booking_travel/models/room_type_model.dart';
 import 'package:booking_travel/services/room_service.dart';
 import 'package:booking_travel/services/booking_service.dart';
+import 'package:booking_travel/services/payment_service.dart';
+import 'package:booking_travel/screens/hotel/booking_confirmation_page.dart';
+import 'package:booking_travel/screens/hotel/booking_success_page.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HotelDetailPage extends StatefulWidget {
   final Hotel hotel;
@@ -48,9 +52,16 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
   }
 
   Future<void> _checkAvailability() async {
-    if (selectedRoom == null || checkInDate == null || checkOutDate == null) {
+    if (checkInDate == null || checkOutDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select room type and dates')),
+        const SnackBar(content: Text('Please select both check-in and check-out dates')),
+      );
+      return;
+    }
+
+    if (checkOutDate!.isBefore(checkInDate!.add(const Duration(days: 1)))) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Check-out date must be after check-in date')),
       );
       return;
     }
@@ -60,7 +71,13 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
     });
 
     try {
-      final availability = await RoomService.checkAvailability(
+      // Log the dates being sent
+      print('Checking availability with:');
+      print('Check-in: ${checkInDate!.toIso8601String().split('T')[0]}');
+      print('Check-out: ${checkOutDate!.toIso8601String().split('T')[0]}');
+      print('Rooms: $rooms');
+
+      final result = await RoomService.checkAvailability(
         roomTypeId: selectedRoom!.id,
         checkInDate: checkInDate!,
         checkOutDate: checkOutDate!,
@@ -68,16 +85,27 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
       );
 
       setState(() {
-        availabilityData = availability;
-        isCheckingAvailability = false;
+        availabilityData = result;
       });
+
+      if (result['available'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Room is available!')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Not enough rooms available. Only ${result['available_rooms']} left.')),
+        );
+      }
     } catch (e) {
+      print('Error checking availability: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString().replaceAll('Exception: ', '')}')),
+      );
+    } finally {
       setState(() {
         isCheckingAvailability = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error checking availability: $e')),
-      );
     }
   }
 
@@ -121,6 +149,10 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
       return;
     }
 
+    // Calculate total price
+    final nights = checkOutDate!.difference(checkInDate!).inDays;
+    final totalPrice = selectedRoom!.price * nights * rooms;
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -131,6 +163,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
           checkOutDate: checkOutDate!,
           guests: guests,
           rooms: rooms,
+          totalPrice: totalPrice,
         ),
       ),
     );
@@ -205,12 +238,16 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
                   _buildHotelInfoSection(),
                   const SizedBox(height: 24),
                   
+                  // Location Map Section
+                  _buildLocationMapSection(),
+                  const SizedBox(height: 24),
+                  
                   // Booking Section
                   _buildBookingSection(),
                   const SizedBox(height: 24),
                   
-                  // Room Types Section
-                  _buildRoomTypesSection(),
+                  // Choose Room Section
+                  _buildChooseRoomSection(),
                   const SizedBox(height: 24),
                   
                   // Availability Section
@@ -224,11 +261,26 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
       ),
       floatingActionButton: selectedRoom != null &&
               checkInDate != null &&
-              checkOutDate != null &&
-              availabilityData != null &&
-              availabilityData!['available'] == true
+              checkOutDate != null
           ? FloatingActionButton.extended(
-              onPressed: _proceedToBooking,
+              onPressed: () {
+                if (availabilityData == null) {
+                  _checkAvailability().then((_) {
+                    if (availabilityData != null && availabilityData!['available'] == true) {
+                      _proceedToBooking();
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Please check room availability first')),
+                      );
+                    }
+                  });
+                } else if (availabilityData!['available'] == true) {
+                  _proceedToBooking();
+                } else {
+                  _checkAvailability();
+                }
+              },
               backgroundColor: Colors.orange,
               icon: const Icon(Icons.book_online),
               label: const Text('Book Now'),
@@ -464,7 +516,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
     );
   }
 
-  Widget _buildRoomTypesSection() {
+  Widget _buildLocationMapSection() {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -474,7 +526,188 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Available Rooms',
+              'Location',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            if (widget.hotel.address != null) ...[
+              Row(
+                children: [
+                  const Icon(Icons.location_on, color: Colors.orange, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      widget.hotel.address!,
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+            ],
+            // Map placeholder with interactive elements
+            Container(
+              height: 200,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey.shade300),
+                color: Colors.grey.shade100,
+              ),
+              child: Stack(
+                children: [
+                  // Map placeholder
+                  Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.map,
+                          size: 60,
+                          color: Colors.grey.shade400,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Interactive Map',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Tap to view location',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Overlay with hotel marker
+                  Positioned(
+                    top: 80,
+                    left: MediaQuery.of(context).size.width * 0.4,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.orange,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.location_on,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                  // Tap detector
+                  Positioned.fill(
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(8),
+                        onTap: () => _openMap(),
+                        child: Container(),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _openMap(),
+                    icon: const Icon(Icons.directions, color: Colors.orange),
+                    label: const Text(
+                      'Get Directions',
+                      style: TextStyle(color: Colors.orange),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.orange),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _shareLocation(),
+                    icon: const Icon(Icons.share, color: Colors.orange),
+                    label: const Text(
+                      'Share Location',
+                      style: TextStyle(color: Colors.orange),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Colors.orange),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openMap() async {
+    if (widget.hotel.address != null) {
+      final query = Uri.encodeComponent(widget.hotel.address!);
+      final googleMapsUrl = 'https://www.google.com/maps/search/?api=1&query=$query';
+      final appleMapsUrl = 'https://maps.apple.com/?q=$query';
+      
+      try {
+        if (await canLaunchUrl(Uri.parse(googleMapsUrl))) {
+          await launchUrl(Uri.parse(googleMapsUrl), mode: LaunchMode.externalApplication);
+        } else if (await canLaunchUrl(Uri.parse(appleMapsUrl))) {
+          await launchUrl(Uri.parse(appleMapsUrl), mode: LaunchMode.externalApplication);
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open maps application')),
+        );
+      }
+    }
+  }
+
+  void _shareLocation() {
+    if (widget.hotel.address != null) {
+      // In a real app, you would use share_plus package
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Location: ${widget.hotel.address!}')),
+      );
+    }
+  }
+
+  Widget _buildChooseRoomSection() {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Choose Room',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
@@ -634,14 +867,14 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
   }
 }
 
-// Placeholder for BookingConfirmationPage
-class BookingConfirmationPage extends StatelessWidget {
+class BookingConfirmationPage extends StatefulWidget {
   final Hotel hotel;
   final RoomType roomType;
   final DateTime checkInDate;
   final DateTime checkOutDate;
   final int guests;
   final int rooms;
+  final double totalPrice;
 
   const BookingConfirmationPage({
     Key? key,
@@ -651,16 +884,435 @@ class BookingConfirmationPage extends StatelessWidget {
     required this.checkOutDate,
     required this.guests,
     required this.rooms,
+    required this.totalPrice,
+  }) : super(key: key);
+
+  @override
+  State<BookingConfirmationPage> createState() => _BookingConfirmationPageState();
+}
+
+class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
+  final _formKey = GlobalKey<FormState>();
+  final _cardNumberController = TextEditingController();
+  final _expiryController = TextEditingController();
+  final _cvvController = TextEditingController();
+  final _cardNameController = TextEditingController();
+  bool _isLoading = false;
+  String _selectedPaymentMethod = 'credit_card';
+
+  @override
+  void dispose() {
+    _cardNumberController.dispose();
+    _expiryController.dispose();
+    _cvvController.dispose();
+    _cardNameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _confirmBooking() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      // Process payment first
+      final paymentResult = await PaymentService.processPayment(
+        amount: widget.totalPrice,
+        paymentMethod: _selectedPaymentMethod,
+        cardDetails: _selectedPaymentMethod == 'credit_card'
+            ? {
+                'cardNumber': _cardNumberController.text,
+                'expiry': _expiryController.text,
+                'cvv': _cvvController.text,
+                'cardHolder': _cardNameController.text,
+              }
+            : null,
+      );
+
+      if (!mounted) return;
+
+      if (paymentResult['success'] == true) {
+        // Create booking
+        final bookingResult = await BookingService.createBookingWithPayment(
+          hotelId: widget.hotel.id,
+          roomTypeId: widget.roomType.id,
+          checkInDate: widget.checkInDate,
+          checkOutDate: widget.checkOutDate,
+          numberOfGuests: widget.guests,
+          numberOfRooms: widget.rooms,
+          totalAmount: widget.totalPrice,
+          paymentMethod: _selectedPaymentMethod,
+          guestInfo: {
+            'name': _cardNameController.text,
+            'email': 'user@example.com', // Replace with actual user email
+            'phone': '+1234567890', // Replace with actual user phone
+          },
+          cardDetails: _selectedPaymentMethod == 'credit_card'
+              ? {
+                  'cardNumber': _cardNumberController.text,
+                  'expiry': _expiryController.text,
+                  'cvv': _cvvController.text,
+                  'cardHolder': _cardNameController.text,
+                }
+              : null,
+        );
+
+        if (!mounted) return;
+
+        if (bookingResult['success'] == true) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => BookingSuccessPage(
+                bookingId: bookingResult['bookingId'],
+                hotel: widget.hotel,
+                roomType: widget.roomType,
+                checkInDate: widget.checkInDate,
+                checkOutDate: widget.checkOutDate,
+                guests: widget.guests,
+                rooms: widget.rooms,
+                totalAmount: widget.totalPrice,
+              ),
+            ),
+          );
+        } else {
+          throw Exception(bookingResult['message'] ?? 'Failed to create booking');
+        }
+      } else {
+        throw Exception(paymentResult['message'] ?? 'Payment failed');
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final nights = widget.checkOutDate.difference(widget.checkInDate).inDays;
+    final pricePerNight = widget.roomType.price;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Confirm Booking'),
+        backgroundColor: Colors.orange,
+      ),
+      body: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Booking Summary
+              _buildBookingSummary(nights, pricePerNight),
+              const SizedBox(height: 24),
+              
+              // Payment Method
+              _buildPaymentMethodSection(),
+              const SizedBox(height: 24),
+              
+              // Payment Details (only show for credit card)
+              if (_selectedPaymentMethod == 'credit_card')
+                _buildPaymentDetails(),
+              
+              const SizedBox(height: 24),
+              
+              // Total Price
+              _buildTotalPrice(),
+              const SizedBox(height: 32),
+              
+              // Confirm Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _confirmBooking,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: _isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                          'Confirm Booking',
+                          style: TextStyle(fontSize: 16, color: Colors.white),
+                        ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBookingSummary(int nights, double pricePerNight) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Booking Summary',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            _buildSummaryRow('Hotel', widget.hotel.name),
+            _buildSummaryRow('Room Type', widget.roomType.name),
+            _buildSummaryRow('Check-in',
+                '${widget.checkInDate.day}/${widget.checkInDate.month}/${widget.checkInDate.year}'),
+            _buildSummaryRow('Check-out',
+                '${widget.checkOutDate.day}/${widget.checkOutDate.month}/${widget.checkOutDate.year}'),
+            _buildSummaryRow('Nights', '$nights'),
+            _buildSummaryRow('Guests', '${widget.guests}'),
+            _buildSummaryRow('Rooms', '${widget.rooms}'),
+            const Divider(thickness: 1, height: 32),
+            _buildSummaryRow('Price per night', '\$${pricePerNight.toStringAsFixed(2)}'),
+            _buildSummaryRow('Total', '\$${widget.totalPrice.toStringAsFixed(2)}', isTotal: true),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPaymentMethodSection() {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Payment Method',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            RadioListTile<String>(
+              title: const Text('Credit/Debit Card'),
+              value: 'credit_card',
+              groupValue: _selectedPaymentMethod,
+              onChanged: (value) {
+                setState(() {
+                  _selectedPaymentMethod = value!;
+                });
+              },
+            ),
+            RadioListTile<String>(
+              title: const Text('Pay at Hotel'),
+              value: 'pay_at_hotel',
+              groupValue: _selectedPaymentMethod,
+              onChanged: (value) {
+                setState(() {
+                  _selectedPaymentMethod = value!;
+                });
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPaymentDetails() {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Card Details',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _cardNameController,
+              decoration: const InputDecoration(
+                labelText: 'Cardholder Name',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.person_outline),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter cardholder name';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _cardNumberController,
+              decoration: const InputDecoration(
+                labelText: 'Card Number',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.credit_card),
+                hintText: '1234 5678 9012 3456',
+              ),
+              keyboardType: TextInputType.number,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter card number';
+                }
+                // Simple validation - in production, use a proper card validation library
+                if (value.replaceAll(' ', '').length < 16) {
+                  return 'Please enter a valid card number';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _expiryController,
+                    decoration: const InputDecoration(
+                      labelText: 'MM/YY',
+                      border: OutlineInputBorder(),
+                      hintText: 'MM/YY',
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Required';
+                      }
+                      // Simple validation
+                      if (!RegExp(r'^\d{2}/\d{2}$').hasMatch(value)) {
+                        return 'Invalid format';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextFormField(
+                    controller: _cvvController,
+                    decoration: const InputDecoration(
+                      labelText: 'CVV',
+                      border: OutlineInputBorder(),
+                      hintText: '123',
+                    ),
+                    keyboardType: TextInputType.number,
+                    obscureText: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Required';
+                      }
+                      if (value.length < 3) {
+                        return 'Invalid CVV';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTotalPrice() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[300]!), 
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text(
+            'Total Amount:',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          Text(
+            '\$${widget.totalPrice.toStringAsFixed(2)}',
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.orange,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryRow(String label, String value, {bool isTotal = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              color: isTotal ? Colors.black : Colors.grey[700],
+              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: isTotal ? 18 : 14,
+              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+              color: isTotal ? Colors.orange : null,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class BookingSuccessPage extends StatelessWidget {
+  final String bookingId;
+  final Hotel hotel;
+  final RoomType roomType;
+  final DateTime checkInDate;
+  final DateTime checkOutDate;
+  final int guests;
+  final int rooms;
+  final double totalAmount;
+
+  const BookingSuccessPage({
+    Key? key,
+    required this.bookingId,
+    required this.hotel,
+    required this.roomType,
+    required this.checkInDate,
+    required this.checkOutDate,
+    required this.guests,
+    required this.rooms,
+    required this.totalAmount,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final nights = checkOutDate.difference(checkInDate).inDays;
-    final totalPrice = roomType.price * nights * rooms;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Booking Confirmation'),
+        title: const Text('Booking Success'),
         backgroundColor: Colors.orange,
       ),
       body: Padding(
@@ -688,7 +1340,7 @@ class BookingConfirmationPage extends StatelessWidget {
                     Text('Guests: $guests'),
                     const Divider(),
                     Text(
-                      'Total: \$${totalPrice.toStringAsFixed(2)}',
+                      'Total: \$${totalAmount.toStringAsFixed(2)}',
                       style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   ],
@@ -710,7 +1362,7 @@ class BookingConfirmationPage extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 child: const Text(
-                  'Confirm Booking',
+                  'View Booking Details',
                   style: TextStyle(fontSize: 18, color: Colors.white),
                 ),
               ),

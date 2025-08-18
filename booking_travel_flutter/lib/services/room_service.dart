@@ -89,16 +89,26 @@ class RoomService {
         'rooms_needed': roomsNeeded,
       };
 
+      print('Sending request to check availability with:');
+      print('Room Type ID: $roomTypeId');
+      print('Data: $data');
+
       final response = await ApiService.post('roomtypes/$roomTypeId/check-availability', data);
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
-        return responseData['data'];
+        print('Availability response: $responseData');
+        return responseData['data'] ?? responseData;
+      } else if (response.statusCode == 422) {
+        final errorData = json.decode(response.body);
+        print('Validation error: $errorData');
+        throw Exception(errorData['message'] ?? 'Invalid request data');
       } else {
         throw Exception('Failed to check availability: ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('Error checking availability: $e');
+      print('Error in checkAvailability: $e');
+      rethrow;
     }
   }
 

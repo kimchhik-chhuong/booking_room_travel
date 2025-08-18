@@ -9,6 +9,7 @@ class ApiService {
   static Future<Map<String, String>> get headers async {
     return {
       'Accept': 'application/json',
+      'Content-Type': 'application/json',
     };
   }
 
@@ -31,6 +32,7 @@ class ApiService {
         Uri.parse('$baseUrl/$endpoint'),
         headers: await headers,
         body: json.encode(data),
+        encoding: Encoding.getByName('utf-8'),
       );
       return response;
     } catch (e) {
