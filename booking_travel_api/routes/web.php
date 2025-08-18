@@ -51,6 +51,12 @@ Route::middleware('auth')->group(function () {
     Route::prefix('packages')->name('packages.')->group(function () {
         Route::get('/', [PackageController::class, 'index'])->name('index');
         Route::get('/province/{id}', [PackageController::class, 'showProvince'])->name('province');
+        
+        // Province CRUD routes
+        Route::get('/provinces/create', [PackageController::class, 'create'])->name('provinces.create');
+        Route::post('/provinces', [PackageController::class, 'store'])->name('provinces.store');
+        Route::put('/provinces/{id}', [PackageController::class, 'update'])->name('provinces.update');
+        Route::delete('/provinces/{id}', [PackageController::class, 'destroy'])->name('provinces.destroy');
     });
 
     // Bookings Routes

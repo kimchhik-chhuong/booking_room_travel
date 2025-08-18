@@ -26,6 +26,11 @@
                             Discover amazing hotels and adventures in {{ $province->name }}, Cambodia.
                         </p>
                     </div>
+                    <div class="flex items-center justify-end">
+                        <a href="{{ route('packages.index') }}" class="text-white hover:text-indigo-100 text-sm font-medium">
+                            Back to Packages
+                        </a>
+                    </div>
                 </div>
             </div>
 
