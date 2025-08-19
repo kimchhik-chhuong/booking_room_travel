@@ -100,7 +100,7 @@
                         <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
                             @if($adventure->image_url)
                             <div class="h-48 overflow-hidden">
-                                <img src="{{ $adventure->image_url }}" 
+                                <img src="{{ $adventure->image_path }}" 
                                      alt="{{ $adventure->name }}" 
                                      class="w-full h-full object-cover">
                             </div>
@@ -158,58 +158,25 @@
         crossorigin=""></script>
 
 <script>
-    let map, marker;
-    
-    function initMap() {
-        // Default to Phnom Penh coordinates if province coordinates not available
-        const defaultLat = {{ $province->latitude ?? 11.5564 }};
-        const defaultLng = {{ $province->longitude ?? 104.9282 }};
-        
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if map container exists
+        const mapElement = document.getElementById('provinceMap');
+        if (!mapElement) return;
+
         // Initialize the map
-        map = L.map('map').setView([defaultLat, defaultLng], 13);
-        
+        const map = L.map('provinceMap').setView([11.5449, 104.8922], 8);
+
         // Add OpenStreetMap tiles
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors',
-            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
         }).addTo(map);
-        
-        // Add initial marker
-        updateMarker(defaultLat, defaultLng);
-        
-        // Add click handler to update marker position
-        map.on('click', function(e) {
-            updateMarker(e.latlng.lat, e.latlng.lng);
-        });
-    }
-    
-    function updateMarker(lat, lng) {
-        // Update input fields
-        const latInput = document.getElementById('latitude');
-        const lngInput = document.getElementById('longitude');
-        if (latInput) latInput.value = lat.toFixed(6);
-        if (lngInput) lngInput.value = lng.toFixed(6);
-        
-        // Remove existing marker if it exists
-        if (marker) {
-            map.removeLayer(marker);
-        }
-        
-        // Add new marker
-        marker = L.marker([lat, lng], {
-            draggable: true
-        }).addTo(map);
-        
-        // Update marker position on drag
-        marker.on('dragend', function(e) {
-            const newLatLng = e.target.getLatLng();
-            updateMarker(newLatLng.lat, newLatLng.lng);
-        });
-    }
-    
-    // Initialize map when page loads
-    document.addEventListener('DOMContentLoaded', function() {
-        initMap();
+
+        // Add a marker for the province if coordinates are available
+        @if($province->latitude && $province->longitude)
+            L.marker([{{ $province->latitude }}, {{ $province->longitude }}])
+                .addTo(map)
+                .bindPopup('<b>{{ $province->name }}</b>');
+        @endif
     });
 </script>
 @endpush
