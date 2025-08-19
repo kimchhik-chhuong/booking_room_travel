@@ -120,6 +120,13 @@ Route::middleware('auth')->group(function () {
         // Additional feedback routes can go here
     });
 
+    // Hotel Management Routes
+    Route::middleware('auth')->group(function () {
+        Route::resource('hotels', 'App\Http\Controllers\HotelMetadataController');
+        Route::get('/hotels', [App\Http\Controllers\HotelMetadataController::class, 'index'])->name('hotels.index');
+        Route::post('/hotels', [App\Http\Controllers\HotelMetadataController::class, 'store'])->name('hotels.store');
+    });
+
     // Redirect root path to dashboard for authenticated users
     Route::get('/', function () {
         return redirect()->route('dashboard');

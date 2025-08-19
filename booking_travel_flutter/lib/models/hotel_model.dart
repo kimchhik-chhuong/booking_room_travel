@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class Hotel {
   final int id;
   final String name;
@@ -40,6 +42,39 @@ class Hotel {
   });
 
   factory Hotel.fromJson(Map<String, dynamic> json) {
+    // Parse amenities - handle both string and list formats
+    List<String>? parseAmenities(dynamic amenitiesData) {
+      if (amenitiesData == null) return null;
+      
+      if (amenitiesData is String) {
+        try {
+          // Try to parse the string as JSON
+          if (amenitiesData.startsWith('[') && amenitiesData.endsWith(']')) {
+            // Remove the square brackets and split by comma
+            final cleanString = amenitiesData.substring(1, amenitiesData.length - 1);
+            return cleanString
+                .split(',')
+                .map((e) => e.trim().replaceAll('"', '').replaceAll("'", ''))
+                .where((e) => e.isNotEmpty)
+                .toList();
+          }
+          // If it's not in JSON array format, try to split by comma
+          return amenitiesData
+              .split(',')
+              .map((e) => e.trim().replaceAll('"', '').replaceAll("'", ''))
+              .where((e) => e.isNotEmpty)
+              .toList();
+        } catch (e) {
+          // If anything fails, return an empty list
+          return [];
+        }
+      } else if (amenitiesData is List) {
+        // If it's already a list, convert each item to String
+        return amenitiesData.map((e) => e.toString()).toList();
+      }
+      return [];
+    }
+
     return Hotel(
       id: json['hotel_id'] ?? json['id'] ?? 0,
       name: json['name'] ?? '',
@@ -58,9 +93,7 @@ class Hotel {
       rating: json['star_rating'] != null
           ? double.tryParse(json['star_rating'].toString())
           : null,
-      amenities: json['amenities'] != null
-          ? List<String>.from(json['amenities'])
-          : null,
+      amenities: parseAmenities(json['amenities']),
       phone: json['contact_phone'] ?? json['phone'],
       email: json['email'],
       website: json['website_url'] ?? json['website'],
