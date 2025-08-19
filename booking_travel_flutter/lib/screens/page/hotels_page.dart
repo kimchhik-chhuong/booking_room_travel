@@ -56,6 +56,7 @@ class _HotelsPageState extends State<HotelsPage> {
     const Center(child: Text('Search Page')),
     HistoryScreen(),
     const Center(child: Text('Profile Page')),
+    const Center(child: Text('Message Page')),
   ];
 
   void _onTabTapped(int index) {
@@ -80,6 +81,7 @@ class _HotelsPageState extends State<HotelsPage> {
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
           BottomNavigationBarItem(icon: Icon(Icons.history), label: 'History'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Message'),
         ],
       ),
     );

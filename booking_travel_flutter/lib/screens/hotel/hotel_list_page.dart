@@ -288,47 +288,24 @@ class _HotelListPageState extends State<HotelListPage> {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  // Price
-                                  if (hotel.priceRange != null)
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.orange.shade50,
-                                        borderRadius: BorderRadius.circular(20),
-                                        border: Border.all(
-                                          color: Colors.orange.shade200,
-                                        ),
-                                      ),
-                                      child: Text(
-                                        '\$${hotel.priceRange}/night',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.orange[700],
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    )
-                                  else
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey.shade100,
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      child: Text(
-                                        'Contact for Price',
-                                        style: TextStyle(
-                                          color: Colors.grey[600],
-                                          fontSize: 12,
-                                        ),
+                                  // Price - Show "Contact for Price" since we don't have room type data in list view
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.shade100,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      'View Rooms & Prices',
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 12,
                                       ),
                                     ),
+                                  ),
                                   
                                   // View Details Button
                                   Container(

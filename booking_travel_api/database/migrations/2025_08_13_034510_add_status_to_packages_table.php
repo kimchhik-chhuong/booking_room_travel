@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('packages', function (Blueprint $table) {
-        $table->string('location')->nullable();
-    });
+            //
+        });
     }
 
     /**
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('packages', function (Blueprint $table) {
-            $table->dropColumn('location');
+            //
         });
     }
 };
