@@ -361,14 +361,34 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
   }
 
   Widget _buildAmenities() {
-    final amenities = [
-      {'icon': Icons.wifi, 'label': 'Free WiFi'},
-      {'icon': Icons.pool, 'label': 'Swimming Pool'},
-      {'icon': Icons.restaurant, 'label': 'Restaurant'},
-      {'icon': Icons.local_parking, 'label': 'Parking'},
-      {'icon': Icons.fitness_center, 'label': 'Fitness Center'},
-      {'icon': Icons.room_service, 'label': 'Room Service'},
-    ];
+    // Get amenities from the hotel model or use an empty list if null
+    final amenities = widget.hotel.amenities ?? [];
+    
+    // Map of common amenity names to their corresponding icons
+    final amenityIcons = {
+      'wifi': Icons.wifi,
+      'free wifi': Icons.wifi,
+      'pool': Icons.pool,
+      'swimming pool': Icons.pool,
+      'restaurant': Icons.restaurant,
+      'parking': Icons.local_parking,
+      'free parking': Icons.local_parking,
+      'fitness': Icons.fitness_center,
+      'gym': Icons.fitness_center,
+      'room service': Icons.room_service,
+      'breakfast': Icons.free_breakfast,
+      'air conditioning': Icons.ac_unit,
+      'bar': Icons.local_bar,
+      'spa': Icons.spa,
+      'airport shuttle': Icons.airport_shuttle,
+      'pets allowed': Icons.pets,
+      'family rooms': Icons.family_restroom,
+      'non-smoking rooms': Icons.smoke_free,
+    };
+
+    if (amenities.isEmpty) {
+      return const SizedBox.shrink(); // Don't show anything if no amenities
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -382,12 +402,23 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
           spacing: 16,
           runSpacing: 8,
           children: amenities.map((amenity) {
+            // Find matching icon or use a default one
+            final icon = amenityIcons.entries
+                .firstWhere(
+                  (entry) => amenity.toLowerCase().contains(entry.key),
+                  orElse: () => MapEntry('', Icons.check_circle),
+                )
+                .value;
+
             return Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(amenity['icon'] as IconData, size: 20, color: Colors.orange),
+                Icon(icon, size: 20, color: Colors.orange),
                 const SizedBox(width: 4),
-                Text(amenity['label'] as String),
+                Text(
+                  amenity,
+                  style: const TextStyle(fontSize: 14),
+                ),
               ],
             );
           }).toList(),

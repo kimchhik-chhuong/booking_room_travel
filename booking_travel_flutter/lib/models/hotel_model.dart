@@ -76,20 +76,19 @@ class Hotel {
     }
 
     return Hotel(
-      id: json['hotel_id'] ?? json['id'] ?? 0,
+      id: json['hotel_id'] ?? json['id'],
       name: json['name'] ?? '',
       description: json['description'] ?? '',
-      address: json['address'],
+      address: json['address'] ?? '',
       latitude: json['latitude'] != null
           ? double.tryParse(json['latitude'].toString())
           : null,
       longitude: json['longitude'] != null
           ? double.tryParse(json['longitude'].toString())
           : null,
-      image: json['image_url'] ?? json['image'],
-      images: json['images'] != null
-          ? List<String>.from(json['images'])
-          : null,
+      image: json['full_image_url'] ?? json['image_url'] ?? json['image'],
+      images: (json['full_images'] as List<dynamic>?)?.cast<String>() ?? 
+             (json['images'] as List<dynamic>?)?.cast<String>(),
       rating: json['star_rating'] != null
           ? double.tryParse(json['star_rating'].toString())
           : null,
@@ -126,6 +125,14 @@ class Hotel {
       'province_name': provinceName,
       'status': status,
     };
+  }
+
+  // Get the first available image
+  String? get firstImage {
+    if (images != null && images!.isNotEmpty) {
+      return images!.first;
+    }
+    return image;
   }
 
   // Get the main image (first from images array or fallback to single image)

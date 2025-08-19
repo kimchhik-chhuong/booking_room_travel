@@ -40,6 +40,8 @@ class HotelMetadata extends Model
         'check_out_time' => 'datetime:H:i',
     ];
 
+    protected $appends = ['full_image_url', 'full_images'];
+
     public function province()
     {
         return $this->belongsTo(Province::class);
@@ -75,6 +77,24 @@ class HotelMetadata extends Model
         return $this->star_rating ? number_format($this->star_rating, 1) : null;
     }
 
+    // Accessor for full image URL
+    public function getFullImageUrlAttribute()
+    {
+        return $this->getFullUrl($this->image_url);
+    }
+
+    // Accessor for full images
+    public function getFullImagesAttribute()
+    {
+        if (empty($this->images)) {
+            return [];
+        }
+        
+        return array_map(function($image) {
+            return $this->getFullUrl($image);
+        }, $this->images);
+    }
+
     // Scope for active hotels
     public function scopeActive($query)
     {
@@ -85,5 +105,22 @@ class HotelMetadata extends Model
     public function scopeWithLocation($query)
     {
         return $query->whereNotNull('latitude')->whereNotNull('longitude');
+    }
+
+    protected function getFullUrl($path)
+    {
+        if (empty($path)) {
+            return null;
+        }
+        
+        if (filter_var($path, FILTER_VALIDATE_URL)) {
+            return $path;
+        }
+        
+        // Remove 'public/' from the path if it exists
+        $path = str_replace('public/', '', $path);
+        
+        // Return full URL
+        return asset('storage/' . ltrim($path, '/'));
     }
 }

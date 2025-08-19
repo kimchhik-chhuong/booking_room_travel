@@ -122,50 +122,31 @@ class _HotelListPageState extends State<HotelListPage> {
                               borderRadius: const BorderRadius.vertical(
                                 top: Radius.circular(16),
                               ),
-                              child: hotel.image != null
+                              child: hotel.firstImage != null
                                   ? Image.network(
-                                      hotel.image!,
+                                      hotel.firstImage!,
                                       height: 200,
                                       width: double.infinity,
                                       fit: BoxFit.cover,
+                                      loadingBuilder: (context, child, loadingProgress) {
+                                        if (loadingProgress == null) return child;
+                                        return Container(
+                                          height: 200,
+                                          color: Colors.grey[200],
+                                          child: Center(
+                                            child: CircularProgressIndicator(
+                                              value: loadingProgress.expectedTotalBytes != null
+                                                  ? loadingProgress.cumulativeBytesLoaded /
+                                                      loadingProgress.expectedTotalBytes!
+                                                  : null,
+                                            ),
+                                          ),
+                                        );
+                                      },
                                       errorBuilder: (context, error, stackTrace) =>
-                                          Container(
-                                        height: 200,
-                                        decoration: BoxDecoration(
-                                          gradient: LinearGradient(
-                                            colors: [
-                                              Colors.orange.shade300,
-                                              Colors.orange.shade500,
-                                            ],
-                                          ),
-                                        ),
-                                        child: const Center(
-                                          child: Icon(
-                                            Icons.hotel,
-                                            size: 60,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
+                                          _buildImagePlaceholder(),
                                     )
-                                  : Container(
-                                      height: 200,
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          colors: [
-                                            Colors.orange.shade300,
-                                            Colors.orange.shade500,
-                                          ],
-                                        ),
-                                      ),
-                                      child: const Center(
-                                        child: Icon(
-                                          Icons.hotel,
-                                          size: 60,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
+                                  : _buildImagePlaceholder(),
                             ),
                             // Rating Badge
                             if (hotel.rating != null)
@@ -344,6 +325,27 @@ class _HotelListPageState extends State<HotelListPage> {
             },
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildImagePlaceholder() {
+    return Container(
+      height: 200,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.orange.shade300,
+            Colors.orange.shade500,
+          ],
+        ),
+      ),
+      child: const Center(
+        child: Icon(
+          Icons.hotel,
+          size: 60,
+          color: Colors.white,
+        ),
       ),
     );
   }
