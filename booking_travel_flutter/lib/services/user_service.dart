@@ -9,7 +9,7 @@ class UserService {
 
   // Base URL for your Laravel API
   // Replace with your actual IP if testing on device/emulator
-  static String baseUrl = 'http://192.168.108.178:8000/api';
+  static String baseUrl = 'http://localhost:8000/api';
 
   /// Register
   static Future<bool> registerUser({
