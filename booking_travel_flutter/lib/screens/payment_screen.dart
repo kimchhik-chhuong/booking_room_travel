@@ -7,7 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:typed_data';
-// import 'dart:html' as html;
+import 'dart:html' as html;
 
 void main() {
   runApp(MaterialApp(
@@ -23,421 +23,58 @@ class HotelsPage extends StatelessWidget {
   const HotelsPage({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Hotels'),
-        backgroundColor: Colors.blue,
-      ),
-      body: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          _buildSectionTitle('Featured Hotels'),
-          _buildHotelList(context),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHotelList(BuildContext context) {
-    final hotels = [
-      {
-        'name': 'Taj Hotel',
-        'price': '\$200/Night',
-        'imageUrl': 'assets/room2.jpg',
-        'rating': 4.5,
-        'reviews': 20,
-        'description': 'The ONOMO Hotels chain established...',
-      },
-      {
-        'name': 'AR Hotel',
-        'price': '\$200/Night',
-        'imageUrl': 'assets/room2.jpg',
-        'rating': 4.5,
-        'reviews': 20,
-        'description': 'The ONOMO Hotels chain established...',
-      },
-      {
-        'name': 'Al Rahman Hotel',
-        'price': '\$200/Night',
-        'imageUrl': 'assets/room2.jpg',
-        'rating': 4.5,
-        'reviews': 20,
-        'description': 'The ONOMO Hotels chain established...',
-      },
-      {
-        'name': 'Oberoy Hotel',
-        'price': '\$200/Night',
-        'imageUrl': 'assets/room2.jpg',
-        'rating': 4.5,
-        'reviews': 20,
-        'description': 'The ONOMO Hotels chain established...',
-      },
-    ];
-
-    return ListView.builder(
-      padding: const EdgeInsets.all(8),
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      itemCount: hotels.length,
-      itemBuilder: (context, index) {
-        final hotel = hotels[index];
-        return _buildHotelCard(
-          context,
-          hotelName: hotel['name'] as String,
-          price: hotel['price'] as String,
-          imageUrl: hotel['imageUrl'] as String,
-          rating: (hotel['rating'] as double?) ?? 0.0,
-          reviews: (hotel['reviews'] as int?) ?? 0,
-          description: hotel['description'] as String,
-        );
-      },
-    );
-  }
-
-  Widget _buildHotelCard(BuildContext context,
-      {required String hotelName,
-      required String price,
-      required String imageUrl,
-      required double rating,
-      required int reviews,
-      required String description}) {
-    final isNetwork = imageUrl.startsWith('http');
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        clipBehavior: Clip.antiAlias,
-        elevation: 4,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: isNetwork
-                  ? Image.network(
-                      imageUrl,
-                      height: 120,
-                      width: 120,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          height: 120,
-                          width: 120,
-                          color: Colors.grey[300],
-                          child: const Icon(Icons.broken_image, size: 40),
-                        );
-                      },
-                    )
-                  : Image.asset(
-                      imageUrl,
-                      height: 120,
-                      width: 120,
-                      fit: BoxFit.cover,
-                    ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          hotelName,
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        const Icon(Icons.favorite_border, color: Colors.grey),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(Icons.star, size: 16, color: Colors.yellow[700]),
-                        const SizedBox(width: 4),
-                        Text(
-                          '$rating Reviews ($reviews)',
-                          style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      description,
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(price, style: TextStyle(color: Colors.blue, fontSize: 16)),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => BookingScreen(
-                                  hotelName: hotelName,
-                                  address: '12 Eze Adele Road Rumuomasi Lagos Nigeria',
-                                  price: price,
-                                  imageUrl: imageUrl,
-                                  description: description,
-                                ),
-                              ),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: const Text('Book now'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  _PaymentScreenState createState() => _PaymentScreenState();
 }
 
-class BookingScreen extends StatefulWidget {
-  final String hotelName;
-  final String address;
-  final String price;
-  final String imageUrl;
-  final String description;
+class _PaymentScreenState extends State<PaymentScreen> {
+  final _formKey = GlobalKey<FormState>();
 
-  const BookingScreen({
-    Key? key,
-    required this.hotelName,
-    required this.address,
-    required this.price,
-    required this.imageUrl,
-    required this.description,
-  }) : super(key: key);
+  final TextEditingController _cardNumberController = TextEditingController();
+  final TextEditingController _cardHolderController = TextEditingController();
+  final TextEditingController _expiryDateController = TextEditingController();
+  final TextEditingController _cvvController = TextEditingController();
 
-  @override
-  _BookingScreenState createState() => _BookingScreenState();
-}
-
-class _BookingScreenState extends State<BookingScreen> {
-  late TextEditingController _destinationController;
-  late TextEditingController _hotelNameController;
-  late TextEditingController _bedsController;
-  late TextEditingController _peopleController;
-  DateTime? _selectedDate;
-
-  @override
-  void initState() {
-    super.initState();
-    _destinationController = TextEditingController();
-    _hotelNameController = TextEditingController(text: widget.hotelName);
-    _bedsController = TextEditingController(text: '1');
-    _peopleController = TextEditingController(text: '1');
-    _selectedDate = null;
-  }
+  bool _isProcessing = false;
 
   @override
   void dispose() {
-    _destinationController.dispose();
-    _hotelNameController.dispose();
-    _bedsController.dispose();
-    _peopleController.dispose();
+    _cardNumberController.dispose();
+    _cardHolderController.dispose();
+    _expiryDateController.dispose();
+    _cvvController.dispose();
     super.dispose();
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime now = DateTime.now();
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate ?? now,
-      firstDate: now,
-      lastDate: DateTime(now.year + 1),
-    );
-    if (picked != null && picked != _selectedDate) {
+  void _submitPayment() {
+    if (_formKey.currentState!.validate()) {
       setState(() {
-        _selectedDate = picked;
+        _isProcessing = true;
+      });
+
+      // Simulate payment processing delay
+      Future.delayed(const Duration(seconds: 2), () {
+        setState(() {
+          _isProcessing = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Payment Successful!')),
+        );
+
+        // Optionally clear form or navigate away
+        _formKey.currentState!.reset();
       });
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
-              child: Image.asset(
-                widget.imageUrl,
-                height: 200,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    height: 200,
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.broken_image, size: 40),
-                  );
-                },
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        widget.hotelName,
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        widget.price,
-                        style: TextStyle(fontSize: 18, color: Colors.green),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(Icons.star, size: 16, color: Colors.yellow[700]),
-                      const SizedBox(width: 4),
-                      Text(
-                        '4.9 (1,092 Reviews)',
-                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    widget.address,
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    widget.description,
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Amenities',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      TextButton(
-                        onPressed: () {},
-                        child: Text('View All', style: TextStyle(color: Colors.blue)),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildAmenityIcon(Icons.local_cafe, 'Café'),
-                      _buildAmenityIcon(Icons.restaurant, 'Restaurant'),
-                      _buildAmenityIcon(Icons.local_dining, 'Garden'),
-                      _buildAmenityIcon(Icons.golf_course, 'Golf Course'),
-                      _buildAmenityIcon(Icons.wifi, 'Free WiFi'),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Gallery Photos',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      TextButton(
-                        onPressed: () {},
-                        child: Text('See All', style: TextStyle(color: Colors.blue)),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildGalleryImage('assets/room1.jpg'),
-                      _buildGalleryImage('assets/room2.jpg'),
-                      _buildGalleryImage('assets/room3.jpg'),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  _buildBookingForm(context),
-                  const SizedBox(height: 20),
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushNamed(
-                          context,
-                          '/payment',
-                          arguments: {
-                            'hotelName': _hotelNameController.text,
-                            'price': widget.price,
-                            'destination': _destinationController.text.isNotEmpty
-                                ? _destinationController.text
-                                : 'Unknown',
-                            'date': _selectedDate != null
-                                ? '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}'
-                                : 'Not selected',
-                            'beds': _bedsController.text.isNotEmpty
-                                ? _bedsController.text
-                                : '1',
-                            'people': _peopleController.text.isNotEmpty
-                                ? _peopleController.text
-                                : '1',
-                          },
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                      ),
-                      child: const Text('Confirm Booking'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  String? _validateCardNumber(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter card number';
+    }
+    if (value.replaceAll(' ', '').length != 16) {
+      return 'Card number must be 16 digits';
+    }
+    return null;
   }
 
   Widget _buildAmenityIcon(IconData icon, String label) {
@@ -759,12 +396,12 @@ class ReceiptScreen extends StatelessWidget {
       ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       Uint8List pngBytes = byteData!.buffer.asUint8List();
 
-      // final blob = html.Blob([pngBytes], 'image/png');
-      // final url = html.Url.createObjectUrlFromBlob(blob);
-      // final anchor = html.AnchorElement(href: url)
-      //   ..setAttribute('download', 'receipt_${DateTime.now().millisecondsSinceEpoch}.png')
-      //   ..click();
-      // html.Url.revokeObjectUrl(url);
+      final blob = html.Blob([pngBytes], 'image/png');
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      final anchor = html.AnchorElement(href: url)
+        ..setAttribute('download', 'receipt_${DateTime.now().millisecondsSinceEpoch}.png')
+        ..click();
+      html.Url.revokeObjectUrl(url);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Receipt download started')),
@@ -779,103 +416,79 @@ class ReceiptScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
-        title: Text('Receipt'),
-        backgroundColor: Colors.blue,
-        centerTitle: true,
+        title: const Text('Payment'),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: RepaintBoundary(
-                  key: _receiptKey,
-                  child: Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Icon(Icons.check_circle, color: Colors.green, size: 80),
-                          SizedBox(height: 10),
-                          Text(
-                            'Payment Successful!',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green.shade700,
-                            ),
-                          ),
-                          SizedBox(height: 30),
-                          _buildReceiptItem(Icons.hotel, 'Hotel', hotelName),
-                          _buildReceiptItem(Icons.nights_stay, 'Nights', nights),
-                          _buildReceiptItem(Icons.group, 'Guests', guests),
-                          _buildReceiptItem(Icons.attach_money, 'Total', total),
-                          SizedBox(height: 30),
-                          Text(
-                            'Thank you for booking with us!',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                        ],
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _cardNumberController,
+                decoration: const InputDecoration(
+                  labelText: 'Card Number',
+                  hintText: '1234 5678 9012 3456',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                maxLength: 19,
+                validator: _validateCardNumber,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _cardHolderController,
+                decoration: const InputDecoration(
+                  labelText: 'Card Holder Name',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) => _validateNotEmpty(value, 'card holder name'),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _expiryDateController,
+                      decoration: const InputDecoration(
+                        labelText: 'Expiry Date',
+                        hintText: 'MM/YY',
+                        border: OutlineInputBorder(),
                       ),
+                      keyboardType: TextInputType.datetime,
+                      validator: _validateExpiryDate,
                     ),
                   ),
-                ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _cvvController,
+                      decoration: const InputDecoration(
+                        labelText: 'CVV',
+                        border: OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.number,
+                      obscureText: true,
+                      maxLength: 3,
+                      validator: _validateCVV,
+                    ),
+                  ),
+                ],
               ),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: () => _captureAndSaveReceipt(context),
-              icon: Icon(Icons.download),
-              label: Text('Download Receipt'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                padding: EdgeInsets.symmetric(vertical: 14),
-                minimumSize: Size(double.infinity, 50),
-                textStyle: TextStyle(fontSize: 18),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ],
+              const SizedBox(height: 24),
+              _isProcessing
+                  ? const CircularProgressIndicator()
+                  : SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _submitPayment,
+                        child: const Text('Pay Now'),
+                      ),
+                    ),
+            ],
+          ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildReceiptItem(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10.0),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.blue),
-          SizedBox(width: 12),
-          Text(
-            '$label:',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          Spacer(),
-          Text(
-            value,
-            style: TextStyle(fontSize: 16),
-          ),
-        ],
       ),
     );
   }
