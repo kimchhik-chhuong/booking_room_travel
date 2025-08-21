@@ -7,70 +7,34 @@ use Illuminate\Http\Request;
 
 class TravelerController extends Controller
 {
-    /**
-     * Display a listing of travelers.
-     */
     public function index()
     {
-        $travelers = Traveler::with('user')->get();
-        return response()->json($travelers, 200);
+        $travelers = Traveler::orderBy('created_at', 'desc')->get();
+        return view('travelers.index', compact('travelers'));
     }
 
-    /**
-     * Store a newly created traveler.
-     */
+    public function create()
+    {
+        return view('travelers.create');
+    }
+
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'phone' => 'required|string|max:20',
-            'address' => 'required|string|max:255',
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:travelers,email',
+            'phone_number' => 'nullable|string|max:20',
         ]);
 
-        $traveler = Traveler::create($validated);
+        Traveler::create($request->all());
 
-        return response()->json([
-            'message' => 'Traveler created successfully.',
-            'data' => $traveler
-        ], 201);
+        return redirect()->route('travelers.index')->with('success', 'Traveler added successfully.');
     }
 
-    /**
-     * Display the specified traveler.
-     */
-    public function show(Traveler $traveler)
+    public function destroy($id)
     {
-        $traveler->load('user');
-        return response()->json($traveler, 200);
-    }
-
-    /**
-     * Update the specified traveler.
-     */
-    public function update(Request $request, Traveler $traveler)
-    {
-        $validated = $request->validate([
-            'phone' => 'sometimes|string|max:20',
-            'address' => 'sometimes|string|max:255',
-        ]);
-
-        $traveler->update($validated);
-
-        return response()->json([
-            'message' => 'Traveler updated successfully.',
-            'data' => $traveler
-        ], 200);
-    }
-
-    /**
-     * Remove the specified traveler.
-     */
-    public function destroy(Traveler $traveler)
-    {
+        $traveler = Traveler::findOrFail($id);
         $traveler->delete();
-
-        return response()->json([
-            'message' => 'Traveler deleted successfully.'
-        ], 200);
+        return redirect()->route('travelers.index')->with('success', 'Traveler deleted successfully.');
     }
 }
