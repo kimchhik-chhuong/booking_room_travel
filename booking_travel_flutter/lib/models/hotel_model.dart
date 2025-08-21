@@ -92,7 +92,7 @@ class Hotel {
       rating: json['star_rating'] != null
           ? double.tryParse(json['star_rating'].toString())
           : null,
-      amenities: parseAmenities(json['amenities']),
+      amenities: _parseAmenities(json['amenities']),
       phone: json['contact_phone'] ?? json['phone'],
       email: json['email'],
       website: json['website_url'] ?? json['website'],
@@ -165,4 +165,42 @@ class Hotel {
 
   // Check if hotel is active
   bool get isActive => status == 'active';
+
+  static List<String>? _parseAmenities(dynamic amenities) {
+    if (amenities == null) return null;
+    
+    try {
+      // If it's already a List, return it
+      if (amenities is List) {
+        return List<String>.from(amenities.map((item) => item.toString()));
+      }
+      
+      // If it's a String, try to parse it
+      if (amenities is String) {
+        // Try to parse as JSON array first
+        try {
+          final parsed = jsonDecode(amenities);
+          if (parsed is List) {
+            return List<String>.from(parsed.map((item) => item.toString()));
+          }
+        } catch (e) {
+          // If JSON parsing fails, try splitting by comma
+          return amenities
+              .replaceAll('[', '')
+              .replaceAll(']', '')
+              .replaceAll('"', '')
+              .split(',')
+              .map((e) => e.trim())
+              .where((e) => e.isNotEmpty)
+              .toList();
+        }
+      }
+      
+      // If we get here, return an empty list as fallback
+      return [];
+    } catch (e) {
+      // If anything goes wrong, return an empty list
+      return [];
+    }
+  }
 }
