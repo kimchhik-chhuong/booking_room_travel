@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\HotelMetadata;
-use App\Models\Destination;
+use App\Models\Province;
 use Illuminate\Http\Request;
 
 class HotelMetadataController extends Controller
@@ -11,9 +11,34 @@ class HotelMetadataController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $hotels = HotelMetadata::with('destination')->get();
+        $query = HotelMetadata::with(['province', 'roomTypes']);
+
+        // Filter by adventure_id if provided
+        if ($request->has('adventure_id') && $request->adventure_id) {
+            $query->where('adventure_id', $request->adventure_id);
+        }
+
+        // Filter by province_id if provided
+        if ($request->has('province_id') && $request->province_id) {
+            $query->where('province_id', $request->province_id);
+        }
+
+        // Filter by status
+        if ($request->has('status') && $request->status) {
+            $query->where('status', $request->status);
+        } else {
+            $query->active(); // Only active hotels by default
+        }
+
+        // Filter by location (hotels with coordinates)
+        if ($request->has('with_location') && $request->with_location) {
+            $query->withLocation();
+        }
+
+        $hotels = $query->get();
+        
         return response()->json(['status' => 'success', 'data' => $hotels], 200);
     }
 
@@ -23,71 +48,96 @@ class HotelMetadataController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'destination_id' => 'required|exists:destinations,id',
-            'hotel_name' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'description' => 'nullable|string',
-            'rating' => 'nullable|numeric|min:0|max:5',
+            'name' => 'required|string|max:255',
             'address' => 'nullable|string|max:255',
-            'phone' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:255',
-            'website' => 'nullable|url|max:255',
-            'amenities' => 'nullable|array',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
+            'star_rating' => 'nullable|numeric|min:0|max:5',
+            'description' => 'nullable|string',
+            'image_url' => 'nullable|string|max:255',
             'images' => 'nullable|array',
+            'amenities' => 'nullable|array',
+            'contact_phone' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:255',
+            'website_url' => 'nullable|string|max:255',
+            'map' => 'nullable|string|max:255',
+            'check_in_time' => 'nullable|date_format:H:i',
+            'check_out_time' => 'nullable|date_format:H:i',
+            'adventure_id' => 'nullable|exists:adventures,id',
+            'province_id' => 'nullable|exists:provinces,id',
+            'status' => 'nullable|in:active,inactive,maintenance',
+            'image_file' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
+
+        if ($request->hasFile('image_file')) {
+            $image = $request->file('image_file');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $image->move(public_path('uploads/hotels'), $imageName);
+            $validated['image_url'] = url('uploads/hotels/' . $imageName);
+        }
 
         $hotel = HotelMetadata::create($validated);
 
         return response()->json([
             'status' => 'success',
             'message' => 'Hotel metadata created successfully',
-            'data' => $hotel
+            'data' => $hotel->load(['province', 'roomTypes'])
         ], 201);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(HotelMetadata $hotelMetadata)
+    public function show($id)
     {
-        $hotelMetadata->load('destination');
-        return response()->json(['status' => 'success', 'data' => $hotelMetadata], 200);
+        $hotel = HotelMetadata::with(['province', 'roomTypes'])->findOrFail($id);
+        return response()->json(['status' => 'success', 'data' => $hotel], 200);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, HotelMetadata $hotelMetadata)
+    public function update(Request $request, $id)
     {
+        $hotel = HotelMetadata::findOrFail($id);
+        
         $validated = $request->validate([
-            'destination_id' => 'sometimes|exists:destinations,id',
-            'hotel_name' => 'sometimes|string|max:255',
-            'price' => 'sometimes|numeric|min:0',
-            'description' => 'nullable|string',
-            'rating' => 'nullable|numeric|min:0|max:5',
+            'name' => 'sometimes|string|max:255',
             'address' => 'nullable|string|max:255',
-            'phone' => 'nullable|string|max:20',
-            'email' => 'nullable|email|max:255',
-            'website' => 'nullable|url|max:255',
-            'amenities' => 'nullable|array',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
+            'star_rating' => 'nullable|numeric|min:0|max:5',
+            'description' => 'nullable|string',
+            'image_url' => 'nullable|string|max:255',
             'images' => 'nullable|array',
+            'amenities' => 'nullable|array',
+            'contact_phone' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:255',
+            'website_url' => 'nullable|string|max:255',
+            'map' => 'nullable|string|max:255',
+            'check_in_time' => 'nullable|date_format:H:i',
+            'check_out_time' => 'nullable|date_format:H:i',
+            'adventure_id' => 'nullable|exists:adventures,id',
+            'province_id' => 'nullable|exists:provinces,id',
+            'status' => 'nullable|in:active,inactive,maintenance',
         ]);
 
-        $hotelMetadata->update($validated);
+        $hotel->update($validated);
 
         return response()->json([
             'status' => 'success',
             'message' => 'Hotel metadata updated successfully',
-            'data' => $hotelMetadata
+            'data' => $hotel->load(['province', 'roomTypes'])
         ], 200);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(HotelMetadata $hotelMetadata)
+    public function destroy($id)
     {
-        $hotelMetadata->delete();
+        $hotel = HotelMetadata::findOrFail($id);
+        $hotel->delete();
 
         return response()->json([
             'status' => 'success',
@@ -96,11 +146,11 @@ class HotelMetadataController extends Controller
     }
 
     /**
-     * Get hotels by destination.
+     * Get hotels by province.
      */
-    public function getByDestination(Destination $destination)
+    public function getByProvince(Province $province)
     {
-        $hotels = $destination->hotels()->get();
+        $hotels = $province->hotels()->active()->with('roomTypes')->get();
 
         return response()->json([
             'status' => 'success',
@@ -115,9 +165,13 @@ class HotelMetadataController extends Controller
     {
         $query = $request->get('q');
 
-        $hotels = HotelMetadata::with('destination')
-            ->where('hotel_name', 'like', "%{$query}%")
-            ->orWhere('address', 'like', "%{$query}%")
+        $hotels = HotelMetadata::with(['province', 'roomTypes'])
+            ->active()
+            ->where(function($q) use ($query) {
+                $q->where('name', 'like', "%{$query}%")
+                  ->orWhere('address', 'like', "%{$query}%")
+                  ->orWhere('description', 'like', "%{$query}%");
+            })
             ->get();
 
         return response()->json([
@@ -127,15 +181,18 @@ class HotelMetadataController extends Controller
     }
 
     /**
-     * Get hotels within price range.
+     * Get hotels with room types within price range.
      */
     public function getByPriceRange(Request $request)
     {
         $minPrice = $request->get('min_price', 0);
         $maxPrice = $request->get('max_price', 999999);
 
-        $hotels = HotelMetadata::with('destination')
-            ->whereBetween('price', [$minPrice, $maxPrice])
+        $hotels = HotelMetadata::with(['province', 'roomTypes'])
+            ->active()
+            ->whereHas('roomTypes', function($query) use ($minPrice, $maxPrice) {
+                $query->whereBetween('price', [$minPrice, $maxPrice]);
+            })
             ->get();
 
         return response()->json([
@@ -151,10 +208,27 @@ class HotelMetadataController extends Controller
     {
         $limit = $request->get('limit', 10);
 
-        $hotels = HotelMetadata::with('destination')
-            ->whereNotNull('rating')
-            ->orderBy('rating', 'desc')
+        $hotels = HotelMetadata::with(['province', 'roomTypes'])
+            ->active()
+            ->whereNotNull('star_rating')
+            ->orderBy('star_rating', 'desc')
             ->limit($limit)
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $hotels
+        ], 200);
+    }
+
+    /**
+     * Get hotels with location coordinates.
+     */
+    public function getWithLocation(Request $request)
+    {
+        $hotels = HotelMetadata::with(['province', 'roomTypes'])
+            ->active()
+            ->withLocation()
             ->get();
 
         return response()->json([
@@ -169,7 +243,9 @@ class HotelMetadataController extends Controller
     public function paginate(Request $request)
     {
         $perPage = $request->get('per_page', 10);
-        $hotels = HotelMetadata::with('destination')->paginate($perPage);
+        $hotels = HotelMetadata::with(['province', 'roomTypes'])
+            ->active()
+            ->paginate($perPage);
 
         return response()->json([
             'status' => 'success',

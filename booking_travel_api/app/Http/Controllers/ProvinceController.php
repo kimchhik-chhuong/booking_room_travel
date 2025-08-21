@@ -13,12 +13,17 @@ class ProvinceController extends Controller
      */
     public function index()
     {
-        $provinces = Province::all();
+        $provinces = Province::all()->map(function ($province) {
+            $province->image_url = $province->image ? asset('storage/' . $province->image) : null;
+            return $province;
+        });
+
         return response()->json([
             'status' => 'success',
             'data' => $provinces
         ], 200);
     }
+
 
     /**
      * Store a newly created province.
@@ -120,6 +125,19 @@ class ProvinceController extends Controller
     public function getAdventures(Province $province)
     {
         $adventures = $province->adventures()->get();
+
+        // Generate URLs that use our API route with CORS headers
+        $adventures->each(function ($adventure) {
+            if ($adventure->image_url) {
+                // Extract just the filename from the image_url path
+                $imagePath = str_replace('uploads/adventures/', '', $adventure->image_url);
+                // Use our API route that serves images with CORS headers
+                $adventure->image_url = url("/api/images/adventures/{$imagePath}");
+            } else {
+                // Use our API route for default image
+                $adventure->image_url = url('/api/images/adventures/default-adventure.jpg');
+            }
+        });
 
         return response()->json([
             'status' => 'success',

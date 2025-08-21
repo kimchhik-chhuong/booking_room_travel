@@ -49,7 +49,14 @@ Route::middleware('auth')->group(function () {
 
     // Packages Routes
     Route::prefix('packages')->name('packages.')->group(function () {
-    Route::get('/', [PackageController::class, 'index'])->name('index');
+        Route::get('/', [PackageController::class, 'index'])->name('index');
+        Route::get('/province/{id}', [PackageController::class, 'showProvince'])->name('province');
+        
+        // Province CRUD routes
+        Route::get('/provinces/create', [PackageController::class, 'create'])->name('provinces.create');
+        Route::post('/provinces', [PackageController::class, 'store'])->name('provinces.store');
+        Route::put('/provinces/{id}', [PackageController::class, 'update'])->name('provinces.update');
+        Route::delete('/provinces/{id}', [PackageController::class, 'destroy'])->name('provinces.destroy');
     });
 
     // Bookings Routes
@@ -122,3 +129,48 @@ Route::middleware('auth')->group(function () {
 // Route::resource('bookings', BookingController::class);
 Route::get('/bookings/create', [BookingController::class, 'create'])->name('bookings.create');
 Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
+
+// Specific route for default adventure image
+Route::get('/uploads/adventures/default-adventure.jpg', function () {
+    // Create a simple default image (orange gradient)
+    $defaultImage = base64_decode('/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCAAyADIDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9/KKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA//Z');
+    
+    return response($defaultImage)
+        ->header('Content-Type', 'image/jpeg')
+        ->header('Access-Control-Allow-Origin', '*')
+        ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        ->header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+});
+
+// Route to serve images with CORS headers
+Route::get('/uploads/{folder}/{filename}', function ($folder, $filename) {
+    $path = public_path("uploads/{$folder}/{$filename}");
+    
+    if (!file_exists($path)) {
+        // Return a 1x1 transparent PNG as fallback
+        $transparentPng = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==');
+        return response($transparentPng)
+            ->header('Content-Type', 'image/png')
+            ->header('Access-Control-Allow-Origin', '*')
+            ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+            ->header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    }
+    
+    $file = file_get_contents($path);
+    $type = mime_content_type($path);
+    
+    return response($file)
+        ->header('Content-Type', $type)
+        ->header('Access-Control-Allow-Origin', '*')
+        ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        ->header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+})->where(['folder' => '[a-zA-Z0-9_-]+', 'filename' => '[a-zA-Z0-9._-]+']);
+
+// Handle OPTIONS requests for CORS preflight
+Route::options('/uploads/{folder}/{filename}', function () {
+    return response('', 200)
+        ->header('Access-Control-Allow-Origin', '*')
+        ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        ->header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization')
+        ->header('Access-Control-Max-Age', '86400');
+})->where(['folder' => '[a-zA-Z0-9_-]+', 'filename' => '[a-zA-Z0-9._-]+']);
