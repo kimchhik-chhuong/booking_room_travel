@@ -4,7 +4,7 @@ import 'package:booking_travel/services/api_service.dart';
 import '../models/hotel_model.dart';
 
 class HotelService {
-  static const String baseUrl = 'http://192.168.108.135:8000/api';
+  static const String baseUrl = 'http://localhost:8000/api';
 
   static Future<List<Hotel>> fetchHotelsByProvince(int provinceId) async {
     try {
