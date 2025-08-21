@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/room_type_model.dart';
 import 'api_service.dart';
+import 'auth_service.dart';
 
 class RoomService {
   static const String baseUrl = 'http://localhost:8000/api';
@@ -137,6 +138,66 @@ class RoomService {
       }
     } catch (e) {
       throw Exception('Error updating availability: $e');
+    }
+  }
+
+  // Create a new room type for a hotel
+  static Future<RoomType> createRoomType({
+    required int hotelId,
+    required String name,
+    required String description,
+    required double price,
+    required int maxOccupancy,
+    required int availableRooms,
+    List<String>? amenities,
+    String? imagePath,
+  }) async {
+    try {
+      final url = '${ApiService.baseUrl}/hotels/$hotelId/roomtypes';
+      
+      // Create multipart request for file upload if image is provided
+      var request = http.MultipartRequest('POST', Uri.parse(url));
+      
+      // Add text fields
+      request.fields['name'] = name;
+      request.fields['description'] = description;
+      request.fields['price'] = price.toString();
+      request.fields['max_occupancy'] = maxOccupancy.toString();
+      request.fields['available_rooms'] = availableRooms.toString();
+      
+      if (amenities != null && amenities.isNotEmpty) {
+        request.fields['amenities'] = jsonEncode(amenities);
+      }
+      
+      // Add image file if provided
+      if (imagePath != null && imagePath.isNotEmpty) {
+        var file = await http.MultipartFile.fromPath('image', imagePath);
+        request.files.add(file);
+      }
+      
+      // Add authorization header if available
+      try {
+        final token = await AuthService.getToken();
+        if (token != null && token.isNotEmpty) {
+          request.headers['Authorization'] = 'Bearer $token';
+        }
+      } catch (e) {
+        print('Warning: Could not get auth token: $e');
+        // Continue without auth token if it's not available
+      }
+      
+      // Send the request
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+      
+      if (response.statusCode == 201) {
+        final data = json.decode(response.body);
+        return RoomType.fromJson(data['data']);
+      } else {
+        throw Exception('Failed to create room type: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Error creating room type: $e');
     }
   }
 }

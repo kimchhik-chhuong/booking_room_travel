@@ -52,8 +52,11 @@ class RoomTypeController extends Controller
     /**
      * Store a newly created room type.
      */
-    public function store(Request $request, HotelMetadata $hotel)
+    public function store(Request $request, $hotelId)
     {
+        // Find the hotel
+        $hotel = HotelMetadata::findOrFail($hotelId);
+        
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -61,19 +64,35 @@ class RoomTypeController extends Controller
             'max_occupancy' => 'required|integer|min:1',
             'available_rooms' => 'required|integer|min:0',
             'amenities' => 'nullable|array',
+            'amenities.*' => 'string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
+        // Handle image upload if present
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('room-types', 'public');
             $validated['image_url'] = $path;
         }
 
-        $validated['amenities'] = json_encode($request->input('amenities', []));
+        // Handle amenities (convert array to JSON string)
+        $validated['amenities'] = json_encode($validated['amenities'] ?? []);
+
+        // Set hotel ID
         $validated['hotel_metadata_id'] = $hotel->hotel_id;
 
-        RoomType::create($validated);
+        // Create the room type
+        $roomType = RoomType::create($validated);
 
+        // Return JSON response for API
+        if ($request->wantsJson()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Room type created successfully',
+                'data' => $roomType->load('hotelMetadata')
+            ], 201);
+        }
+
+        // For web form submission (if needed)
         return redirect()->route('hotels.show', $hotel->hotel_id)
             ->with('success', 'Room type created successfully');
     }

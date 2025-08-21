@@ -111,8 +111,9 @@
                             @foreach($amenities as $key => $label)
                                 <div class="flex items-start">
                                     <div class="flex items-center h-5">
-                                        <input id="amenity_{{ $key }}" name="amenities[]" type="checkbox" value="{{ $key }}" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                        <input id="amenity_{{ $key }}" name="amenities[]" type="checkbox" value="{{ $label }}" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
                                     </div>
+                                    <!-- change frist latter to big latter -->
                                     <div class="ml-3 text-sm">
                                         <label for="amenity_{{ $key }}" class="font-medium text-gray-700">{{ $label }}</label>
                                     </div>

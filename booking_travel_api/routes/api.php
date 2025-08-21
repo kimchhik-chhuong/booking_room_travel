@@ -90,6 +90,7 @@ Route::get('/hotelmetadata/paginate', [HotelMetadataController::class, 'paginate
 // Room Type Routes
 Route::apiResource('roomtypes', RoomTypeController::class);
 Route::get('/hotels/{hotel}/roomtypes', [RoomTypeController::class, 'getByHotel']);
+Route::post('/hotels/{hotel}/roomtypes', [RoomTypeController::class, 'store']);
 Route::post('/roomtypes/{roomType}/check-availability', [RoomTypeController::class, 'checkAvailability']);
 Route::patch('/roomtypes/{roomType}/availability', [RoomTypeController::class, 'updateAvailability']);
 

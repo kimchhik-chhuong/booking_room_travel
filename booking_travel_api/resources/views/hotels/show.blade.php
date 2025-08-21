@@ -212,12 +212,12 @@
                                                     <div class="sm:col-span-2 mt-2">
                                                         <div class="flex flex-wrap gap-2">
                                                             @foreach(array_slice($roomType->amenities, 0, 4) as $amenity)
-                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize bg-blue-100 text-blue-800">
                                                                 {{ $amenity }}
                                                             </span>
                                                             @endforeach
                                                             @if(count($roomType->amenities) > 4)
-                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize bg-gray-100 text-gray-800">
                                                                 +{{ count($roomType->amenities) - 4 }} more
                                                             </span>
                                                             @endif
