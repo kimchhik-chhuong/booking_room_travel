@@ -3,42 +3,38 @@ import 'dart:convert';
 class Hotel {
   final int id;
   final String name;
-  final String description;
+  final String? description;
+  final double? starRating;
+  final String? location;
   final String? address;
+  final String? imageUrl;
+  final List<String>? images;
+  final List<String>? amenities;
   final double? latitude;
   final double? longitude;
-  final String? image;
-  final List<String>? images;
-  final double? rating;
-  final List<String>? amenities;
-  final String? phone;
+  final String? contactPhone;
+  final String? websiteUrl;
   final String? email;
-  final String? website;
   final String? checkInTime;
   final String? checkOutTime;
-  final int? provinceId;
-  final String? provinceName;
-  final String status;
 
   Hotel({
     required this.id,
     required this.name,
-    required this.description,
+    this.description,
+    this.starRating,
+    this.location,
     this.address,
+    this.imageUrl,
+    this.images,
+    this.amenities,
     this.latitude,
     this.longitude,
-    this.image,
-    this.images,
-    this.rating,
-    this.amenities,
-    this.phone,
+    this.contactPhone,
+    this.websiteUrl,
     this.email,
-    this.website,
     this.checkInTime,
     this.checkOutTime,
-    this.provinceId,
-    this.provinceName,
-    this.status = 'active',
   });
 
   factory Hotel.fromJson(Map<String, dynamic> json) {
@@ -79,28 +75,26 @@ class Hotel {
       id: json['hotel_id'] ?? json['id'],
       name: json['name'] ?? '',
       description: json['description'] ?? '',
+      starRating: json['star_rating'] != null
+          ? double.tryParse(json['star_rating'].toString())
+          : null,
+      location: json['location'] ?? '',
       address: json['address'] ?? '',
+      imageUrl: json['full_image_url'] ?? json['image_url'] ?? json['image'],
+      images: (json['full_images'] as List<dynamic>?)?.cast<String>() ?? 
+             (json['images'] as List<dynamic>?)?.cast<String>(),
+      amenities: parseAmenities(json['amenities']),
       latitude: json['latitude'] != null
           ? double.tryParse(json['latitude'].toString())
           : null,
       longitude: json['longitude'] != null
           ? double.tryParse(json['longitude'].toString())
           : null,
-      image: json['full_image_url'] ?? json['image_url'] ?? json['image'],
-      images: (json['full_images'] as List<dynamic>?)?.cast<String>() ?? 
-             (json['images'] as List<dynamic>?)?.cast<String>(),
-      rating: json['star_rating'] != null
-          ? double.tryParse(json['star_rating'].toString())
-          : null,
-      amenities: parseAmenities(json['amenities']),
-      phone: json['contact_phone'] ?? json['phone'],
+      contactPhone: json['contact_phone'] ?? json['phone'],
+      websiteUrl: json['website_url'] ?? json['website'],
       email: json['email'],
-      website: json['website_url'] ?? json['website'],
       checkInTime: json['check_in_time'],
       checkOutTime: json['check_out_time'],
-      provinceId: json['province_id'],
-      provinceName: json['province_name'] ?? json['province']?['name'],
-      status: json['status'] ?? 'active',
     );
   }
 
@@ -109,22 +103,20 @@ class Hotel {
       'id': id,
       'name': name,
       'description': description,
+      'star_rating': starRating,
+      'location': location,
       'address': address,
+      'image_url': imageUrl,
+      'images': images,
+      'amenities': amenities,
       'latitude': latitude,
       'longitude': longitude,
-      'image': image,
-      'images': images,
-      'rating': rating,
-      'amenities': amenities,
-      'phone': phone,
+      'contact_phone': contactPhone,
+      'website_url': websiteUrl,
       'email': email,
-      'website': website,
       'check_in_time': checkInTime,
       'check_out_time': checkOutTime,
-      'province_id': provinceId,
-      'province_name': provinceName,
-      'status': status,
-    };
+    }..removeWhere((key, value) => value == null);
   }
 
   // Get the first available image
@@ -132,7 +124,7 @@ class Hotel {
     if (images != null && images!.isNotEmpty) {
       return images!.first;
     }
-    return image;
+    return imageUrl;
   }
 
   // Get the main image (first from images array or fallback to single image)
@@ -140,7 +132,7 @@ class Hotel {
     if (images != null && images!.isNotEmpty) {
       return images!.first;
     }
-    return image;
+    return imageUrl;
   }
 
   // Get all images including the main image
@@ -148,8 +140,8 @@ class Hotel {
     List<String> allImagesList = [];
     if (images != null && images!.isNotEmpty) {
       allImagesList.addAll(images!);
-    } else if (image != null) {
-      allImagesList.add(image!);
+    } else if (imageUrl != null) {
+      allImagesList.add(imageUrl!);
     }
     return allImagesList;
   }
@@ -159,10 +151,7 @@ class Hotel {
 
   // Get formatted rating
   String get formattedRating {
-    if (rating == null) return 'No rating';
-    return rating!.toStringAsFixed(1);
+    if (starRating == null) return 'No rating';
+    return starRating!.toStringAsFixed(1);
   }
-
-  // Check if hotel is active
-  bool get isActive => status == 'active';
 }

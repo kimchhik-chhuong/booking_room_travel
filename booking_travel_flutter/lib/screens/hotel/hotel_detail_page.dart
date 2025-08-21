@@ -1,16 +1,14 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:booking_travel/models/hotel_model.dart';
-import 'package:booking_travel/models/room_type_model.dart';
-import 'package:booking_travel/services/room_service.dart';
-import 'package:booking_travel/services/booking_service.dart';
-import 'package:booking_travel/services/payment_service.dart';
-import 'package:booking_travel/screens/hotel/booking_confirmation_page.dart';
-import 'package:booking_travel/screens/hotel/booking_success_page.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:url_launcher/url_launcher_string.dart';
+import 'package:intl/intl.dart';
+import '../../models/hotel_model.dart';
+import '../../models/room_type_model.dart';
+import 'booking_confirmation_page.dart';
 
 class HotelDetailPage extends StatefulWidget {
   final Hotel hotel;
-
   const HotelDetailPage({Key? key, required this.hotel}) : super(key: key);
 
   @override
@@ -27,6 +25,11 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
   RoomType? selectedRoom;
   bool isCheckingAvailability = false;
   Map<String, dynamic>? availabilityData;
+  final Completer<GoogleMapController> _mapController = Completer<GoogleMapController>();
+  static const CameraPosition _kInitialPosition = CameraPosition(
+    target: LatLng(11.5621, 104.8685), // Phnom Penh coordinates
+    zoom: 12,
+  );
 
   @override
   void initState() {
@@ -35,138 +38,27 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
   }
 
   Future<void> _loadRoomTypes() async {
-    try {
-      final rooms = await RoomService.fetchRoomTypesByHotel(widget.hotel.id);
-      setState(() {
-        roomTypes = rooms;
-        isLoadingRooms = false;
-      });
-    } catch (e) {
-      setState(() {
-        isLoadingRooms = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading rooms: $e')),
-      );
-    }
-  }
-
-  Future<void> _checkAvailability() async {
-    if (checkInDate == null || checkOutDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select both check-in and check-out dates')),
-      );
-      return;
-    }
-
-    if (checkOutDate!.isBefore(checkInDate!.add(const Duration(days: 1)))) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Check-out date must be after check-in date')),
-      );
-      return;
-    }
-
+    // TODO: Implement room types loading from API
     setState(() {
-      isCheckingAvailability = true;
+      isLoadingRooms = false;
     });
+  }
 
-    try {
-      // Log the dates being sent
-      print('Checking availability with:');
-      print('Check-in: ${checkInDate!.toIso8601String().split('T')[0]}');
-      print('Check-out: ${checkOutDate!.toIso8601String().split('T')[0]}');
-      print('Rooms: $rooms');
+  Future<void> _showBookingDialog(RoomType room) async {
+    // TODO: Implement booking dialog
+  }
 
-      final result = await RoomService.checkAvailability(
-        roomTypeId: selectedRoom!.id,
-        checkInDate: checkInDate!,
-        checkOutDate: checkOutDate!,
-        roomsNeeded: rooms,
-      );
+  Future<void> _showRoomSelection() async {
+    // TODO: Implement room selection dialog
+  }
 
-      setState(() {
-        availabilityData = result;
-      });
-
-      if (result['available'] == true) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Room is available!')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Not enough rooms available. Only ${result['available_rooms']} left.')),
-        );
+  Future<void> _launchMapsUrl() async {
+    if (widget.hotel.latitude != null && widget.hotel.longitude != null) {
+      final url = 'https://www.google.com/maps/search/?api=1&query=${widget.hotel.latitude},${widget.hotel.longitude}';
+      if (await canLaunchUrlString(url)) {
+        await launchUrlString(url);
       }
-    } catch (e) {
-      print('Error checking availability: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString().replaceAll('Exception: ', '')}')),
-      );
-    } finally {
-      setState(() {
-        isCheckingAvailability = false;
-      });
     }
-  }
-
-  Future<void> _selectDate(BuildContext context, bool isCheckIn) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-    );
-    
-    if (picked != null) {
-      setState(() {
-        if (isCheckIn) {
-          checkInDate = picked;
-          if (checkOutDate != null && checkOutDate!.isBefore(picked)) {
-            checkOutDate = null;
-          }
-        } else {
-          if (checkInDate != null && picked.isAfter(checkInDate!)) {
-            checkOutDate = picked;
-          }
-        }
-        availabilityData = null; // Reset availability when dates change
-      });
-    }
-  }
-
-  void _proceedToBooking() {
-    if (selectedRoom == null || checkInDate == null || checkOutDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please complete all booking details')),
-      );
-      return;
-    }
-
-    if (availabilityData == null || availabilityData!['available'] != true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please check room availability first')),
-      );
-      return;
-    }
-
-    // Calculate total price
-    final nights = checkOutDate!.difference(checkInDate!).inDays;
-    final totalPrice = selectedRoom!.price * nights * rooms;
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => BookingConfirmationPage(
-          hotel: widget.hotel,
-          roomType: selectedRoom!,
-          checkInDate: checkInDate!,
-          checkOutDate: checkOutDate!,
-          guests: guests,
-          rooms: rooms,
-          totalPrice: totalPrice,
-        ),
-      ),
-    );
   }
 
   @override
@@ -175,57 +67,16 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 300.0,
-            floating: false,
+            expandedHeight: 250.0,
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
-              title: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  widget.hotel.name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  widget.hotel.image != null
-                      ? Image.network(
-                          widget.hotel.image!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Colors.grey[300],
-                              child: const Icon(Icons.hotel, size: 100),
-                            );
-                          },
-                        )
-                      : Container(
-                          color: Colors.grey[300],
-                          child: const Icon(Icons.hotel, size: 100),
-                        ),
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.black.withOpacity(0.7),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              title: Text(widget.hotel.name),
+              background: widget.hotel.images?.isNotEmpty == true
+                  ? Image.network(
+                      widget.hotel.images!.first,
+                      fit: BoxFit.cover,
+                    )
+                  : null,
             ),
           ),
           SliverToBoxAdapter(
@@ -234,1171 +85,211 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Hotel Info Section
-                  _buildHotelInfoSection(),
-                  const SizedBox(height: 24),
-                  
-                  // Location Map Section
-                  _buildLocationMapSection(),
-                  const SizedBox(height: 24),
-                  
-                  // Booking Section
-                  _buildBookingSection(),
-                  const SizedBox(height: 24),
-                  
-                  // Choose Room Section
-                  _buildChooseRoomSection(),
-                  const SizedBox(height: 24),
-                  
-                  // Availability Section
-                  if (availabilityData != null) _buildAvailabilitySection(),
-                  const SizedBox(height: 100), // Space for floating button
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-      floatingActionButton: selectedRoom != null &&
-              checkInDate != null &&
-              checkOutDate != null
-          ? FloatingActionButton.extended(
-              onPressed: () {
-                if (availabilityData == null) {
-                  _checkAvailability().then((_) {
-                    if (availabilityData != null && availabilityData!['available'] == true) {
-                      _proceedToBooking();
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Please check room availability first')),
-                      );
-                    }
-                  });
-                } else if (availabilityData!['available'] == true) {
-                  _proceedToBooking();
-                } else {
-                  _checkAvailability();
-                }
-              },
-              backgroundColor: Colors.orange,
-              icon: const Icon(Icons.book_online),
-              label: const Text('Book Now'),
-            )
-          : null,
-    );
-  }
-
-  Widget _buildHotelInfoSection() {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
+                  // Hotel Info
+                  Row(
+                    children: [
+                      if (widget.hotel.starRating != null)
+                        Row(
+                          children: List.generate(
+                            5,
+                            (index) => Icon(
+                              Icons.star,
+                              color: index < (widget.hotel.starRating ?? 0) ? Colors.amber : Colors.grey,
+                            ),
+                          ),
+                        ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${widget.hotel.starRating?.toStringAsFixed(1) ?? 'N/A'}/5',
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
                     widget.hotel.name,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: Theme.of(context).textTheme.headlineSmall,
                   ),
-                ),
-                if (widget.hotel.rating != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.orange,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                  const SizedBox(height: 8),
+                  if (widget.hotel.location != null || widget.hotel.address != null)
+                    Row(
                       children: [
-                        const Icon(Icons.star, color: Colors.white, size: 16),
+                        const Icon(Icons.location_on, size: 16, color: Colors.grey),
                         const SizedBox(width: 4),
-                        Text(
-                          widget.hotel.rating!.toStringAsFixed(1),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                        Expanded(
+                          child: Text(
+                            widget.hotel.location ?? widget.hotel.address ?? '',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                           ),
                         ),
                       ],
                     ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            if (widget.hotel.address != null)
-              Row(
-                children: [
-                  const Icon(Icons.location_on, color: Colors.grey, size: 16),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      widget.hotel.address!,
-                      style: const TextStyle(color: Colors.grey),
-                    ),
-                  ),
-                ],
-              ),
-            const SizedBox(height: 12),
-            Text(
-              widget.hotel.description,
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 16),
-            _buildAmenities(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAmenities() {
-    // Get amenities from the hotel model or use an empty list if null
-    final amenities = widget.hotel.amenities ?? [];
-    
-    // Map of common amenity names to their corresponding icons
-    final amenityIcons = {
-      'wifi': Icons.wifi,
-      'free wifi': Icons.wifi,
-      'pool': Icons.pool,
-      'swimming pool': Icons.pool,
-      'restaurant': Icons.restaurant,
-      'parking': Icons.local_parking,
-      'free parking': Icons.local_parking,
-      'fitness': Icons.fitness_center,
-      'gym': Icons.fitness_center,
-      'room service': Icons.room_service,
-      'breakfast': Icons.free_breakfast,
-      'air conditioning': Icons.ac_unit,
-      'bar': Icons.local_bar,
-      'spa': Icons.spa,
-      'airport shuttle': Icons.airport_shuttle,
-      'pets allowed': Icons.pets,
-      'family rooms': Icons.family_restroom,
-      'non-smoking rooms': Icons.smoke_free,
-    };
-
-    if (amenities.isEmpty) {
-      return const SizedBox.shrink(); // Don't show anything if no amenities
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Amenities',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 16,
-          runSpacing: 8,
-          children: amenities.map((amenity) {
-            // Find matching icon or use a default one
-            final icon = amenityIcons.entries
-                .firstWhere(
-                  (entry) => amenity.toLowerCase().contains(entry.key),
-                  orElse: () => MapEntry('', Icons.check_circle),
-                )
-                .value;
-
-            return Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(icon, size: 20, color: Colors.orange),
-                const SizedBox(width: 4),
-                Text(
-                  amenity,
-                  style: const TextStyle(fontSize: 14),
-                ),
-              ],
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBookingSection() {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Book Your Stay',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => _selectDate(context, true),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Check-in', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                          Text(
-                            checkInDate != null
-                                ? '${checkInDate!.day}/${checkInDate!.month}/${checkInDate!.year}'
-                                : 'Select date',
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => _selectDate(context, false),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Check-out', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                          Text(
-                            checkOutDate != null
-                                ? '${checkOutDate!.day}/${checkOutDate!.month}/${checkOutDate!.year}'
-                                : 'Select date',
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Guests', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                      Row(
-                        children: [
-                          IconButton(
-                            onPressed: guests > 1 ? () => setState(() => guests--) : null,
-                            icon: const Icon(Icons.remove),
-                          ),
-                          Text('$guests', style: const TextStyle(fontSize: 16)),
-                          IconButton(
-                            onPressed: () => setState(() => guests++),
-                            icon: const Icon(Icons.add),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Rooms', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                      Row(
-                        children: [
-                          IconButton(
-                            onPressed: rooms > 1 ? () => setState(() => rooms--) : null,
-                            icon: const Icon(Icons.remove),
-                          ),
-                          Text('$rooms', style: const TextStyle(fontSize: 16)),
-                          IconButton(
-                            onPressed: () => setState(() => rooms++),
-                            icon: const Icon(Icons.add),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLocationMapSection() {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Location',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            if (widget.hotel.address != null) ...[
-              Row(
-                children: [
-                  const Icon(Icons.location_on, color: Colors.orange, size: 20),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      widget.hotel.address!,
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-            ],
-            // Map placeholder with interactive elements
-            Container(
-              height: 200,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey.shade300),
-                color: Colors.grey.shade100,
-              ),
-              child: Stack(
-                children: [
-                  // Map placeholder
-                  Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.map,
-                          size: 60,
-                          color: Colors.grey.shade400,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Interactive Map',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey.shade600,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Tap to view location',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Overlay with hotel marker
-                  Positioned(
-                    top: 80,
-                    left: MediaQuery.of(context).size.width * 0.4,
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.orange,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.location_on,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                  // Tap detector
-                  Positioned.fill(
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(8),
-                        onTap: () => _openMap(),
-                        child: Container(),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _openMap(),
-                    icon: const Icon(Icons.directions, color: Colors.orange),
-                    label: const Text(
-                      'Get Directions',
-                      style: TextStyle(color: Colors.orange),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.orange),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _shareLocation(),
-                    icon: const Icon(Icons.share, color: Colors.orange),
-                    label: const Text(
-                      'Share Location',
-                      style: TextStyle(color: Colors.orange),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.orange),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _openMap() async {
-    if (widget.hotel.address != null) {
-      final query = Uri.encodeComponent(widget.hotel.address!);
-      final googleMapsUrl = 'https://www.google.com/maps/search/?api=1&query=$query';
-      final appleMapsUrl = 'https://maps.apple.com/?q=$query';
-      
-      try {
-        if (await canLaunchUrl(Uri.parse(googleMapsUrl))) {
-          await launchUrl(Uri.parse(googleMapsUrl), mode: LaunchMode.externalApplication);
-        } else if (await canLaunchUrl(Uri.parse(appleMapsUrl))) {
-          await launchUrl(Uri.parse(appleMapsUrl), mode: LaunchMode.externalApplication);
-        }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open maps application')),
-        );
-      }
-    }
-  }
-
-  void _shareLocation() {
-    if (widget.hotel.address != null) {
-      // In a real app, you would use share_plus package
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Location: ${widget.hotel.address!}')),
-      );
-    }
-  }
-
-  Widget _buildChooseRoomSection() {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Choose Room',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            if (isLoadingRooms)
-              const Center(child: CircularProgressIndicator())
-            else if (roomTypes.isEmpty)
-              const Center(child: Text('No rooms available'))
-            else
-              ...roomTypes.map((room) => _buildRoomCard(room)).toList(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRoomCard(RoomType room) {
-    final isSelected = selectedRoom?.id == room.id;
-    
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedRoom = room;
-          availabilityData = null; // Reset availability when room changes
-        });
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: isSelected ? Colors.orange : Colors.grey.shade300,
-            width: isSelected ? 2 : 1,
-          ),
-          borderRadius: BorderRadius.circular(8),
-          color: isSelected ? Colors.orange.shade50 : Colors.white,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    room.name,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: isSelected ? Colors.orange.shade800 : Colors.black,
-                    ),
-                  ),
-                ),
-                Text(
-                  room.formattedPrice,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: isSelected ? Colors.orange.shade800 : Colors.green,
-                  ),
-                ),
-                const Text('/night', style: TextStyle(color: Colors.grey)),
-              ],
-            ),
-            const SizedBox(height: 8),
-            if (room.description != null)
-              Text(
-                room.description!,
-                style: const TextStyle(color: Colors.grey),
-              ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Icon(Icons.people, size: 16, color: Colors.grey),
-                const SizedBox(width: 4),
-                Text('Max ${room.maxOccupancy} guests'),
-                const SizedBox(width: 16),
-                Icon(Icons.hotel, size: 16, color: Colors.grey),
-                const SizedBox(width: 4),
-                Text('${room.availableRooms} available'),
-              ],
-            ),
-            if (room.amenities != null && room.amenities!.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                children: room.amenities!.take(3).map((amenity) {
-                  return Chip(
-                    label: Text(amenity, style: const TextStyle(fontSize: 12)),
-                    backgroundColor: Colors.grey.shade200,
-                  );
-                }).toList(),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAvailabilitySection() {
-    final isAvailable = availabilityData!['available'] == true;
-    
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  isAvailable ? Icons.check_circle : Icons.cancel,
-                  color: isAvailable ? Colors.green : Colors.red,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  isAvailable ? 'Available' : 'Not Available',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: isAvailable ? Colors.green : Colors.red,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            if (isAvailable) ...[
-              Text('${availabilityData!['available_rooms']} rooms available for your dates'),
-              if (checkInDate != null && checkOutDate != null) ...[
-                const SizedBox(height: 8),
-                Text(
-                  'Total: ${selectedRoom!.formattedPrice} × ${checkOutDate!.difference(checkInDate!).inDays} nights × $rooms rooms = ${(selectedRoom!.price * checkOutDate!.difference(checkInDate!).inDays * rooms).toStringAsFixed(2)}',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ],
-            ] else
-              Text('Only ${availabilityData!['available_rooms']} rooms available, but you requested $rooms rooms'),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: isCheckingAvailability ? null : _checkAvailability,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-                child: isCheckingAvailability
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('Check Availability', style: TextStyle(color: Colors.white)),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class BookingConfirmationPage extends StatefulWidget {
-  final Hotel hotel;
-  final RoomType roomType;
-  final DateTime checkInDate;
-  final DateTime checkOutDate;
-  final int guests;
-  final int rooms;
-  final double totalPrice;
-
-  const BookingConfirmationPage({
-    Key? key,
-    required this.hotel,
-    required this.roomType,
-    required this.checkInDate,
-    required this.checkOutDate,
-    required this.guests,
-    required this.rooms,
-    required this.totalPrice,
-  }) : super(key: key);
-
-  @override
-  State<BookingConfirmationPage> createState() => _BookingConfirmationPageState();
-}
-
-class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _cardNumberController = TextEditingController();
-  final _expiryController = TextEditingController();
-  final _cvvController = TextEditingController();
-  final _cardNameController = TextEditingController();
-  bool _isLoading = false;
-  String _selectedPaymentMethod = 'credit_card';
-
-  @override
-  void dispose() {
-    _cardNumberController.dispose();
-    _expiryController.dispose();
-    _cvvController.dispose();
-    _cardNameController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _confirmBooking() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() => _isLoading = true);
-
-    try {
-      // Process payment first
-      final paymentResult = await PaymentService.processPayment(
-        amount: widget.totalPrice,
-        paymentMethod: _selectedPaymentMethod,
-        cardDetails: _selectedPaymentMethod == 'credit_card'
-            ? {
-                'cardNumber': _cardNumberController.text,
-                'expiry': _expiryController.text,
-                'cvv': _cvvController.text,
-                'cardHolder': _cardNameController.text,
-              }
-            : null,
-      );
-
-      if (!mounted) return;
-
-      if (paymentResult['success'] == true) {
-        // Create booking
-        final bookingResult = await BookingService.createBookingWithPayment(
-          hotelId: widget.hotel.id,
-          roomTypeId: widget.roomType.id,
-          checkInDate: widget.checkInDate,
-          checkOutDate: widget.checkOutDate,
-          numberOfGuests: widget.guests,
-          numberOfRooms: widget.rooms,
-          totalAmount: widget.totalPrice,
-          paymentMethod: _selectedPaymentMethod,
-          guestInfo: {
-            'name': _cardNameController.text,
-            'email': 'user@example.com', // Replace with actual user email
-            'phone': '+1234567890', // Replace with actual user phone
-          },
-          cardDetails: _selectedPaymentMethod == 'credit_card'
-              ? {
-                  'cardNumber': _cardNumberController.text,
-                  'expiry': _expiryController.text,
-                  'cvv': _cvvController.text,
-                  'cardHolder': _cardNameController.text,
-                }
-              : null,
-        );
-
-        if (!mounted) return;
-
-        if (bookingResult['success'] == true) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => BookingSuccessPage(
-                bookingId: bookingResult['bookingId'],
-                hotel: widget.hotel,
-                roomType: widget.roomType,
-                checkInDate: widget.checkInDate,
-                checkOutDate: widget.checkOutDate,
-                guests: widget.guests,
-                rooms: widget.rooms,
-                totalAmount: widget.totalPrice,
-              ),
-            ),
-          );
-        } else {
-          throw Exception(bookingResult['message'] ?? 'Failed to create booking');
-        }
-      } else {
-        throw Exception(paymentResult['message'] ?? 'Payment failed');
-      }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
-      );
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final nights = widget.checkOutDate.difference(widget.checkInDate).inDays;
-    final pricePerNight = widget.roomType.price;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Confirm Booking'),
-        backgroundColor: Colors.orange,
-      ),
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Booking Summary
-              _buildBookingSummary(nights, pricePerNight),
-              const SizedBox(height: 24),
-              
-              // Payment Method
-              _buildPaymentMethodSection(),
-              const SizedBox(height: 24),
-              
-              // Payment Details (only show for credit card)
-              if (_selectedPaymentMethod == 'credit_card')
-                _buildPaymentDetails(),
-              
-              const SizedBox(height: 24),
-              
-              // Total Price
-              _buildTotalPrice(),
-              const SizedBox(height: 32),
-              
-              // Confirm Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _confirmBooking,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text(
-                          'Confirm Booking',
-                          style: TextStyle(fontSize: 16, color: Colors.white),
-                        ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBookingSummary(int nights, double pricePerNight) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Booking Summary',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            _buildSummaryRow('Hotel', widget.hotel.name),
-            _buildSummaryRow('Room Type', widget.roomType.name),
-            _buildSummaryRow('Check-in',
-                '${widget.checkInDate.day}/${widget.checkInDate.month}/${widget.checkInDate.year}'),
-            _buildSummaryRow('Check-out',
-                '${widget.checkOutDate.day}/${widget.checkOutDate.month}/${widget.checkOutDate.year}'),
-            _buildSummaryRow('Nights', '$nights'),
-            _buildSummaryRow('Guests', '${widget.guests}'),
-            _buildSummaryRow('Rooms', '${widget.rooms}'),
-            const Divider(thickness: 1, height: 32),
-            _buildSummaryRow('Price per night', '\$${pricePerNight.toStringAsFixed(2)}'),
-            _buildSummaryRow('Total', '\$${widget.totalPrice.toStringAsFixed(2)}', isTotal: true),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPaymentMethodSection() {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Payment Method',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            RadioListTile<String>(
-              title: const Text('Credit/Debit Card'),
-              value: 'credit_card',
-              groupValue: _selectedPaymentMethod,
-              onChanged: (value) {
-                setState(() {
-                  _selectedPaymentMethod = value!;
-                });
-              },
-            ),
-            RadioListTile<String>(
-              title: const Text('Pay at Hotel'),
-              value: 'pay_at_hotel',
-              groupValue: _selectedPaymentMethod,
-              onChanged: (value) {
-                setState(() {
-                  _selectedPaymentMethod = value!;
-                });
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPaymentDetails() {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Card Details',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _cardNameController,
-              decoration: const InputDecoration(
-                labelText: 'Cardholder Name',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.person_outline),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter cardholder name';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _cardNumberController,
-              decoration: const InputDecoration(
-                labelText: 'Card Number',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.credit_card),
-                hintText: '1234 5678 9012 3456',
-              ),
-              keyboardType: TextInputType.number,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter card number';
-                }
-                // Simple validation - in production, use a proper card validation library
-                if (value.replaceAll(' ', '').length < 16) {
-                  return 'Please enter a valid card number';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _expiryController,
-                    decoration: const InputDecoration(
-                      labelText: 'MM/YY',
-                      border: OutlineInputBorder(),
-                      hintText: 'MM/YY',
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Required';
-                      }
-                      // Simple validation
-                      if (!RegExp(r'^\d{2}/\d{2}$').hasMatch(value)) {
-                        return 'Invalid format';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextFormField(
-                    controller: _cvvController,
-                    decoration: const InputDecoration(
-                      labelText: 'CVV',
-                      border: OutlineInputBorder(),
-                      hintText: '123',
-                    ),
-                    keyboardType: TextInputType.number,
-                    obscureText: true,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Required';
-                      }
-                      if (value.length < 3) {
-                        return 'Invalid CVV';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTotalPrice() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!), 
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            'Total Amount:',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          Text(
-            '\$${widget.totalPrice.toStringAsFixed(2)}',
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.orange,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSummaryRow(String label, String value, {bool isTotal = false}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              color: isTotal ? Colors.black : Colors.grey[700],
-              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-            ),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: isTotal ? 18 : 14,
-              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-              color: isTotal ? Colors.orange : null,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class BookingSuccessPage extends StatelessWidget {
-  final String bookingId;
-  final Hotel hotel;
-  final RoomType roomType;
-  final DateTime checkInDate;
-  final DateTime checkOutDate;
-  final int guests;
-  final int rooms;
-  final double totalAmount;
-
-  const BookingSuccessPage({
-    Key? key,
-    required this.bookingId,
-    required this.hotel,
-    required this.roomType,
-    required this.checkInDate,
-    required this.checkOutDate,
-    required this.guests,
-    required this.rooms,
-    required this.totalAmount,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final nights = checkOutDate.difference(checkInDate).inDays;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Booking Success'),
-        backgroundColor: Colors.orange,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Booking Summary',
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Hotel: ${hotel.name}', style: const TextStyle(fontSize: 16)),
-                    Text('Room: ${roomType.name}', style: const TextStyle(fontSize: 16)),
-                    Text('Check-in: ${checkInDate.day}/${checkInDate.month}/${checkInDate.year}'),
-                    Text('Check-out: ${checkOutDate.day}/${checkOutDate.month}/${checkOutDate.year}'),
-                    Text('Nights: $nights'),
-                    Text('Rooms: $rooms'),
-                    Text('Guests: $guests'),
-                    const Divider(),
+                  const SizedBox(height: 16),
+                  
+                  // Description
+                  if (widget.hotel.description?.isNotEmpty ?? false) ...[
                     Text(
-                      'Total: \$${totalAmount.toStringAsFixed(2)}',
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      'Description',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                     ),
+                    const SizedBox(height: 8),
+                    Text(widget.hotel.description!),
+                    const SizedBox(height: 16),
                   ],
-                ),
+
+                  // Map
+                  if (widget.hotel.latitude != null && widget.hotel.longitude != null) ...[
+                    Text(
+                      'Location',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      height: 200,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: GoogleMap(
+                          initialCameraPosition: CameraPosition(
+                            target: LatLng(widget.hotel.latitude!, widget.hotel.longitude!),
+                            zoom: 15,
+                          ),
+                          markers: {
+                            Marker(
+                              markerId: const MarkerId('hotel_location'),
+                              position: LatLng(widget.hotel.latitude!, widget.hotel.longitude!),
+                              infoWindow: InfoWindow(title: widget.hotel.name),
+                            ),
+                          },
+                          onMapCreated: (controller) {
+                            _mapController.complete(controller);
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ElevatedButton.icon(
+                      onPressed: _launchMapsUrl,
+                      icon: const Icon(Icons.directions),
+                      label: const Text('Get Directions'),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // Amenities
+                  if (widget.hotel.amenities?.isNotEmpty ?? false) ...[
+                    Text(
+                      'Amenities',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: widget.hotel.amenities!
+                          .map((amenity) => Chip(label: Text(amenity)))
+                          .toList(),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // Room Types
+                  Text(
+                    'Available Rooms',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  if (isLoadingRooms)
+                    const Center(child: CircularProgressIndicator())
+                  else if (roomTypes.isEmpty)
+                    const Text('No rooms available')
+                  else
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: roomTypes.length,
+                      itemBuilder: (context, index) {
+                        final room = roomTypes[index];
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (room.imageUrl != null)
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Image.network(
+                                      room.imageUrl!,
+                                      height: 150,
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  room.name,
+                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                ),
+                                const SizedBox(height: 8),
+                                if (room.description?.isNotEmpty ?? false) ...[
+                                  Text(room.description!),
+                                  const SizedBox(height: 8),
+                                ],
+                                Text(
+                                  '\$${room.price?.toStringAsFixed(2) ?? 'N/A'} per night',
+                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                        color: Theme.of(context).primaryColor,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                ),
+                                const SizedBox(height: 8),
+                                if (room.amenities?.isNotEmpty ?? false) ...[
+                                  Text(
+                                    'Room Amenities:',
+                                    style: Theme.of(context).textTheme.bodySmall,
+                                  ),
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 4,
+                                    children: room.amenities!
+                                        .map((a) => Chip(
+                                              label: Text(a),
+                                              padding: EdgeInsets.zero,
+                                              labelStyle: Theme.of(context).textTheme.labelSmall,
+                                            ))
+                                        .toList(),
+                                  ),
+                                  const SizedBox(height: 8),
+                                ],
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                    onPressed: () => _showBookingDialog(room),
+                                    child: const Text('Book Now'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                ],
               ),
             ),
-            const Spacer(),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  // TODO: Implement actual booking logic
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Booking functionality coming soon!')),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                child: const Text(
-                  'View Booking Details',
-                  style: TextStyle(fontSize: 18, color: Colors.white),
-                ),
-              ),
-            ),
-          ],
+          ),
+        ],
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: ElevatedButton(
+            onPressed: roomTypes.isNotEmpty ? _showRoomSelection : null,
+            child: const Text('Check Availability'),
+          ),
         ),
       ),
     );

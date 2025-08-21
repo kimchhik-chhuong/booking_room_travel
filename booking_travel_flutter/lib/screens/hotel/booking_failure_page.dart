@@ -260,14 +260,21 @@ class BookingFailurePage extends StatelessWidget {
                           ),
                         ),
                       const SizedBox(height: 4),
-                      if (hotel.rating != null)
+                      if (hotel.starRating != null)
                         Row(
                           children: [
-                            const Icon(Icons.star, color: Colors.orange, size: 16),
+                            for (int i = 0; i < 5; i++)
+                              Icon(
+                                Icons.star,
+                                size: 16,
+                                color: i < (hotel.starRating ?? 0)
+                                    ? Colors.amber
+                                    : Colors.grey[300],
+                              ),
                             const SizedBox(width: 4),
                             Text(
-                              hotel.formattedRating,
-                              style: const TextStyle(fontSize: 14),
+                              hotel.starRating!.toStringAsFixed(1),
+                              style: const TextStyle(fontSize: 12),
                             ),
                           ],
                         ),

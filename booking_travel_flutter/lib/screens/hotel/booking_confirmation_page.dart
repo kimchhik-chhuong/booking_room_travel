@@ -264,14 +264,21 @@ class _BookingConfirmationPageState extends State<BookingConfirmationPage> {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      if (widget.hotel.rating != null)
+                      if (widget.hotel.starRating != null)
                         Row(
                           children: [
-                            const Icon(Icons.star, color: Colors.orange, size: 16),
+                            for (int i = 0; i < 5; i++)
+                              Icon(
+                                Icons.star,
+                                size: 16,
+                                color: i < (widget.hotel.starRating ?? 0)
+                                    ? Colors.amber
+                                    : Colors.grey[300],
+                              ),
                             const SizedBox(width: 4),
                             Text(
-                              widget.hotel.formattedRating,
-                              style: const TextStyle(fontSize: 14),
+                              widget.hotel.starRating!.toStringAsFixed(1),
+                              style: const TextStyle(fontSize: 12),
                             ),
                           ],
                         ),

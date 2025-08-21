@@ -31,6 +31,19 @@
 
   <title>booking_ravel_flutter</title>
   <link rel="manifest" href="manifest.json">
+  
+  <!-- Google Maps JavaScript API -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
+  <script>
+    // Initialize Google Maps when the Flutter app is ready
+    window.addEventListener('load', function() {
+      if (typeof google !== 'undefined' && google.maps) {
+        console.log('Google Maps API loaded successfully');
+      } else {
+        console.error('Google Maps API failed to load');
+      }
+    });
+  </script>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>

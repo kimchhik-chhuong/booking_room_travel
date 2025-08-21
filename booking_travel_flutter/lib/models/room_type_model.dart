@@ -11,7 +11,7 @@ class RoomType {
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
-  RoomType({
+  const RoomType({
     required this.id,
     required this.hotelMetadataId,
     required this.name,
@@ -23,26 +23,28 @@ class RoomType {
     this.imageUrl,
     this.createdAt,
     this.updatedAt,
-  });
+  })  : assert(price >= 0, 'Price cannot be negative'),
+        assert(maxOccupancy > 0, 'Max occupancy must be greater than 0'),
+        assert(availableRooms >= 0, 'Available rooms cannot be negative');
 
   factory RoomType.fromJson(Map<String, dynamic> json) {
     return RoomType(
-      id: json['id'] ?? 0,
-      hotelMetadataId: json['hotel_metadata_id'] ?? 0,
-      name: json['name'] ?? '',
-      description: json['description'],
-      price: double.tryParse(json['price'].toString()) ?? 0.0,
-      maxOccupancy: json['max_occupancy'] ?? 2,
-      availableRooms: json['available_rooms'] ?? 0,
+      id: json['id'] as int? ?? 0,
+      hotelMetadataId: json['hotel_metadata_id'] as int? ?? 0,
+      name: json['name'] as String? ?? 'Unnamed Room',
+      description: json['description'] as String?,
+      price: (json['price'] as num?)?.toDouble() ?? 0.0,
+      maxOccupancy: json['max_occupancy'] as int? ?? 2,
+      availableRooms: json['available_rooms'] as int? ?? 0,
       amenities: json['amenities'] != null 
-          ? List<String>.from(json['amenities'])
+          ? List<String>.from(json['amenities'] as List)
           : null,
-      imageUrl: json['image_url'],
+      imageUrl: json['image_url'] as String?,
       createdAt: json['created_at'] != null 
-          ? DateTime.tryParse(json['created_at'])
+          ? DateTime.tryParse(json['created_at'] as String)
           : null,
       updatedAt: json['updated_at'] != null 
-          ? DateTime.tryParse(json['updated_at'])
+          ? DateTime.tryParse(json['updated_at'] as String)
           : null,
     );
   }
@@ -60,10 +62,81 @@ class RoomType {
       'image_url': imageUrl,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
-    };
+    }..removeWhere((key, value) => value == null);
   }
 
+  RoomType copyWith({
+    int? id,
+    int? hotelMetadataId,
+    String? name,
+    String? description,
+    double? price,
+    int? maxOccupancy,
+    int? availableRooms,
+    List<String>? amenities,
+    String? imageUrl,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return RoomType(
+      id: id ?? this.id,
+      hotelMetadataId: hotelMetadataId ?? this.hotelMetadataId,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      price: price ?? this.price,
+      maxOccupancy: maxOccupancy ?? this.maxOccupancy,
+      availableRooms: availableRooms ?? this.availableRooms,
+      amenities: amenities ?? this.amenities,
+      imageUrl: imageUrl ?? this.imageUrl,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  // Helper getters
   String get formattedPrice => '\$${price.toStringAsFixed(2)}';
-  
   bool get isAvailable => availableRooms > 0;
+  bool get isFullyBooked => availableRooms <= 0;
+  
+  /// Returns the room's availability status as a string
+  String get availabilityStatus {
+    if (isFullyBooked) return 'Sold Out';
+    if (availableRooms < 5) return 'Only $availableRooms left';
+    return 'Available';
+  }
+
+  /// Returns a list of amenities with default values if null
+  List<String> get safeAmenities => amenities ?? [];
+
+  /// Returns a short description or a default message if null
+  String get safeDescription => description ?? 'No description available';
+
+  /// Returns the first image URL or a placeholder if none exists
+  String get displayImageUrl => imageUrl ?? 'https://via.placeholder.com/300x200?text=No+Image';
+
+  /// Validates if the room can accommodate the requested number of guests
+  bool canAccommodate(int numberOfGuests) {
+    return numberOfGuests > 0 && numberOfGuests <= maxOccupancy;
+  }
+
+  /// Returns a new instance with updated available rooms
+  RoomType withUpdatedAvailability(int newAvailableRooms) {
+    return copyWith(availableRooms: newAvailableRooms);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is RoomType &&
+        other.id == id &&
+        other.hotelMetadataId == hotelMetadataId;
+  }
+
+  @override
+  int get hashCode => id.hashCode ^ hotelMetadataId.hashCode;
+
+  @override
+  String toString() {
+    return 'RoomType(id: $id, name: $name, price: $formattedPrice, available: $availableRooms)';
+  }
 }

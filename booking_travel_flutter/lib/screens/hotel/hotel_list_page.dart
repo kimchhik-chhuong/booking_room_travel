@@ -149,38 +149,26 @@ class _HotelListPageState extends State<HotelListPage> {
                                   : _buildImagePlaceholder(),
                             ),
                             // Rating Badge
-                            if (hotel.rating != null)
+                            if (hotel.starRating != null)
                               Positioned(
                                 top: 12,
                                 right: 12,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.7),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Icon(
+                                child: Row(
+                                  children: [
+                                    for (int i = 0; i < 5; i++)
+                                      Icon(
                                         Icons.star,
-                                        color: Colors.amber,
                                         size: 16,
+                                        color: i < (hotel.starRating ?? 0)
+                                            ? Colors.amber
+                                            : Colors.grey[300],
                                       ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        hotel.rating!.toStringAsFixed(1),
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      hotel.starRating!.toStringAsFixed(1),
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                  ],
                                 ),
                               ),
                           ],
@@ -204,16 +192,11 @@ class _HotelListPageState extends State<HotelListPage> {
                               const SizedBox(height: 8),
                               
                               // Description
-                              if (hotel.description.isNotEmpty)
+                              if (hotel.description?.isNotEmpty == true)
                                 Text(
-                                  hotel.description,
+                                  hotel.description!,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[600],
-                                    height: 1.4,
-                                  ),
                                 ),
                               const SizedBox(height: 12),
                               
@@ -221,7 +204,7 @@ class _HotelListPageState extends State<HotelListPage> {
                               Row(
                                 children: [
                                   // Phone
-                                  if (hotel.phone != null && hotel.phone!.isNotEmpty)
+                                  if (hotel.contactPhone != null && hotel.contactPhone!.isNotEmpty)
                                     Expanded(
                                       child: Row(
                                         children: [
@@ -233,7 +216,7 @@ class _HotelListPageState extends State<HotelListPage> {
                                           const SizedBox(width: 4),
                                           Flexible(
                                             child: Text(
-                                              hotel.phone!,
+                                              hotel.contactPhone!,
                                               style: TextStyle(
                                                 fontSize: 12,
                                                 color: Colors.grey[700],
@@ -246,7 +229,7 @@ class _HotelListPageState extends State<HotelListPage> {
                                     ),
                                   
                                   // Website indicator
-                                  if (hotel.phone != null && hotel.phone!.isNotEmpty)
+                                  if (hotel.contactPhone != null && hotel.contactPhone!.isNotEmpty)
                                     const SizedBox(width: 16),
                                   Icon(
                                     Icons.language,
@@ -313,6 +296,10 @@ class _HotelListPageState extends State<HotelListPage> {
                                     ),
                                   ),
                                 ],
+                              ),
+                              Text(
+                                '${hotel.starRating?.toStringAsFixed(1) ?? 'N/A'}/5',
+                                style: const TextStyle(fontSize: 12, color: Colors.amber),
                               ),
                             ],
                           ),
