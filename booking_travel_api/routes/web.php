@@ -6,12 +6,18 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\DealController;
 use App\Http\Controllers\PackageController;
+use App\Http\Controllers\RoomTypeController;
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
 */
+
+// Default redirect to login or dashboard based on auth status
+Route::get('/', function () {
+    return redirect()->route(auth()->check() ? 'dashboard' : 'login');
+})->name('home');
 
 // Guest routes (Unauthenticated users)
 Route::middleware('guest')->group(function () {
@@ -30,11 +36,30 @@ Route::middleware('guest')->group(function () {
 
     // Handle Register Form Submission
     Route::post('/register', [RegisterController::class, 'register'])->name('register.post');
+});
 
-    // Default redirect to login
-    Route::get('/', function () {
-        return redirect()->route('login');
-    });
+// Public routes
+Route::prefix('hotels')->name('hotels.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\HotelMetadataController::class, 'index'])->name('index');
+    Route::get('/create', [\App\Http\Controllers\HotelMetadataController::class, 'create'])->name('create');
+    Route::post('/', [\App\Http\Controllers\HotelMetadataController::class, 'store'])->name('store');
+    
+    // Explicitly define routes with hotel_id parameter
+    Route::get('/{hotel}', [\App\Http\Controllers\HotelMetadataController::class, 'show'])
+        ->name('show')
+        ->where('hotel', '[0-9]+');
+        
+    Route::get('/{hotel}/edit', [\App\Http\Controllers\HotelMetadataController::class, 'edit'])
+        ->name('edit')
+        ->where('hotel', '[0-9]+');
+        
+    Route::put('/{hotel}', [\App\Http\Controllers\HotelMetadataController::class, 'update'])
+        ->name('update')
+        ->where('hotel', '[0-9]+');
+        
+    Route::delete('/{hotel}', [\App\Http\Controllers\HotelMetadataController::class, 'destroy'])
+        ->name('destroy')
+        ->where('hotel', '[0-9]+');
 });
 
 // Authenticated routes (Logged-in users)
@@ -46,6 +71,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+
+    // Hotel management routes
+    Route::resource('hotels', \App\Http\Controllers\HotelMetadataController::class)->except(['index', 'show']);
+    
+    // Room types management
+    Route::resource('hotels.room-types', \App\Http\Controllers\RoomTypeController::class)->shallow();
 
     // Packages Routes
     Route::prefix('packages')->name('packages.')->group(function () {
@@ -120,17 +151,8 @@ Route::middleware('auth')->group(function () {
         // Additional feedback routes can go here
     });
 
-    // Hotel Management Routes
-    Route::middleware('auth')->group(function () {
-        Route::resource('hotels', 'App\Http\Controllers\HotelMetadataController');
-        Route::get('/hotels', [App\Http\Controllers\HotelMetadataController::class, 'index'])->name('hotels.index');
-        Route::post('/hotels', [App\Http\Controllers\HotelMetadataController::class, 'store'])->name('hotels.store');
-    });
-
     // Redirect root path to dashboard for authenticated users
-    Route::get('/', function () {
-        return redirect()->route('dashboard');
-    });
+    // Removed this route as it's now handled by the 'home' route
 });
 
 // Route::resource('bookings', BookingController::class);
@@ -140,7 +162,7 @@ Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.st
 // Specific route for default adventure image
 Route::get('/uploads/adventures/default-adventure.jpg', function () {
     // Create a simple default image (orange gradient)
-    $defaultImage = base64_decode('/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCAAyADIDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9/KKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA//Z');
+    $defaultImage = base64_decode('/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCAAyADIDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9/KKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA//Z');
     
     return response($defaultImage)
         ->header('Content-Type', 'image/jpeg')

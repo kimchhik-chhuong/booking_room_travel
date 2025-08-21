@@ -36,21 +36,26 @@
 
             <!-- Hotels Section -->
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <div class="mb-8 flex justify-between flex-row">
-                    <div class="flex items-start justify-start flex-col">
+                <div class="mb-8 flex justify-between flex-col sm:flex-row">
+                    <div class="flex items-start justify-start flex-col mb-4 sm:mb-0">
                         <h2 class="text-2xl font-bold text-gray-900">Hotels in {{ $province->name }}</h2>
                         <p class="mt-1 text-sm text-gray-500">Find the perfect place to stay during your visit</p>
                     </div>
-                    <div class="flex items-center justify-end">
-                        <a href="{{ route('hotels.create', ['province_id' => $province->id]) }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition-colors duration-300">
-                            Add Hotel
+                    <div class="flex items-center space-x-4">
+                        <a href="{{ route('hotels.index', ['province_id' => $province->id]) }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            View All Hotels
                         </a>
+                        @auth
+                            <a href="{{ route('hotels.create', ['province_id' => $province->id]) }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition-colors duration-300">
+                                Add Hotel
+                            </a>
+                        @endauth
                     </div>
                 </div>
 
                 @if($province->hotels->count() > 0)
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    @foreach($province->hotels as $hotel)
+                    @foreach($province->hotels->take(3) as $hotel)
                     <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
                         @if($hotel->image_url)
                         <div class="h-48 overflow-hidden">
@@ -70,8 +75,21 @@
                             <div class="mt-2">
                                 <p class="text-sm text-gray-500 line-clamp-2">{{ $hotel->description }}</p>
                             </div>
+                            @if($hotel->star_rating)
+                            <div class="mt-2">
+                                <span class="text-yellow-400">
+                                    @for($i = 0; $i < 5; $i++)
+                                        @if($i < $hotel->star_rating)
+                                            ★
+                                        @else
+                                            ☆
+                                        @endif
+                                    @endfor
+                                </span>
+                            </div>
+                            @endif
                             <div class="mt-4">
-                                <a href="#" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                                <a href="{{ route('hotels.show', ['hotel' => $hotel->hotel_id]) }}" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
                                     View details →
                                 </a>
                             </div>
@@ -82,6 +100,17 @@
                 @else
                 <div class="text-center py-12">
                     <p class="text-gray-500">No hotels available in {{ $province->name }} yet.</p>
+                </div>
+                @endif
+
+                @if($province->hotels->count() > 3)
+                <div class="mt-8 text-center">
+                    <a href="{{ route('hotels.index', ['province_id' => $province->id]) }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        View All {{ $province->hotels->count() }} Hotels in {{ $province->name }}
+                        <svg class="ml-2 -mr-1 w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </a>
                 </div>
                 @endif
             </div>

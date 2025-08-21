@@ -49,13 +49,20 @@ class PackageController extends Controller
 
     public function showProvince($id)
     {
-        $province = Province::withCount(['hotels', 'adventures'])->findOrFail($id);
+        $province = Province::with(['hotels' => function($query) {
+            $query->with(['province'])->take(3); // Limit to 3 hotels
+        }, 'adventures'])
+            ->withCount(['hotels', 'adventures'])
+            ->findOrFail($id);
         
         if (request()->wantsJson()) {
             return response()->json($province);
         }
         
-        return view('packages.province', compact('province'));
+        return view('packages.province', [
+            'province' => $province,
+            'provinceId' => $id // Pass province ID for the view all link
+        ]);
     }
 
     /**

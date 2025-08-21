@@ -47,7 +47,7 @@
                                     @endforeach
                                 </select>
                             </div>
-                            
+
                             <div>
                                 <label for="adventure_id" class="block text-sm font-medium text-gray-700">Adventure</label>
                                 <select name="adventure_id" id="adventure_id" 
@@ -60,11 +60,10 @@
                                     @endforeach
                                 </select>
                             </div>
-                            
+
                             <div>
-                                <label for="star_rating" class="block text-sm font-medium text-gray-700">Star Rating <span class="text-red-500">*</span></label>
-                                <select name="star_rating" id="star_rating" required 
-                                        class="mt-1 block w-full border border-gray-300 bg-white rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <label for="star_rating" class="block text-sm font-medium text-gray-700">Star Rating</label>
+                                <select name="star_rating" id="star_rating" class="mt-1 block w-full border border-gray-300 bg-white rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                                     <option value="1">1 Star</option>
                                     <option value="2">2 Stars</option>
                                     <option value="3" selected>3 Stars</option>
@@ -72,15 +71,56 @@
                                     <option value="5">5 Stars</option>
                                 </select>
                             </div>
-                            
+
                             <div class="col-span-2">
-                                <label for="description" class="block text-sm font-medium text-gray-700">Description <span class="text-red-500">*</span></label>
-                                <textarea name="description" id="description" rows="3" required
-                                          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+                                <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+                                <textarea name="description" id="description" rows="3" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
                             </div>
                         </div>
                     </div>
-                    
+
+                    <!-- Amenities Section -->
+                    <div class="px-4 py-5 sm:p-6">
+                        <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Amenities</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            @php
+                                $amenities = [
+                                    'wifi' => 'WiFi',
+                                    'swimming_pool' => 'Swimming Pool',
+                                    'spa' => 'Spa',
+                                    'gym' => 'Gym',
+                                    'restaurant' => 'Restaurant',
+                                    'bar' => 'Bar',
+                                    'room_service' => '24/7 Room Service',
+                                    'air_conditioning' => 'Air Conditioning',
+                                    'parking' => 'Free Parking',
+                                    'airport_shuttle' => 'Airport Shuttle',
+                                    'laundry' => 'Laundry Service',
+                                    'concierge' => 'Concierge',
+                                    'meeting_rooms' => 'Meeting Rooms',
+                                    'business_center' => 'Business Center',
+                                    'family_rooms' => 'Family Rooms',
+                                    'non_smoking_rooms' => 'Non-Smoking Rooms',
+                                    'pet_friendly' => 'Pet Friendly',
+                                    'beach_access' => 'Beach Access',
+                                    'bicycle_rental' => 'Bicycle Rental',
+                                    'car_rental' => 'Car Rental'
+                                ];
+                            @endphp
+
+                            @foreach($amenities as $key => $label)
+                                <div class="flex items-start">
+                                    <div class="flex items-center h-5">
+                                        <input id="amenity_{{ $key }}" name="amenities[]" type="checkbox" value="{{ $key }}" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                    </div>
+                                    <div class="ml-3 text-sm">
+                                        <label for="amenity_{{ $key }}" class="font-medium text-gray-700">{{ $label }}</label>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
                     <!-- Contact Information Section -->
                     <div class="px-4 py-5 sm:p-6">
                         <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Contact Information</h3>
@@ -92,74 +132,44 @@
                             </div>
                             
                             <div>
-                                <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
+                                <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
                                 <input type="email" name="email" id="email"
                                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                             </div>
                             
-                            <div class="col-span-2">
-                                <label for="website_url" class="block text-sm font-medium text-gray-700">Website URL</label>
-                                <input type="url" name="website_url" id="website_url"
-                                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            <div>
+                                <label for="website" class="block text-sm font-medium text-gray-700">Website</label>
+                                <input type="url" name="website" id="website"
+                                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                       placeholder="https://example.com">
                             </div>
                             
                             <div class="col-span-2">
-                                <label for="address" class="block text-sm font-medium text-gray-700">Full Address <span class="text-red-500">*</span></label>
-                                <input type="text" name="address" id="address" required
-                                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <label for="address" class="block text-sm font-medium text-gray-700">Address <span class="text-red-500">*</span></label>
+                                <textarea name="address" id="address" rows="2" required
+                                          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+                            </div>
+                            
+                            <div>
+                                <label for="check_in_time" class="block text-sm font-medium text-gray-700">Check-in Time</label>
+                                <input type="time" name="check_in_time" id="check_in_time" 
+                                       value="14:00" 
+                                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                       placeholder="14:00">
+                                <p class="mt-1 text-xs text-gray-500">Format: HH:MM (24-hour format)</p>
+                            </div>
+                            
+                            <div>
+                                <label for="check_out_time" class="block text-sm font-medium text-gray-700">Check-out Time</label>
+                                <input type="time" name="check_out_time" id="check_out_time" 
+                                       value="12:00" 
+                                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                       placeholder="12:00">
+                                <p class="mt-1 text-xs text-gray-500">Format: HH:MM (24-hour format)</p>
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Location Section -->
-                    <div class="px-4 py-5 sm:p-6">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-medium leading-6 text-gray-900">Location on Map</h3>
-                            <button type="button" id="searchLocationBtn" 
-                                    class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                </svg>
-                                Search Location
-                            </button>
-                        </div>
-                        <div class="grid grid-cols-1 gap-6">
-                            <div class="map-container relative">
-                                <div id="map"></div>
-                                <div id="searchControl" class="absolute top-4 right-4 z-[1000] w-72 hidden">
-                                    <div class="bg-white rounded-md shadow-lg overflow-hidden">
-                                        <div class="flex items-center px-3 py-2 border-b">
-                                            <input type="text" id="searchInput" 
-                                                   class="flex-1 border-0 focus:ring-0 focus:outline-none" 
-                                                   placeholder="Search location...">
-                                            <button id="closeSearch" class="ml-2 text-gray-500 hover:text-gray-700">
-                                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                        <div id="searchResults" class="max-h-60 overflow-y-auto">
-                                            <!-- Search results will be populated here -->
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <p class="text-sm text-gray-500">Click on the map to set the hotel location or use the search button above</p>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label for="latitude" class="block text-sm font-medium text-gray-700">Latitude</label>
-                                    <input type="text" name="latitude" id="latitude" readonly
-                                           class="mt-1 block w-full border border-gray-300 bg-gray-50 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                </div>
-                                <div>
-                                    <label for="longitude" class="block text-sm font-medium text-gray-700">Longitude</label>
-                                    <input type="text" name="longitude" id="longitude" readonly
-                                           class="mt-1 block w-full border border-gray-300 bg-gray-50 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
+
                     <!-- Media Section -->
                     <div class="px-4 py-5 sm:p-6">
                         <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Media</h3>
@@ -189,20 +199,6 @@
                                               file:text-sm file:font-semibold
                                               file:bg-indigo-50 file:text-indigo-700
                                               hover:file:bg-indigo-100">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Amenities Section -->
-                    <div class="px-4 py-5 sm:p-6">
-                        <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Amenities</h3>
-                        <div class="grid grid-cols-1">
-                            <div>
-                                <label for="amenities" class="block text-sm font-medium text-gray-700">Available Amenities</label>
-                                <p class="mt-1 text-sm text-gray-500 mb-2">Enter amenities separated by commas (e.g., WiFi, Pool, Restaurant, Parking)</p>
-                                <input type="text" name="amenities" id="amenities" 
-                                       placeholder="e.g., WiFi, Pool, Restaurant, Parking"
-                                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                             </div>
                         </div>
                     </div>
