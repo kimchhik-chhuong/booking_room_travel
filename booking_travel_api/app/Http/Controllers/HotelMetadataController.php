@@ -128,7 +128,7 @@ class HotelMetadataController extends Controller
                 'address' => $validated['address'],
                 'website_url' => $validated['website'] ?? null,
                 'image_url' => $imagePath,
-                'additional_images' => !empty($additionalImages) ? json_encode($additionalImages) : null,
+                'images' => !empty($additionalImages) ? json_encode($additionalImages) : null,
                 'amenities' => !empty($amenities) ? json_encode($amenities) : null,
                 'status' => 'active',
             ]);
@@ -164,6 +164,10 @@ class HotelMetadataController extends Controller
     {
         try {
             $hotel->load(['province', 'roomTypes']);
+            
+            // Convert images and amenities JSON to array for the view
+            $hotel->additional_images = $hotel->images ? json_decode($hotel->images, true) : [];
+            $hotel->amenities = $hotel->amenities ? (is_array($hotel->amenities) ? $hotel->amenities : json_decode($hotel->amenities, true)) : [];
                 
             if (request()->wantsJson()) {
                 return response()->json([
@@ -211,11 +215,12 @@ class HotelMetadataController extends Controller
             'contact_phone' => 'required|string',
             'email' => 'nullable|email',
             'website' => 'nullable|url',
-            'check_in_time' => 'nullable|date_format:H:i',
-            'check_out_time' => 'nullable|date_format:H:i',
             'amenities' => 'nullable|array',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'additional_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'existing_images' => 'nullable|array',
+            'existing_images.*' => 'string',
+            'removed_images' => 'nullable|string',
         ]);
 
         // Handle main image upload
@@ -229,14 +234,37 @@ class HotelMetadataController extends Controller
         }
 
         // Handle additional images
-        if ($request->hasFile('additional_images')) {
-            $additionalImages = [];
-            foreach ($request->file('additional_images') as $image) {
+        $additionalImages = [];
+        
+        // 1. Keep existing images that weren't removed
+        if ($request->has('existing_images')) {
+            $additionalImages = $request->input('existing_images');
+            
+            // Remove images that were marked for deletion
+            if ($request->has('removed_images') && !empty($request->removed_images)) {
+                $removedImages = explode(',', $request->removed_images);
+                foreach ($removedImages as $removedImage) {
+                    if (($key = array_search($removedImage, $additionalImages)) !== false) {
+                        // Delete the image file from storage
+                        Storage::disk('public')->delete($removedImage);
+                        unset($additionalImages[$key]);
+                    }
+                }
+                // Re-index array after unset
+                $additionalImages = array_values($additionalImages);
+            }
+        }
+        
+        // 2. Add new images
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
                 $path = $image->store('hotels/additional', 'public');
                 $additionalImages[] = $path;
             }
-            $validated['additional_images'] = json_encode($additionalImages);
         }
+        
+        // Update the images field
+        $validated['images'] = !empty($additionalImages) ? json_encode($additionalImages) : null;
 
         // Handle amenities
         $validated['amenities'] = $request->has('amenities') ? json_encode($request->input('amenities')) : json_encode([]);

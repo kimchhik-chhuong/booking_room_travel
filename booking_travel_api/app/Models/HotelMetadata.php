@@ -40,7 +40,7 @@ class HotelMetadata extends Model
         'check_out_time' => 'datetime:H:i',
     ];
 
-    protected $appends = ['full_image_url', 'full_images'];
+    protected $appends = ['full_image_url', 'full_images', 'additional_images'];
 
     public function province()
     {
@@ -83,16 +83,84 @@ class HotelMetadata extends Model
         return $this->getFullUrl($this->image_url);
     }
 
-    // Accessor for full images
+    /**
+     * Get all images including the main image with full URLs
+     *
+     * @return array
+     */
     public function getFullImagesAttribute()
     {
-        if (empty($this->images)) {
+        $images = [];
+        
+        // Add main image if exists
+        if ($this->image_url) {
+            $images[] = $this->getFullUrl($this->image_url);
+        }
+        
+        // Add additional images
+        $additionalImages = $this->additional_images;
+        if (!empty($additionalImages)) {
+            $images = array_merge($images, $additionalImages);
+        }
+        
+        return $images;
+    }
+
+    // Accessor for images
+    public function getImagesAttribute($value)
+    {
+        if (empty($value)) {
             return [];
         }
         
+        // If it's already an array, return it
+        if (is_array($value)) {
+            return $value;
+        }
+        
+        // If it's a JSON string, decode it
+        $decoded = json_decode($value, true);
+        
+        // If decoding failed, return empty array
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return [];
+        }
+        
+        return $decoded;
+    }
+
+    /**
+     * Get the additional images with full URLs
+     *
+     * @return array
+     */
+    public function getAdditionalImagesAttribute()
+    {
+        $images = $this->images;
+        
+        if (empty($images)) {
+            return [];
+        }
+        
+        // If $images is a string, try to decode it as JSON
+        if (is_string($images)) {
+            $images = json_decode($images, true);
+            
+            // If json_decode failed or returned null, return empty array
+            if (json_last_error() !== JSON_ERROR_NONE || $images === null) {
+                return [];
+            }
+        }
+        
+        // Ensure we have an array
+        if (!is_array($images)) {
+            return [];
+        }
+        
+        // Map each image to its full URL
         return array_map(function($image) {
             return $this->getFullUrl($image);
-        }, $this->images);
+        }, $images);
     }
 
     // Scope for active hotels

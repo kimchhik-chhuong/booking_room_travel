@@ -118,9 +118,21 @@
             <!-- Adventures Section -->
             <div class="bg-gray-50">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    <div class="mb-8">
-                        <h2 class="text-2xl font-bold text-gray-900">Adventures in {{ $province->name }}</h2>
-                        <p class="mt-1 text-sm text-gray-500">Exciting activities and experiences waiting for you</p>
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="mb-8">
+                            <h2 class="text-2xl font-bold text-gray-900">Adventures in {{ $province->name }}</h2>
+                            <p class="mt-1 text-sm text-gray-500">Exciting activities and experiences waiting for you</p>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <a href="{{ route('adventures.index', ['province_id' => $province->id]) }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                View All Adventures
+                            </a>
+                            @auth
+                                <a href="{{ route('adventures.create', ['province_id' => $province->id]) }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition-colors duration-300">
+                                    Add Adventure
+                                </a>
+                            @endauth
+                        </div>
                     </div>
 
                     @if($province->adventures->count() > 0)
@@ -140,7 +152,7 @@
                                     <p class="text-sm text-gray-500 line-clamp-2">{{ $adventure->description }}</p>
                                 </div>
                                 <div class="mt-4">
-                                    <a href="#" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                                    <a href="{{ route('adventures.show', $adventure) }}" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
                                         View details →
                                     </a>
                                 </div>

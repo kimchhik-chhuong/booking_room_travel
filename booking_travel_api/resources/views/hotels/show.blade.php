@@ -47,7 +47,7 @@
                             <a href="{{ route('hotels.room-types.create', $hotel->hotel_id) }}" 
                                class="ml-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                 <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 01-1 1h-3a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
                                 </svg>
                                 Add Room Type
                             </a>
@@ -62,6 +62,38 @@
                             <img src="{{ asset('storage/' . $hotel->image_url) }}" 
                                  alt="{{ $hotel->name }}" 
                                  class="w-full h-full object-cover">
+                        </div>
+                        @endif
+
+                        <!-- Additional Images -->
+                        @php
+                            $additionalImages = is_string($hotel->additional_images) 
+                                ? json_decode($hotel->additional_images, true) 
+                                : $hotel->additional_images;
+                        @endphp
+                        
+                        @if(!empty($additionalImages) && is_array($additionalImages) && count($additionalImages) > 0)
+                        <div class="p-4 bg-gray-50">
+                            <h4 class="text-lg font-medium text-gray-900 mb-4">Gallery</h4>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                                @foreach($additionalImages as $index => $image)
+                                    @php
+                                        // Handle both full URLs and relative paths
+                                        if (str_starts_with($image, 'http')) {
+                                            // If it's already a full URL, use it directly
+                                            $imageUrl = $image;
+                                        } else {
+                                            // If it's a relative path, prepend storage path
+                                            $imageUrl = asset('storage/' . ltrim($image, '/'));
+                                        }
+                                    @endphp
+                                    <div class="relative group">
+                                        <img src="{{ $imageUrl }}" 
+                                             alt="Gallery image {{ $index + 1 }}" 
+                                             class="w-full h-40 object-cover rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300">
+                                    </div>
+                                @endforeach
+                            </div>
                         </div>
                         @endif
 
@@ -142,18 +174,35 @@
                                 </div>
                                 @endif
 
-                                @if($hotel->check_in_time || $hotel->check_out_time)
-                                <div>
+                                @if(!empty($hotel->amenities) && is_array($hotel->amenities))
+                                <div class="mt-6">
                                     <dt class="text-sm font-medium text-gray-500">
-                                        Check-in / Check-out
+                                        Amenities
                                     </dt>
-                                    <dd class="mt-1 text-sm text-gray-900">
-                                        @if($hotel->check_in_time)
-                                            Check-in: {{ $hotel->check_in_time }}<br>
-                                        @endif
-                                        @if($hotel->check_out_time)
-                                            Check-out: {{ $hotel->check_out_time }}
-                                        @endif
+                                    <dd class="mt-2">
+                                        <div class="flex flex-wrap gap-2">
+                                            @foreach($hotel->amenities as $amenity)
+                                                @php
+                                                    // Map amenity keys to display names and icons
+                                                    $amenityIcons = [
+                                                        'wifi' => ['icon' => 'wifi', 'label' => 'Free WiFi'],
+                                                        'swimming_pool' => ['icon' => 'swimmer', 'label' => 'Swimming Pool'],
+                                                        'restaurant' => ['icon' => 'utensils', 'label' => 'Restaurant'],
+                                                        'parking' => ['icon' => 'parking', 'label' => 'Free Parking'],
+                                                        'air_conditioning' => ['icon' => 'snowflake', 'label' => 'Air Conditioning'],
+                                                        'bar' => ['icon' => 'glass-martini-alt', 'label' => 'Bar'],
+                                                        'spa' => ['icon' => 'spa', 'label' => 'Spa'],
+                                                        'gym' => ['icon' => 'dumbbell', 'label' => 'Gym'],
+                                                    ];
+                                                    
+                                                    $amenityData = $amenityIcons[$amenity] ?? ['icon' => 'check', 'label' => ucfirst(str_replace('_', ' ', $amenity))];
+                                                @endphp
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                                    <i class="fas fa-{{ $amenityData['icon'] }} mr-1"></i>
+                                                    {{ $amenityData['label'] }}
+                                                </span>
+                                            @endforeach
+                                        </div>
                                     </dd>
                                 </div>
                                 @endif

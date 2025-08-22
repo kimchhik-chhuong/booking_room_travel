@@ -152,24 +152,6 @@
                                 <textarea name="address" id="address" rows="2" required
                                           class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">{{ old('address', $hotel->address) }}</textarea>
                             </div>
-                            
-                            <div>
-                                <label for="check_in_time" class="block text-sm font-medium text-gray-700">Check-in Time</label>
-                                <input type="time" name="check_in_time" id="check_in_time" 
-                                       value="{{ old('check_in_time', $hotel->check_in_time ? \Carbon\Carbon::parse($hotel->check_in_time)->format('H:i') : '14:00') }}" 
-                                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                       placeholder="14:00">
-                                <p class="mt-1 text-xs text-gray-500">Format: HH:MM (24-hour format)</p>
-                            </div>
-                            
-                            <div>
-                                <label for="check_out_time" class="block text-sm font-medium text-gray-700">Check-out Time</label>
-                                <input type="time" name="check_out_time" id="check_out_time" 
-                                       value="{{ old('check_out_time', $hotel->check_out_time ? \Carbon\Carbon::parse($hotel->check_out_time)->format('H:i') : '12:00') }}" 
-                                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                       placeholder="12:00">
-                                <p class="mt-1 text-xs text-gray-500">Format: HH:MM (24-hour format)</p>
-                            </div>
                         </div>
                     </div>
 
@@ -192,32 +174,67 @@
                             </div>
                             
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Additional Images</label>
-                                @if($hotel->additional_images && count(json_decode($hotel->additional_images, true)) > 0)
-                                    <div class="mt-2 grid grid-cols-3 gap-2">
-                                        @foreach(json_decode($hotel->additional_images, true) as $index => $image)
-                                            <div class="relative group">
-                                                <img src="{{ asset('storage/' . $image) }}" alt="Additional image {{ $index + 1 }}" class="h-32 w-full object-cover rounded">
-                                                <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <a href="#" class="text-white p-2 bg-red-500 rounded-full" onclick="event.preventDefault(); document.getElementById('delete-image-{{ $index }}').submit();">
-                                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                <label for="images" class="block text-sm font-medium text-gray-700">Additional Images</label>
+                                <p class="mt-1 text-sm text-gray-500 mb-2">Upload additional images to showcase the hotel (multiple selection allowed).</p>
+                                <input type="file" 
+                                       name="images[]" 
+                                       id="images" 
+                                       multiple 
+                                       accept="image/*"
+                                       class="block w-full text-sm text-gray-500
+                                              file:mr-4 file:py-2 file:px-4
+                                              file:rounded-md file:border-0
+                                              file:text-sm file:font-semibold
+                                              file:bg-indigo-50 file:text-indigo-700
+                                              hover:file:bg-indigo-100">
+                                <p class="mt-2 text-xs text-gray-500">You can select multiple images (JPEG, PNG, JPG, GIF) up to 2MB each. Existing images will be replaced.</p>
+                                
+                                <!-- Display existing additional images -->
+                                @php
+                                    $additionalImages = is_string($hotel->additional_images) 
+                                        ? json_decode($hotel->additional_images, true) 
+                                        : $hotel->additional_images;
+                                @endphp
+                                
+                                @if(!empty($additionalImages) && is_array($additionalImages) && count($additionalImages) > 0)
+                                    <div class="mt-3">
+                                        <p class="text-sm font-medium text-gray-700 mb-2">Current Additional Images:</p>
+                                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                                            @foreach($additionalImages as $index => $image)
+                                                @php
+                                                    $relativePath = $image;
+                                                    if (str_starts_with($image, 'http')) {
+                                                        $baseUrl = url('storage/');
+                                                        $relativePath = str_replace($baseUrl . '/', '', $image);
+                                                        $relativePath = ltrim($relativePath, '/');
+                                                    }
+                                                    $imageUrl = asset('storage/' . ltrim($relativePath, '/'));
+                                                @endphp
+                                                <div class="relative group">
+                                                    <img src="{{ $imageUrl }}" 
+                                                         alt="Additional Image {{ $index + 1 }}" 
+                                                         class="h-32 w-full object-cover rounded-lg border border-gray-200">
+                                                    <input type="hidden" name="existing_images[]" value="{{ $relativePath }}">
+                                                    <button type="button" 
+                                                            class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                            onclick="removeExistingImage(this, '{{ $relativePath }}')">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                                         </svg>
-                                                    </a>
+                                                    </button>
                                                 </div>
-                                            </div>
-                                            <form id="delete-image-{{ $index }}" action="{{ route('hotels.deleteImage', ['id' => $hotel->id, 'index' => $index]) }}" method="POST" class="hidden">
-                                                @csrf
-                                                @method('DELETE')
-                                            </form>
-                                        @endforeach
+                                            @endforeach
+                                        </div>
                                     </div>
-                                    <p class="mt-1 text-sm text-gray-500">Upload additional images (will be added to existing ones).</p>
-                                @else
-                                    <p class="mt-1 text-sm text-gray-500">No additional images uploaded yet.</p>
                                 @endif
-                                <input type="file" name="images[]" id="images" multiple
-                                       class="mt-2 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                                
+                                <!-- Container for new image previews -->
+                                <div id="imagePreviewContainer" class="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                                    <!-- New image previews will be added here -->
+                                </div>
+                                
+                                <!-- Hidden input to track removed existing images -->
+                                <input type="hidden" name="removed_images" id="removedImages" value="">
                             </div>
                         </div>
                     </div>
@@ -266,31 +283,30 @@
         document.getElementById('images').addEventListener('change', function(e) {
             const files = e.target.files;
             if (files.length > 0) {
-                const previewContainer = document.createElement('div');
-                previewContainer.className = 'mt-2';
-                previewContainer.innerHTML = '<p class="text-sm text-gray-500">New additional images preview:</p><div class="grid grid-cols-3 gap-2 mt-1"></div>';
-                
-                const grid = previewContainer.querySelector('.grid');
+                const previewContainer = document.getElementById('imagePreviewContainer');
+                previewContainer.innerHTML = '';
                 
                 Array.from(files).forEach(file => {
                     const reader = new FileReader();
                     reader.onload = function(e) {
                         const img = document.createElement('img');
                         img.src = e.target.result;
-                        img.className = 'h-32 w-full object-cover rounded';
-                        grid.appendChild(img);
+                        img.className = 'h-32 w-full object-cover rounded-lg border border-gray-200';
+                        previewContainer.appendChild(img);
                     };
                     reader.readAsDataURL(file);
                 });
-                
-                const existingPreview = document.querySelector('#images').nextElementSibling;
-                if (existingPreview && existingPreview.className.includes('mt-2')) {
-                    existingPreview.remove();
-                }
-                
-                document.getElementById('images').insertAdjacentElement('afterend', previewContainer);
             }
         });
+
+        function removeExistingImage(button, image) {
+            const removedImagesInput = document.getElementById('removedImages');
+            const existingImages = removedImagesInput.value.split(',');
+            existingImages.push(image);
+            removedImagesInput.value = existingImages.join(',');
+            
+            button.parentNode.remove();
+        }
     </script>
     @endpush
 @endsection
