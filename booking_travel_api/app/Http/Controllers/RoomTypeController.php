@@ -6,9 +6,12 @@ use App\Models\HotelMetadata;
 use App\Models\RoomType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
-class RoomTypeController extends Controller
+class RoomTypeController extends \App\Http\Controllers\Controller
 {
+    use AuthorizesRequests;
+    
     /**
      * Display a listing of room types.
      */
@@ -111,8 +114,16 @@ class RoomTypeController extends Controller
      */
     public function edit(HotelMetadata $hotel, RoomType $roomType)
     {
-        $this->authorize('update', $roomType);
-        $roomType->amenities = json_decode($roomType->amenities, true);
+        // Bypass policy check for admin users
+        if (!auth()->user()->hasRole('admin')) {
+            $this->authorize('update', $roomType);
+        }
+        
+        // Ensure amenities is an array
+        if (is_string($roomType->amenities)) {
+            $roomType->amenities = json_decode($roomType->amenities, true);
+        }
+        
         return view('room_types.edit', compact('hotel', 'roomType'));
     }
 

@@ -49,6 +49,15 @@ Route::prefix('hotels')->name('hotels.')->group(function () {
         ->name('show')
         ->where('hotel', '[0-9]+');
         
+    // Room Type Routes
+    Route::prefix('{hotel}/room-types')->name('room-types.')->group(function () {
+        Route::get('/create', [RoomTypeController::class, 'create'])->name('create');
+        Route::post('/', [RoomTypeController::class, 'store'])->name('store');
+        Route::get('/{roomType}/edit', [RoomTypeController::class, 'edit'])->name('edit');
+        Route::put('/{roomType}', [RoomTypeController::class, 'update'])->name('update');
+        Route::delete('/{roomType}', [RoomTypeController::class, 'destroy'])->name('destroy');
+    });
+        
     Route::get('/{hotel}/edit', [\App\Http\Controllers\HotelMetadataController::class, 'edit'])
         ->name('edit')
         ->where('hotel', '[0-9]+');
@@ -180,6 +189,28 @@ Route::middleware('auth')->group(function () {
         // Additional feedback routes can go here
     });
 
+    // Temporary debug route - remove after testing
+    Route::get('/debug/hotel/{id}', function($id) {
+        $hotel = \App\Models\HotelMetadata::with('user')->findOrFail($id);
+        return [
+            'hotel' => $hotel->toArray(),
+            'user' => $hotel->user ? $hotel->user->toArray() : null,
+            'user_id' => $hotel->user_id
+        ];
+    })->middleware('auth');
+
+    // Debug route to check user roles - remove after testing
+    Route::get('/debug/check-roles', function() {
+        $user = auth()->user();
+        return [
+            'user_id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'roles' => $user->getRoleNames()->toArray(),
+            'permissions' => $user->getAllPermissions()->pluck('name')
+        ];
+    })->middleware('auth');
+
     // Redirect root path to dashboard for authenticated users
     // Removed this route as it's now handled by the 'home' route
 });
@@ -191,7 +222,7 @@ Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.st
 // Specific route for default adventure image
 Route::get('/uploads/adventures/default-adventure.jpg', function () {
     // Create a simple default image (orange gradient)
-    $defaultImage = base64_decode('/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCAAyADIDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9/KKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA//Z');
+    $defaultImage = base64_decode('/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCAAyADIDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9/KKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA//Z');
     
     return response($defaultImage)
         ->header('Content-Type', 'image/jpeg')

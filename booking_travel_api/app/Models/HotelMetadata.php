@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
 
 class HotelMetadata extends Model
 {
@@ -27,7 +28,8 @@ class HotelMetadata extends Model
         'check_out_time',
         'adventure_id',
         'province_id',
-        'status'
+        'status',
+        'user_id'
     ];
 
     protected $casts = [
@@ -60,6 +62,11 @@ class HotelMetadata extends Model
     public function roomTypes()
     {
         return $this->hasMany(RoomType::class, 'hotel_metadata_id', 'hotel_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 
     // Accessor for getting the main image
