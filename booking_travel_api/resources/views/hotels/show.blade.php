@@ -259,16 +259,44 @@
                                                     </div>
                                                     @if(!empty($roomType->amenities) && is_array($roomType->amenities))
                                                     <div class="sm:col-span-2 mt-2">
-                                                        <div class="flex flex-wrap gap-2">
-                                                            @foreach(array_slice($roomType->amenities, 0, 4) as $amenity)
-                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize bg-blue-100 text-blue-800">
-                                                                {{ $amenity }}
-                                                            </span>
+                                                        <div class="flex flex-wrap items-center gap-2">
+                                                            @php
+                                                                // Map amenity keys to display names and icons
+                                                                $amenityData = [
+                                                                    'wifi' => ['icon' => 'wifi', 'label' => 'WiFi'],
+                                                                    'tv' => ['icon' => 'tv', 'label' => 'TV'],
+                                                                    'ac' => ['icon' => 'snowflake', 'label' => 'Air Conditioning'],
+                                                                    'minibar' => ['icon' => 'wine-bottle', 'label' => 'Minibar'],
+                                                                    'safe' => ['icon' => 'shield-alt', 'label' => 'Safe'],
+                                                                    'balcony' => ['icon' => 'door-open', 'label' => 'Balcony'],
+                                                                    'sea_view' => ['icon' => 'water', 'label' => 'Sea View'],
+                                                                    'mountain_view' => ['icon' => 'mountain', 'label' => 'Mountain View'],
+                                                                    'bathtub' => ['icon' => 'bath', 'label' => 'Bathtub'],
+                                                                    'shower' => ['icon' => 'shower', 'label' => 'Shower'],
+                                                                    'coffee_maker' => ['icon' => 'coffee', 'label' => 'Coffee Maker'],
+                                                                    'kettle' => ['icon' => 'mug-hot', 'label' => 'Electric Kettle']
+                                                                ];
+                                                                
+                                                                // Get the first 4 amenities to display
+                                                                $displayAmenities = array_slice($roomType->amenities, 0, 4);
+                                                                $remainingCount = count($roomType->amenities) - count($displayAmenities);
+                                                            @endphp
+                                                            
+                                                            @foreach($displayAmenities as $amenity)
+                                                                @php
+                                                                    $data = $amenityData[$amenity] ?? ['icon' => 'check', 'label' => ucwords(str_replace('_', ' ', $amenity))];
+                                                                @endphp
+                                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800" 
+                                                                      title="{{ $data['label'] }}">
+                                                                    <i class="fas fa-{{ $data['icon'] }} mr-1"></i>
+                                                                    {{ $data['label'] }}
+                                                                </span>
                                                             @endforeach
-                                                            @if(count($roomType->amenities) > 4)
-                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize bg-gray-100 text-gray-800">
-                                                                +{{ count($roomType->amenities) - 4 }} more
-                                                            </span>
+                                                            
+                                                            @if($remainingCount > 0)
+                                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                                    +{{ $remainingCount }} more
+                                                                </span>
                                                             @endif
                                                         </div>
                                                     </div>
