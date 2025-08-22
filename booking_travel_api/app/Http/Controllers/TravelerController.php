@@ -4,73 +4,101 @@ namespace App\Http\Controllers;
 
 use App\Models\Traveler;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class TravelerController extends Controller
 {
-    /**
-     * Display a listing of travelers.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        $travelers = Traveler::with('user')->get();
-        return response()->json($travelers, 200);
+        $query = Traveler::query();
+
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->get('status'));
+        }
+
+        $travelers = $query->with('bookings')->paginate(15);
+
+        return view('travelers.index', compact('travelers'));
     }
 
-    /**
-     * Store a newly created traveler.
-     */
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'phone' => 'required|string|max:20',
-            'address' => 'required|string|max:255',
-        ]);
-
-        $traveler = Traveler::create($validated);
-
-        return response()->json([
-            'message' => 'Traveler created successfully.',
-            'data' => $traveler
-        ], 201);
-    }
-
-    /**
-     * Display the specified traveler.
-     */
     public function show(Traveler $traveler)
     {
-        $traveler->load('user');
-        return response()->json($traveler, 200);
+        $traveler->load(['bookings.package', 'messages']);
+        return view('travelers.show', compact('traveler'));
     }
 
-    /**
-     * Update the specified traveler.
-     */
-    public function update(Request $request, Traveler $traveler)
+    public function create()
     {
-        $validated = $request->validate([
-            'phone' => 'sometimes|string|max:20',
-            'address' => 'sometimes|string|max:255',
+        return view('travelers.create');
+    }
+
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|email|unique:travelers,email',
+            'phone' => 'nullable|string|max:20',
+            'date_of_birth' => 'nullable|date',
+            'passport_number' => 'nullable|string|max:50',
+            'nationality' => 'nullable|string|max:100',
+            'address' => 'nullable|string',
+            'status' => 'required|in:active,inactive',
         ]);
 
-        $traveler->update($validated);
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
 
-        return response()->json([
-            'message' => 'Traveler updated successfully.',
-            'data' => $traveler
-        ], 200);
+        Traveler::create($validator->validated());
+
+        return redirect()->route('travelers.index')
+            ->with('success', 'Traveler created successfully.');
     }
 
-    /**
-     * Remove the specified traveler.
-     */
+    public function edit(Traveler $traveler)
+    {
+        return view('travelers.edit', compact('traveler'));
+    }
+
+    public function update(Request $request, Traveler $traveler)
+    {
+        $validator = Validator::make($request->all(), [
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|email|unique:travelers,email,' . $traveler->id,
+            'phone' => 'nullable|string|max:20',
+            'date_of_birth' => 'nullable|date',
+            'passport_number' => 'nullable|string|max:50',
+            'nationality' => 'nullable|string|max:100',
+            'address' => 'nullable|string',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $traveler->update($validator->validated());
+
+        return redirect()->route('travelers.index')
+            ->with('success', 'Traveler updated successfully.');
+    }
+
     public function destroy(Traveler $traveler)
     {
         $traveler->delete();
 
-        return response()->json([
-            'message' => 'Traveler deleted successfully.'
-        ], 200);
+        return redirect()->route('travelers.index')
+            ->with('success', 'Traveler deleted successfully.');
     }
 }

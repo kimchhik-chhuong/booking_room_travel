@@ -1,27 +1,29 @@
 import 'package:flutter/material.dart';
 import 'page/trips_page.dart';
-import 'page/hotels_page.dart' hide TripScreen, HotelsPage;
-import 'page/flights_page.dart';
+import 'page/car_rental.dart';
 import 'page/offers_page.dart';
 import 'payment_screen.dart';
-import 'search_screen.dart';
+// import 'search_screen.dart';
 import 'profile_screen.dart';
 import 'history/history_screen.dart';
+import 'message_screen.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({Key? key}) : super(key: key);
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
-  int _notificationCount = 5; // Updated count
   final List<Widget> _pages = [
-    HomePageContent(),
+    const HomePageContent(),
     PaymentScreen(),
-    SearchScreen(),
+    // SearchScreen(),
     HistoryScreen(),
     ProfileScreen(),
+    MessageScreen(),
   ];
 
   @override
@@ -41,9 +43,11 @@ class _HomeScreenState extends State<HomeScreen> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.payment), label: 'Payment'),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(icon: Icon(Icons.card_travel), label: 'Historys'),
+          // BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.card_travel), label: 'Historys'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          BottomNavigationBarItem(icon: Icon(Icons.message), label: 'Message'),
         ],
       ),
     );
@@ -51,6 +55,8 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class HomePageContent extends StatelessWidget {
+  const HomePageContent({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -68,13 +74,13 @@ class HomePageContent extends StatelessWidget {
           context,
           hotelName: 'Grand Hyatt Resort',
           price: '\$1300/night',
-          imageUrl: '../lib/assets/room2.jpg',
+          imageUrl: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800&q=80',
         ),
         _buildHotelCard(
           context,
           hotelName: 'Luxury Haven Inn',
           price: '\$150/night',
-          imageUrl: '../lib/assets/room1.png',
+          imageUrl: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80',
         ),
         const SizedBox(height: 20),
       ],
@@ -87,7 +93,10 @@ class HomePageContent extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Colors.blue.shade400, Colors.blue.shade600],
+          colors: [
+            Color.fromRGBO(102, 153, 255, 1.0),
+            Color.fromRGBO(153, 204, 255, 1.0)
+          ],
         ),
       ),
       child: SafeArea(
@@ -100,7 +109,7 @@ class HomePageContent extends StatelessWidget {
                 child: Text(
                   "Let's Explore The World!",
                   style: TextStyle(
-                    fontSize: 22, 
+                    fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
@@ -110,11 +119,12 @@ class HomePageContent extends StatelessWidget {
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Color.fromRGBO(255, 255, 255, 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: IconButton(
-                      icon: Icon(Icons.notifications, color: Colors.white),
+                      icon:
+                          const Icon(Icons.notifications, color: Colors.white),
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -129,11 +139,11 @@ class HomePageContent extends StatelessWidget {
                     right: 6,
                     top: 6,
                     child: Container(
-                      padding: EdgeInsets.all(4),
+                      padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
                         color: Colors.red,
                         borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
+                        boxShadow: const [
                           BoxShadow(
                             color: Colors.black26,
                             blurRadius: 4,
@@ -141,11 +151,11 @@ class HomePageContent extends StatelessWidget {
                           ),
                         ],
                       ),
-                      constraints: BoxConstraints(
+                      constraints: const BoxConstraints(
                         minWidth: 18,
                         minHeight: 18,
                       ),
-                      child: Text(
+                      child: const Text(
                         '5',
                         style: TextStyle(
                           color: Colors.white,
@@ -166,57 +176,58 @@ class HomePageContent extends StatelessWidget {
   }
 
   Widget _buildOptions(BuildContext context) {
-    final options = ['Trips', 'Hotels', 'Flights', 'Offers'];
-    final colors = [
-      Colors.purple,
-      Colors.pink,
-      Colors.orange,
-      Colors.blueAccent
-    ];
-    final icons = [
-      Icons.airplanemode_active,
-      Icons.hotel,
-      Icons.flight,
-      Icons.local_offer,
-    ];
-    final pages = [
-      TripsPage(),
-      HotelsPage(),
-      FlightsPage(),
-      OffersPage(),
-    ];
+  final options = ['Trips', 'Hotels', 'CarRental', 'Offers'];
+  final colors = [
+    Colors.purple,
+    Colors.pink,
+    Colors.orange,
+    Colors.blueAccent
+  ];
+  final icons = [
+    Icons.airplanemode_active,
+    Icons.hotel,
+    Icons.directions_car, // updated icon for CarRental
+    Icons.local_offer,
+  ];
+  final pages = [
+    const TripsPage(),
+    const PaymentScreen(), // Replaced HotelsPage with PaymentScreen
+    CarRentalApp(), // updated navigation target
+    const OffersPage(),
+  ];
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: List.generate(options.length, (index) {
-          return GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => pages[index]),
-              );
-            },
-            child: Column(
-              children: [
-                CircleAvatar(
-                  backgroundColor: colors[index],
-                  radius: 30,
-                  child: Icon(icons[index], color: Colors.white, size: 28),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  options[index],
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          );
-        }),
-      ),
-    );
-  }
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: List.generate(options.length, (index) {
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => pages[index]),
+            );
+          },
+          child: Column(
+            children: [
+              CircleAvatar(
+                backgroundColor: colors[index],
+                radius: 30,
+                child: Icon(icons[index], color: Colors.white, size: 28),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                options[index],
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        );
+      }),
+    ),
+  );
+}
+
 
   Widget _buildSectionTitle(String title) {
     return Padding(
@@ -234,13 +245,15 @@ class HomePageContent extends StatelessWidget {
   Widget _buildPopularOffers() {
     final offers = [
       {
-        'url': 'https://images.unsplash.com/photo-1560347876-aeef00ee58a1?w=800&q=80',
+        'url':
+            'https://images.unsplash.com/photo-1560347876-aeef00ee58a1?w=800&q=80',
         'name': 'Offer 1',
         'price': '\$150/night',
         'rating': 3.5,
       },
       {
-        'url': 'https://images.unsplash.com/photo-1505691723518-36a5ac3be353?w=800&q=80',
+        'url':
+            'https://images.unsplash.com/photo-1505691723518-36a5ac3be353?w=800&q=80',
         'name': 'Offer 2',
         'price': '\$200/night',
         'rating': 4.0,
@@ -380,8 +393,8 @@ class HomePageContent extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(hotelName,
-                      style: TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold)),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   Text(price, style: TextStyle(color: Colors.blue)),
                 ],
               ),
@@ -398,7 +411,8 @@ class HomePageContent extends StatelessWidget {
 // =======================
 class NotificationDetailScreen extends StatefulWidget {
   @override
-  _NotificationDetailScreenState createState() => _NotificationDetailScreenState();
+  _NotificationDetailScreenState createState() =>
+      _NotificationDetailScreenState();
 }
 
 class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
@@ -461,18 +475,30 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
   ];
 
   String selectedFilter = 'All';
-  final List<String> filterOptions = ['All', 'Unread', 'Bookings', 'Messages', 'Offers'];
+  final List<String> filterOptions = [
+    'All',
+    'Unread',
+    'Bookings',
+    'Messages',
+    'Offers'
+  ];
 
   List<NotificationItem> get filteredNotifications {
     switch (selectedFilter) {
       case 'Unread':
         return notifications.where((n) => !n.isRead).toList();
       case 'Bookings':
-        return notifications.where((n) => n.category == NotificationCategory.booking).toList();
+        return notifications
+            .where((n) => n.category == NotificationCategory.booking)
+            .toList();
       case 'Messages':
-        return notifications.where((n) => n.category == NotificationCategory.message).toList();
+        return notifications
+            .where((n) => n.category == NotificationCategory.message)
+            .toList();
       case 'Offers':
-        return notifications.where((n) => n.category == NotificationCategory.promotion).toList();
+        return notifications
+            .where((n) => n.category == NotificationCategory.promotion)
+            .toList();
       default:
         return notifications;
     }
@@ -489,7 +515,8 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
 
   void _markAllAsRead() {
     setState(() {
-      notifications = notifications.map((n) => n.copyWith(isRead: true)).toList();
+      notifications =
+          notifications.map((n) => n.copyWith(isRead: true)).toList();
     });
   }
 
@@ -645,12 +672,17 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
                           );
                         },
                         child: Container(
-                          margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          margin:
+                              EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: item.isRead ? Colors.white : Colors.blue.withOpacity(0.05),
+                            color: item.isRead
+                                ? Colors.white
+                                : Colors.blue.withOpacity(0.05),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: item.isRead ? Colors.grey.withOpacity(0.2) : Colors.blue.withOpacity(0.3),
+                              color: item.isRead
+                                  ? Colors.grey.withOpacity(0.2)
+                                  : Colors.blue.withOpacity(0.3),
                             ),
                           ),
                           child: ListTile(
@@ -660,7 +692,8 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
                                 CircleAvatar(
                                   backgroundColor: item.color.withOpacity(0.2),
                                   radius: 24,
-                                  child: Icon(item.icon, color: item.color, size: 24),
+                                  child: Icon(item.icon,
+                                      color: item.color, size: 24),
                                 ),
                                 if (item.priority == NotificationPriority.high)
                                   Positioned(
@@ -672,7 +705,8 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
                                       decoration: BoxDecoration(
                                         color: Colors.red,
                                         shape: BoxShape.circle,
-                                        border: Border.all(color: Colors.white, width: 2),
+                                        border: Border.all(
+                                            color: Colors.white, width: 2),
                                       ),
                                     ),
                                   ),
@@ -684,7 +718,9 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
                                   child: Text(
                                     item.title,
                                     style: TextStyle(
-                                      fontWeight: item.isRead ? FontWeight.normal : FontWeight.bold,
+                                      fontWeight: item.isRead
+                                          ? FontWeight.normal
+                                          : FontWeight.bold,
                                       fontSize: 16,
                                     ),
                                   ),
@@ -744,19 +780,25 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
                                   builder: (context) {
                                     switch (item.category) {
                                       case NotificationCategory.message:
-                                        return NotificationDetailMessageScreen(notification: item);
+                                        return NotificationDetailMessageScreen(
+                                            notification: item);
                                       case NotificationCategory.booking:
                                         if (item.title.contains('Flight')) {
-                                          return NotificationDetailFlightScreen(notification: item);
+                                          return NotificationDetailFlightScreen(
+                                              notification: item);
                                         } else {
-                                          return NotificationDetailHotelScreen(notification: item);
+                                          return NotificationDetailHotelScreen(
+                                              notification: item);
                                         }
                                       case NotificationCategory.promotion:
-                                        return NotificationDetailOfferScreen(notification: item);
+                                        return NotificationDetailOfferScreen(
+                                            notification: item);
                                       case NotificationCategory.alert:
-                                        return NotificationDetailAlertScreen(notification: item);
+                                        return NotificationDetailAlertScreen(
+                                            notification: item);
                                       default:
-                                        return NotificationDetailGenericScreen(item: item);
+                                        return NotificationDetailGenericScreen(
+                                            item: item);
                                     }
                                   },
                                 ),
@@ -776,7 +818,7 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen> {
   Widget _buildPriorityChip(NotificationPriority priority) {
     Color color;
     String text;
-    
+
     switch (priority) {
       case NotificationPriority.high:
         color = Colors.red;
@@ -861,13 +903,15 @@ class NotificationItem {
 }
 
 enum NotificationPriority { high, medium, low }
+
 enum NotificationCategory { message, booking, promotion, alert, general }
 
 // ======= Enhanced Notification Detail Pages =======
 class NotificationDetailMessageScreen extends StatelessWidget {
   final NotificationItem notification;
 
-  const NotificationDetailMessageScreen({Key? key, required this.notification}) : super(key: key);
+  const NotificationDetailMessageScreen({Key? key, required this.notification})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -893,7 +937,8 @@ class NotificationDetailMessageScreen extends StatelessWidget {
                         SizedBox(width: 8),
                         Text(
                           'Travel Agent Message',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
@@ -917,7 +962,8 @@ class NotificationDetailMessageScreen extends StatelessWidget {
                           onPressed: () {},
                           icon: Icon(Icons.reply),
                           label: Text('Reply'),
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange),
                         ),
                         SizedBox(width: 12),
                         OutlinedButton.icon(
@@ -941,7 +987,8 @@ class NotificationDetailMessageScreen extends StatelessWidget {
 class NotificationDetailFlightScreen extends StatelessWidget {
   final NotificationItem notification;
 
-  const NotificationDetailFlightScreen({Key? key, required this.notification}) : super(key: key);
+  const NotificationDetailFlightScreen({Key? key, required this.notification})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -966,7 +1013,8 @@ class NotificationDetailFlightScreen extends StatelessWidget {
                         SizedBox(width: 8),
                         Text(
                           'Flight Confirmed',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
@@ -984,7 +1032,8 @@ class NotificationDetailFlightScreen extends StatelessWidget {
                           onPressed: () {},
                           icon: Icon(Icons.qr_code),
                           label: Text('Boarding Pass'),
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue),
                         ),
                         SizedBox(width: 12),
                         OutlinedButton.icon(
@@ -1014,7 +1063,8 @@ class NotificationDetailFlightScreen extends StatelessWidget {
             width: 100,
             child: Text(
               '$label:',
-              style: TextStyle(fontWeight: FontWeight.w500, color: Colors.grey[600]),
+              style: TextStyle(
+                  fontWeight: FontWeight.w500, color: Colors.grey[600]),
             ),
           ),
           Expanded(
@@ -1032,7 +1082,8 @@ class NotificationDetailFlightScreen extends StatelessWidget {
 class NotificationDetailHotelScreen extends StatelessWidget {
   final NotificationItem notification;
 
-  const NotificationDetailHotelScreen({Key? key, required this.notification}) : super(key: key);
+  const NotificationDetailHotelScreen({Key? key, required this.notification})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -1057,7 +1108,8 @@ class NotificationDetailHotelScreen extends StatelessWidget {
                         SizedBox(width: 8),
                         Text(
                           'Hotel Reservation Confirmed',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
@@ -1076,7 +1128,8 @@ class NotificationDetailHotelScreen extends StatelessWidget {
                           onPressed: () {},
                           icon: Icon(Icons.directions),
                           label: Text('Get Directions'),
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green),
                         ),
                         SizedBox(width: 12),
                         OutlinedButton.icon(
@@ -1106,7 +1159,8 @@ class NotificationDetailHotelScreen extends StatelessWidget {
             width: 100,
             child: Text(
               '$label:',
-              style: TextStyle(fontWeight: FontWeight.w500, color: Colors.grey[600]),
+              style: TextStyle(
+                  fontWeight: FontWeight.w500, color: Colors.grey[600]),
             ),
           ),
           Expanded(
@@ -1124,7 +1178,8 @@ class NotificationDetailHotelScreen extends StatelessWidget {
 class NotificationDetailOfferScreen extends StatelessWidget {
   final NotificationItem notification;
 
-  const NotificationDetailOfferScreen({Key? key, required this.notification}) : super(key: key);
+  const NotificationDetailOfferScreen({Key? key, required this.notification})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -1149,7 +1204,8 @@ class NotificationDetailOfferScreen extends StatelessWidget {
                         SizedBox(width: 8),
                         Text(
                           '50% OFF Weekend Getaways',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
@@ -1208,7 +1264,8 @@ class NotificationDetailOfferScreen extends StatelessWidget {
 class NotificationDetailAlertScreen extends StatelessWidget {
   final NotificationItem notification;
 
-  const NotificationDetailAlertScreen({Key? key, required this.notification}) : super(key: key);
+  const NotificationDetailAlertScreen({Key? key, required this.notification})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -1233,7 +1290,8 @@ class NotificationDetailAlertScreen extends StatelessWidget {
                         SizedBox(width: 8),
                         Text(
                           'Weather Alert',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
@@ -1279,7 +1337,8 @@ class NotificationDetailAlertScreen extends StatelessWidget {
                           onPressed: () {},
                           icon: Icon(Icons.cloud),
                           label: Text('View Forecast'),
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red),
                         ),
                         SizedBox(width: 12),
                         OutlinedButton.icon(
@@ -1303,7 +1362,8 @@ class NotificationDetailAlertScreen extends StatelessWidget {
 class NotificationDetailGenericScreen extends StatelessWidget {
   final NotificationItem item;
 
-  const NotificationDetailGenericScreen({Key? key, required this.item}) : super(key: key);
+  const NotificationDetailGenericScreen({Key? key, required this.item})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {

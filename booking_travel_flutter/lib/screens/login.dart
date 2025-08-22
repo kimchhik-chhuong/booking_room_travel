@@ -72,6 +72,7 @@ class _LoginScreenState extends State<LoginScreen>
     });
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -199,6 +200,7 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
+
   Widget _buildForm() {
     return AnimatedBuilder(
       animation: _formAnimation,
@@ -264,6 +266,7 @@ class _LoginScreenState extends State<LoginScreen>
       },
     );
   }
+
 
   Widget _buildAnimatedTextField({
     required TextEditingController controller,
@@ -376,6 +379,7 @@ class _LoginScreenState extends State<LoginScreen>
       ),
     );
   }
+
 
   Widget _buildSignUpLink() {
     return Row(

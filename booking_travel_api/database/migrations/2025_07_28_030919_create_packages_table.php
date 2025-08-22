@@ -4,22 +4,31 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreatePackagesTable extends Migration
+return new class extends Migration
 {
-    public function up()
+    public function up(): void
     {
         Schema::create('packages', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('destination_id');
-            $table->foreign('destination_id')->references('id')->on('destinations')->onDelete('cascade');
-            $table->string('name');
-            $table->text('description')->nullable();
+            $table->string('title');
+            $table->string('location'); // already exists
+            $table->string('duration');
+            $table->decimal('price', 10, 2);
+            $table->decimal('rating', 3, 1)->default(0);
+            $table->integer('bookings')->default(0);
+            $table->enum('status', ['Active', 'Draft'])->default('Active');
+            $table->string('image')->nullable();
+            $table->string('category')->nullable();
+            $table->unsignedBigInteger('destination_id')->nullable(); // newly added
             $table->timestamps();
+
+            // If you want, you can add a foreign key to destinations
+            // $table->foreign('destination_id')->references('id')->on('destinations')->onDelete('set null');
         });
     }
 
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('packages');
     }
-}
+};
