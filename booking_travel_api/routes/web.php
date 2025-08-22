@@ -6,200 +6,174 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\DealController;
 use App\Http\Controllers\PackageController;
-use App\Http\Controllers\RoomTypeController;
+use App\Http\Controllers\TravelerController;
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application.
+|
 */
 
-// Default redirect to login or dashboard based on auth status
-Route::get('/', function () {
-    return redirect()->route(auth()->check() ? 'dashboard' : 'login');
-})->name('home');
-
-// Guest routes (Unauthenticated users)
+/*
+|--------------------------------------------------------------------------
+| Guest Routes (not logged in)
+|--------------------------------------------------------------------------
+*/
 Route::middleware('guest')->group(function () {
-    // Show Login Page
-    Route::get('/login', function () {
-        return view('auth.login');
-    })->name('login');
-
-    // Handle Login Form Submission
+    // Login
+    Route::get('/login', fn() => view('auth.login'))->name('login');
     Route::post('/login', [LoginController::class, 'login'])->name('login.post');
 
-    // Show Register Page
-    Route::get('/register', function () {
-        return view('auth.register');
-    })->name('register');
-
-    // Handle Register Form Submission
+    // Register
+    Route::get('/register', fn() => view('auth.register'))->name('register');
     Route::post('/register', [RegisterController::class, 'register'])->name('register.post');
+
+    // Default root → login
+    Route::get('/', fn() => redirect()->route('login'));
 });
 
-// Public routes
-Route::prefix('hotels')->name('hotels.')->group(function () {
-    Route::get('/', [\App\Http\Controllers\HotelMetadataController::class, 'index'])->name('index');
-    Route::get('/create', [\App\Http\Controllers\HotelMetadataController::class, 'create'])->name('create');
-    Route::post('/', [\App\Http\Controllers\HotelMetadataController::class, 'store'])->name('store');
-    
-    // Explicitly define routes with hotel_id parameter
-    Route::get('/{hotel}', [\App\Http\Controllers\HotelMetadataController::class, 'show'])
-        ->name('show')
-        ->where('hotel', '[0-9]+');
-        
-    Route::get('/{hotel}/edit', [\App\Http\Controllers\HotelMetadataController::class, 'edit'])
-        ->name('edit')
-        ->where('hotel', '[0-9]+');
-        
-    Route::put('/{hotel}', [\App\Http\Controllers\HotelMetadataController::class, 'update'])
-        ->name('update')
-        ->where('hotel', '[0-9]+');
-        
-    Route::delete('/{hotel}', [\App\Http\Controllers\HotelMetadataController::class, 'destroy'])
-        ->name('destroy')
-        ->where('hotel', '[0-9]+');
-});
-
-// Authenticated routes (Logged-in users)
+/*
+|--------------------------------------------------------------------------
+| Authenticated Routes (must be logged in)
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth')->group(function () {
+
     // Logout
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-    // Dashboard Route
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    // Dashboard
+    Route::get('/dashboard', fn() => view('dashboard'))->name('dashboard');
+    Route::get('/home', fn() => redirect()->route('dashboard'))->name('home');
 
-    // Hotel management routes
-    Route::resource('hotels', \App\Http\Controllers\HotelMetadataController::class)->except(['index', 'show']);
-    
-    // Room types management
-    Route::resource('hotels.room-types', \App\Http\Controllers\RoomTypeController::class)->shallow();
-
-    // Packages Routes
+    /*
+    |--------------------------------------------------------------------------
+    | Packages
+    |--------------------------------------------------------------------------
+    */
     Route::prefix('packages')->name('packages.')->group(function () {
         Route::get('/', [PackageController::class, 'index'])->name('index');
         Route::get('/province/{id}', [PackageController::class, 'showProvince'])->name('province');
-        
-        // Province CRUD routes
+
+        // Province CRUD
         Route::get('/provinces/create', [PackageController::class, 'create'])->name('provinces.create');
         Route::post('/provinces', [PackageController::class, 'store'])->name('provinces.store');
         Route::put('/provinces/{id}', [PackageController::class, 'update'])->name('provinces.update');
         Route::delete('/provinces/{id}', [PackageController::class, 'destroy'])->name('provinces.destroy');
     });
 
-    // Bookings Routes
+    /*
+    |--------------------------------------------------------------------------
+    | Bookings
+    |--------------------------------------------------------------------------
+    */
     Route::prefix('bookings')->name('bookings.')->group(function () {
-        Route::get('/', function () {
-            return view('bookings.index');
-        })->name('index');
-        // Additional booking routes can go here
+        Route::get('/', fn() => view('bookings.index'))->name('index');
+        Route::get('/create', [BookingController::class, 'create'])->name('create');
+        Route::post('/', [BookingController::class, 'store'])->name('store');
     });
 
-    // Calendar Route
-    Route::get('/calendar', function () {
-        return view('calendar');
-    })->name('calendar');
+    /*
+    |--------------------------------------------------------------------------
+    | Calendar
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/calendar', fn() => view('calendar'))->name('calendar');
 
-    // Travelers Routes
+    /*
+    |--------------------------------------------------------------------------
+    | Travelers CRUD
+    |--------------------------------------------------------------------------
+    */
     Route::prefix('travelers')->name('travelers.')->group(function () {
-        Route::get('/', function () {
-            return view('travelers.index');
-        })->name('index');
-        // Additional traveler routes can go here
+        Route::get('/', [TravelerController::class, 'index'])->name('index');
+        Route::get('/create', [TravelerController::class, 'create'])->name('create');
+        Route::post('/', [TravelerController::class, 'store'])->name('store');
+        Route::get('/{traveler}', [TravelerController::class, 'show'])->name('show');
+        Route::get('/{traveler}/edit', [TravelerController::class, 'edit'])->name('edit');
+        Route::put('/{traveler}', [TravelerController::class, 'update'])->name('update');
+        Route::delete('/{traveler}', [TravelerController::class, 'destroy'])->name('destroy');
     });
 
-    // Guides Routes
+    /*
+    |--------------------------------------------------------------------------
+    | Guides
+    |--------------------------------------------------------------------------
+    */
     Route::prefix('guides')->name('guides.')->group(function () {
-        Route::get('/', function () {
-            return view('guides.index');
-        })->name('index');
-        // Additional guide routes can go here
+        Route::get('/', fn() => view('guides.index'))->name('index');
     });
 
-    // Gallery Routes
+    /*
+    |--------------------------------------------------------------------------
+    | Gallery
+    |--------------------------------------------------------------------------
+    */
     Route::prefix('gallery')->name('gallery.')->group(function () {
-        Route::get('/', function () {
-            return view('gallery.index');
-        })->name('index');
-        // Additional gallery routes can go here
+        Route::get('/', fn() => view('gallery.index'))->name('index');
     });
 
-    // Messages Routes
+    /*
+    |--------------------------------------------------------------------------
+    | Messages
+    |--------------------------------------------------------------------------
+    */
     Route::prefix('messages')->name('messages.')->group(function () {
-        Route::get('/', function () {
-            return view('messages.index');
-        })->name('index');
-        // Additional message routes can go here
+        Route::get('/', fn() => view('messages.index'))->name('index');
     });
 
-    // Deals Routes
+    /*
+    |--------------------------------------------------------------------------
+    | Deals
+    |--------------------------------------------------------------------------
+    */
     Route::prefix('deals')->name('deals.')->group(function () {
-        Route::get('/', function () {
-            return view('deals.index');
-        })->name('index');
-        // Additional deals routes can go here
+        Route::get('/', fn() => view('deals.index'))->name('index');
     });
 
-    // Feedback Routes
+    /*
+    |--------------------------------------------------------------------------
+    | Feedback
+    |--------------------------------------------------------------------------
+    */
     Route::prefix('feedback')->name('feedback.')->group(function () {
-        Route::get('/', function () {
-            return view('feedback.index');
-        })->name('index');
-        // Additional feedback routes can go here
+        Route::get('/', fn() => view('feedback.index'))->name('index');
     });
 
-    // Redirect root path to dashboard for authenticated users
-    // Removed this route as it's now handled by the 'home' route
+    // Root redirect to dashboard (for logged in users)
+    Route::get('/', fn() => redirect()->route('dashboard'));
 });
 
-// Route::resource('bookings', BookingController::class);
-Route::get('/bookings/create', [BookingController::class, 'create'])->name('bookings.create');
-Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
-
-// Specific route for default adventure image
+/*
+|--------------------------------------------------------------------------
+| Image & Upload Routes (with CORS headers)
+|--------------------------------------------------------------------------
+*/
 Route::get('/uploads/adventures/default-adventure.jpg', function () {
-    // Create a simple default image (orange gradient)
-    $defaultImage = base64_decode('/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCAAyADIDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9/KKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA//Z');
-    
-    return response($defaultImage)
-        ->header('Content-Type', 'image/jpeg')
-        ->header('Access-Control-Allow-Origin', '*')
-        ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-        ->header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    $defaultImage = base64_decode('...'); // your base64 image
+    return response($defaultImage)->header('Content-Type', 'image/jpeg')->header('Access-Control-Allow-Origin', '*');
 });
 
-// Route to serve images with CORS headers
 Route::get('/uploads/{folder}/{filename}', function ($folder, $filename) {
     $path = public_path("uploads/{$folder}/{$filename}");
-    
+
     if (!file_exists($path)) {
-        // Return a 1x1 transparent PNG as fallback
         $transparentPng = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==');
-        return response($transparentPng)
-            ->header('Content-Type', 'image/png')
-            ->header('Access-Control-Allow-Origin', '*')
-            ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-            ->header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+        return response($transparentPng)->header('Content-Type', 'image/png')->header('Access-Control-Allow-Origin', '*');
     }
-    
+
     $file = file_get_contents($path);
     $type = mime_content_type($path);
-    
-    return response($file)
-        ->header('Content-Type', $type)
-        ->header('Access-Control-Allow-Origin', '*')
-        ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-        ->header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+
+    return response($file)->header('Content-Type', $type)->header('Access-Control-Allow-Origin', '*');
 })->where(['folder' => '[a-zA-Z0-9_-]+', 'filename' => '[a-zA-Z0-9._-]+']);
 
-// Handle OPTIONS requests for CORS preflight
-Route::options('/uploads/{folder}/{filename}', function () {
-    return response('', 200)
-        ->header('Access-Control-Allow-Origin', '*')
-        ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-        ->header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization')
-        ->header('Access-Control-Max-Age', '86400');
-})->where(['folder' => '[a-zA-Z0-9_-]+', 'filename' => '[a-zA-Z0-9._-]+']);
+Route::options('/uploads/{folder}/{filename}', fn() => response('', 200)
+    ->header('Access-Control-Allow-Origin', '*')
+    ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+    ->header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization')
+    ->header('Access-Control-Max-Age', '86400')
+)->where(['folder' => '[a-zA-Z0-9_-]+', 'filename' => '[a-zA-Z0-9._-]+']);
