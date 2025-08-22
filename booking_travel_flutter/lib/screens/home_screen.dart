@@ -191,8 +191,8 @@ class HomePageContent extends StatelessWidget {
   ];
   final pages = [
     const TripsPage(),
-    const HotelsPage(),
-     CarRentalApp(), // updated navigation target
+    const PaymentScreen(), // Replaced HotelsPage with PaymentScreen
+    CarRentalApp(), // updated navigation target
     const OffersPage(),
   ];
 

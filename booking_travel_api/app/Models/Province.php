@@ -33,26 +33,40 @@ class Province extends Model
     public function getImageUrlAttribute()
     {
         if (!$this->image) {
-            return null;
+            return asset('storage/images/default-province.jpg');
         }
 
-        // Check if the image is already a full URL
+        // If it's already a full URL, return as is
         if (filter_var($this->image, FILTER_VALIDATE_URL)) {
             return $this->image;
         }
 
-        // Check if the file exists in storage
-        if (Storage::disk('public')->exists($this->image)) {
-            return Storage::url($this->image);
+        // Clean up the path
+        $path = ltrim($this->image, '/');
+        $path = str_replace('storage/', '', $path);
+        $path = str_replace('public/', '', $path);
+
+        // Check if file exists in storage
+        if (Storage::disk('public')->exists($path)) {
+            return Storage::url($path);
         }
 
-        // Fallback to the old path if file doesn't exist in the new location
-        $oldPath = str_replace('provinces/', 'provinces/images/', $this->image);
-        if (Storage::disk('public')->exists($oldPath)) {
-            return Storage::url($oldPath);
+        // Try different possible paths
+        $possiblePaths = [
+            'uploads/adventures/' . basename($path),
+            'adventures/' . basename($path),
+            'provinces/' . basename($path),
+            'uploads/provinces/' . basename($path),
+        ];
+
+        foreach ($possiblePaths as $possiblePath) {
+            if (Storage::disk('public')->exists($possiblePath)) {
+                return Storage::url($possiblePath);
+            }
         }
 
-        return null;
+        // If file still not found, return the default image
+        return asset('storage/images/default-province.jpg');
     }
 
     /**
