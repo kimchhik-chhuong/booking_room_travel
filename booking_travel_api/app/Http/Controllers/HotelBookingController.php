@@ -45,43 +45,56 @@ class HotelBookingController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, $hotelId)
     {
-        $validated = $request->validate([
-            'booking_id' => 'required|exists:bookings,id',
-            'hotel_id' => 'required|exists:hotel_metadata,hotel_id',
-            'check_in_date' => 'required|date|after_or_equal:today',
-            'check_out_date' => 'required|date|after:check_in_date',
-            'room_type_id' => 'required|exists:room_types,id',
-            'num_rooms' => 'required|integer|min:1',
-            'num_guests' => 'required|integer|min:1',
-            'price_per_night' => 'required|numeric|min:0',
-            'total_hotel_price' => 'required|numeric|min:0',
-            'status' => 'required|in:pending,confirmed,cancelled,completed',
-        ]);
+        // Find the hotel
+        $hotel = HotelMetadata::findOrFail($hotelId);
+    
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'description' => 'required|string',
+        'price' => 'required|numeric|min:0',
+        'max_occupancy' => 'required|integer|min:1',
+        'available_rooms' => 'required|integer|min:0',
+        'amenities' => 'nullable|array',
+        'amenities.*' => 'string|max:255',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+    ]);
 
-        // Check room availability
-        $roomType = RoomType::find($validated['room_type_id']);
-        if ($roomType->available_rooms < $validated['num_rooms']) {
+    // Handle image upload if present
+    if ($request->hasFile('image')) {
+        $path = $request->file('image')->store('room-types', 'public');
+        $validated['image_url'] = $path;
+    }
+
+    // Format amenities array
+    if (isset($validated['amenities'])) {
+        // Clean up the array to ensure proper formatting
+        $validated['amenities'] = array_map('trim', $validated['amenities']);
+        $validated['amenities'] = array_filter($validated['amenities']); // Remove empty values
+        $validated['amenities'] = array_values($validated['amenities']); // Reset array keys
+    } else {
+        $validated['amenities'] = [];
+    }
+
+    // Set hotel ID
+    $validated['hotel_metadata_id'] = $hotel->hotel_id;
+
+    // Create the room type
+    $roomType = RoomType::create($validated);
+    
+        // Return JSON response for API
+        if ($request->wantsJson()) {
             return response()->json([
-                'status' => 'error',
-                'message' => 'Insufficient rooms available',
-                'available_rooms' => $roomType->available_rooms,
-                'requested_rooms' => $validated['num_rooms']
-            ], 400);
+                'status' => 'success',
+                'message' => 'Room type created successfully',
+                'data' => $roomType->load('hotelMetadata')
+            ], 201);
         }
-
-        // Create hotel booking
-        $hotelBooking = HotelBooking::create($validated);
-
-        // Update room availability
-        $roomType->decrement('available_rooms', $validated['num_rooms']);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Hotel booking created successfully',
-            'data' => $hotelBooking->load(['hotelMetadata', 'booking', 'roomType'])
-        ], 201);
+    
+        // For web form submission
+        return redirect()->route('hotels.show', $hotel->hotel_id)
+            ->with('success', 'Room type created successfully');
     }
 
     /**

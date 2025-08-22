@@ -34,7 +34,7 @@ class Adventure extends Model
     public function getImagePathAttribute()
     {
         // Default image path
-        $defaultImage = asset('storage/images/default-adventure.jpg');
+        $defaultImage = asset('images/default-adventure.jpg');
         
         // If no image URL is set, return the default image
         if (empty($this->image_url)) {
@@ -46,11 +46,14 @@ class Adventure extends Model
             return $this->image_url;
         }
 
+        // Handle storage paths
+        $storagePath = str_replace('public/', '', $this->image_url);
+        
         // Check if file exists in storage
-        if (Storage::disk('public')->exists($this->image_url)) {
-            return asset('storage/' . $this->image_url);
+        if (Storage::disk('public')->exists($storagePath)) {
+            return asset('storage/' . ltrim($storagePath, '/'));
         }
-
+        
         // Check if file exists in public directory
         if (file_exists(public_path($this->image_url))) {
             return asset($this->image_url);

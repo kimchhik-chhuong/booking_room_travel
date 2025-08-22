@@ -16,17 +16,19 @@
     <div class="md:pl-64 flex flex-col">
         <main class="flex-1">
             <!-- Page header -->
-            <div class="bg-white shadow">
+
                 <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                     <div class="flex justify-between items-center">
-                        <h1 class="text-2xl font-bold text-gray-900">Add New Room Type</h1>
                         <a href="{{ route('hotels.show', $hotel->hotel_id) }}" 
-                           class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                           class="text-indigo-600 hover:text-indigo-800 flex items-center">
+                           <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                </svg>
                             Back to Hotel
                         </a>
                     </div>
                 </div>
-            </div>
+          
 
             <!-- Form content -->
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

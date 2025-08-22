@@ -47,7 +47,7 @@
                             <a href="{{ route('hotels.room-types.create', $hotel->hotel_id) }}" 
                                class="ml-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                 <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 01-1 1h-3a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
                                 </svg>
                                 Add Room Type
                             </a>
@@ -62,6 +62,38 @@
                             <img src="{{ asset('storage/' . $hotel->image_url) }}" 
                                  alt="{{ $hotel->name }}" 
                                  class="w-full h-full object-cover">
+                        </div>
+                        @endif
+
+                        <!-- Additional Images -->
+                        @php
+                            $additionalImages = is_string($hotel->additional_images) 
+                                ? json_decode($hotel->additional_images, true) 
+                                : $hotel->additional_images;
+                        @endphp
+                        
+                        @if(!empty($additionalImages) && is_array($additionalImages) && count($additionalImages) > 0)
+                        <div class="p-4 bg-gray-50">
+                            <h4 class="text-lg font-medium text-gray-900 mb-4">Gallery</h4>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                                @foreach($additionalImages as $index => $image)
+                                    @php
+                                        // Handle both full URLs and relative paths
+                                        if (str_starts_with($image, 'http')) {
+                                            // If it's already a full URL, use it directly
+                                            $imageUrl = $image;
+                                        } else {
+                                            // If it's a relative path, prepend storage path
+                                            $imageUrl = asset('storage/' . ltrim($image, '/'));
+                                        }
+                                    @endphp
+                                    <div class="relative group">
+                                        <img src="{{ $imageUrl }}" 
+                                             alt="Gallery image {{ $index + 1 }}" 
+                                             class="w-full h-40 object-cover rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300">
+                                    </div>
+                                @endforeach
+                            </div>
                         </div>
                         @endif
 
@@ -111,7 +143,7 @@
                                         @if($hotel->contact_phone)
                                             <div class="flex items-center">
                                                 <svg class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                                                    <path fill-rule="evenodd" d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                                                 </svg>
                                                 {{ $hotel->contact_phone }}
                                             </div>
@@ -119,7 +151,7 @@
                                         @if($hotel->email)
                                             <div class="mt-2 flex items-center">
                                                 <svg class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                                                    <path fill-rule="evenodd" d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                                                     <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                                                 </svg>
                                                 {{ $hotel->email }}
@@ -142,18 +174,35 @@
                                 </div>
                                 @endif
 
-                                @if($hotel->check_in_time || $hotel->check_out_time)
-                                <div>
+                                @if(!empty($hotel->amenities) && is_array($hotel->amenities))
+                                <div class="mt-6">
                                     <dt class="text-sm font-medium text-gray-500">
-                                        Check-in / Check-out
+                                        Amenities
                                     </dt>
-                                    <dd class="mt-1 text-sm text-gray-900">
-                                        @if($hotel->check_in_time)
-                                            Check-in: {{ $hotel->check_in_time }}<br>
-                                        @endif
-                                        @if($hotel->check_out_time)
-                                            Check-out: {{ $hotel->check_out_time }}
-                                        @endif
+                                    <dd class="mt-2">
+                                        <div class="flex flex-wrap gap-2">
+                                            @foreach($hotel->amenities as $amenity)
+                                                @php
+                                                    // Map amenity keys to display names and icons
+                                                    $amenityIcons = [
+                                                        'wifi' => ['icon' => 'wifi', 'label' => 'Free WiFi'],
+                                                        'swimming_pool' => ['icon' => 'swimmer', 'label' => 'Swimming Pool'],
+                                                        'restaurant' => ['icon' => 'utensils', 'label' => 'Restaurant'],
+                                                        'parking' => ['icon' => 'parking', 'label' => 'Free Parking'],
+                                                        'air_conditioning' => ['icon' => 'snowflake', 'label' => 'Air Conditioning'],
+                                                        'bar' => ['icon' => 'glass-martini-alt', 'label' => 'Bar'],
+                                                        'spa' => ['icon' => 'spa', 'label' => 'Spa'],
+                                                        'gym' => ['icon' => 'dumbbell', 'label' => 'Gym'],
+                                                    ];
+                                                    
+                                                    $amenityData = $amenityIcons[$amenity] ?? ['icon' => 'check', 'label' => ucfirst(str_replace('_', ' ', $amenity))];
+                                                @endphp
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                                    <i class="fas fa-{{ $amenityData['icon'] }} mr-1"></i>
+                                                    {{ $amenityData['label'] }}
+                                                </span>
+                                            @endforeach
+                                        </div>
                                     </dd>
                                 </div>
                                 @endif
@@ -210,22 +259,66 @@
                                                     </div>
                                                     @if(!empty($roomType->amenities) && is_array($roomType->amenities))
                                                     <div class="sm:col-span-2 mt-2">
-                                                        <div class="flex flex-wrap gap-2">
-                                                            @foreach(array_slice($roomType->amenities, 0, 4) as $amenity)
-                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                                {{ $amenity }}
-                                                            </span>
+                                                        <div class="flex flex-wrap items-center gap-2">
+                                                            @php
+                                                                // Map amenity keys to display names and icons
+                                                                $amenityData = [
+                                                                    'wifi' => ['icon' => 'wifi', 'label' => 'WiFi'],
+                                                                    'tv' => ['icon' => 'tv', 'label' => 'TV'],
+                                                                    'ac' => ['icon' => 'snowflake', 'label' => 'Air Conditioning'],
+                                                                    'minibar' => ['icon' => 'wine-bottle', 'label' => 'Minibar'],
+                                                                    'safe' => ['icon' => 'shield-alt', 'label' => 'Safe'],
+                                                                    'balcony' => ['icon' => 'door-open', 'label' => 'Balcony'],
+                                                                    'sea_view' => ['icon' => 'water', 'label' => 'Sea View'],
+                                                                    'mountain_view' => ['icon' => 'mountain', 'label' => 'Mountain View'],
+                                                                    'bathtub' => ['icon' => 'bath', 'label' => 'Bathtub'],
+                                                                    'shower' => ['icon' => 'shower', 'label' => 'Shower'],
+                                                                    'coffee_maker' => ['icon' => 'coffee', 'label' => 'Coffee Maker'],
+                                                                    'kettle' => ['icon' => 'mug-hot', 'label' => 'Electric Kettle']
+                                                                ];
+                                                                
+                                                                // Get the first 4 amenities to display
+                                                                $displayAmenities = array_slice($roomType->amenities, 0, 4);
+                                                                $remainingCount = count($roomType->amenities) - count($displayAmenities);
+                                                            @endphp
+                                                            
+                                                            @foreach($displayAmenities as $amenity)
+                                                                @php
+                                                                    $data = $amenityData[$amenity] ?? ['icon' => 'check', 'label' => ucwords(str_replace('_', ' ', $amenity))];
+                                                                @endphp
+                                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800" 
+                                                                      title="{{ $data['label'] }}">
+                                                                    <i class="fas fa-{{ $data['icon'] }} mr-1"></i>
+                                                                    {{ $data['label'] }}
+                                                                </span>
                                                             @endforeach
-                                                            @if(count($roomType->amenities) > 4)
-                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                                                +{{ count($roomType->amenities) - 4 }} more
-                                                            </span>
+                                                            
+                                                            @if($remainingCount > 0)
+                                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                                    +{{ $remainingCount }} more
+                                                                </span>
                                                             @endif
                                                         </div>
                                                     </div>
                                                     @endif
                                                 </div>
                                             </div>
+                                        </div>
+                                        <div class="mt-4 flex justify-end space-x-3">
+                                            <a href="{{ route('hotels.room-types.edit', ['hotel' => $hotel->hotel_id, 'roomType' => $roomType->id]) }}" 
+                                               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                                Edit Room
+                                            </a>
+                                            <form action="{{ route('hotels.room-types.destroy', ['hotel' => $hotel->hotel_id, 'roomType' => $roomType->id]) }}" 
+                                                  method="POST" 
+                                                  onsubmit="return confirm('Are you sure you want to delete this room type? This action cannot be undone.');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" 
+                                                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                                    Delete Room
+                                                </button>
+                                            </form>
                                         </div>
                                     </div>
                                 </li>

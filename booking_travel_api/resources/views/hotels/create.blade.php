@@ -111,8 +111,9 @@
                             @foreach($amenities as $key => $label)
                                 <div class="flex items-start">
                                     <div class="flex items-center h-5">
-                                        <input id="amenity_{{ $key }}" name="amenities[]" type="checkbox" value="{{ $key }}" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                        <input id="amenity_{{ $key }}" name="amenities[]" type="checkbox" value="{{ $label }}" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
                                     </div>
+                                    <!-- change frist latter to big latter -->
                                     <div class="ml-3 text-sm">
                                         <label for="amenity_{{ $key }}" class="font-medium text-gray-700">{{ $label }}</label>
                                     </div>
@@ -149,24 +150,6 @@
                                 <textarea name="address" id="address" rows="2" required
                                           class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
                             </div>
-                            
-                            <div>
-                                <label for="check_in_time" class="block text-sm font-medium text-gray-700">Check-in Time</label>
-                                <input type="time" name="check_in_time" id="check_in_time" 
-                                       value="14:00" 
-                                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                       placeholder="14:00">
-                                <p class="mt-1 text-xs text-gray-500">Format: HH:MM (24-hour format)</p>
-                            </div>
-                            
-                            <div>
-                                <label for="check_out_time" class="block text-sm font-medium text-gray-700">Check-out Time</label>
-                                <input type="time" name="check_out_time" id="check_out_time" 
-                                       value="12:00" 
-                                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                       placeholder="12:00">
-                                <p class="mt-1 text-xs text-gray-500">Format: HH:MM (24-hour format)</p>
-                            </div>
                         </div>
                     </div>
 
@@ -192,13 +175,21 @@
                             <div>
                                 <label for="images" class="block text-sm font-medium text-gray-700">Additional Images</label>
                                 <p class="mt-1 text-sm text-gray-500 mb-2">Upload additional images to showcase the hotel (multiple selection allowed).</p>
-                                <input type="file" name="images[]" id="images" multiple accept="image/*"
+                                <input type="file" 
+                                       name="images[]" 
+                                       id="images" 
+                                       multiple 
+                                       accept="image/*"
                                        class="block w-full text-sm text-gray-500
                                               file:mr-4 file:py-2 file:px-4
                                               file:rounded-md file:border-0
                                               file:text-sm file:font-semibold
                                               file:bg-indigo-50 file:text-indigo-700
                                               hover:file:bg-indigo-100">
+                                <p class="mt-2 text-xs text-gray-500">You can select multiple images (JPEG, PNG, JPG, GIF) up to 2MB each.</p>
+                                <div id="imagePreviewContainer" class="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                                    <!-- Preview images will be added here -->
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -353,7 +344,7 @@
         crossorigin=""></script>
 
 <script>
-    // Image preview function
+    // Image preview for main image
     function previewImage(input) {
         const preview = document.getElementById('imagePreview');
         if (input.files && input.files[0]) {
@@ -366,6 +357,65 @@
         } else {
             preview.src = '';
             preview.classList.add('hidden');
+        }
+    }
+
+    // Multiple image preview for additional images
+    document.getElementById('images').addEventListener('change', function(event) {
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        previewContainer.innerHTML = ''; // Clear previous previews
+        
+        const files = event.target.files;
+        
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            if (!file.type.match('image.*')) continue;
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const preview = document.createElement('div');
+                preview.className = 'relative group';
+                preview.innerHTML = `
+                    <div class="relative">
+                        <img src="${e.target.result}" 
+                             alt="Preview ${i + 1}" 
+                             class="h-32 w-full object-cover rounded-lg border border-gray-200">
+                        <button type="button" 
+                                class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                onclick="removeImagePreview(this, ${i})">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+                previewContainer.appendChild(preview);
+            };
+            
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Function to remove image preview and update file input
+    function removeImagePreview(button, index) {
+        // Remove the preview
+        button.closest('.relative').remove();
+        
+        // Update the file input
+        const input = document.getElementById('images');
+        const files = Array.from(input.files);
+        files.splice(index, 1);
+        
+        // Create a new DataTransfer to update the files
+        const dataTransfer = new DataTransfer();
+        files.forEach(file => dataTransfer.items.add(file));
+        input.files = dataTransfer.files;
+        
+        // If no files left, show the default message
+        if (files.length === 0) {
+            const previewContainer = document.getElementById('imagePreviewContainer');
+            previewContainer.innerHTML = '<!-- Preview images will be added here -->';
         }
     }
 

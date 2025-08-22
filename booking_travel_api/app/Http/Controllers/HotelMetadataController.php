@@ -128,7 +128,7 @@ class HotelMetadataController extends Controller
                 'address' => $validated['address'],
                 'website_url' => $validated['website'] ?? null,
                 'image_url' => $imagePath,
-                'additional_images' => !empty($additionalImages) ? json_encode($additionalImages) : null,
+                'images' => !empty($additionalImages) ? json_encode($additionalImages) : null,
                 'amenities' => !empty($amenities) ? json_encode($amenities) : null,
                 'status' => 'active',
             ]);
@@ -164,6 +164,10 @@ class HotelMetadataController extends Controller
     {
         try {
             $hotel->load(['province', 'roomTypes']);
+            
+            // Convert images and amenities JSON to array for the view
+            $hotel->additional_images = $hotel->images ? json_decode($hotel->images, true) : [];
+            $hotel->amenities = $hotel->amenities ? (is_array($hotel->amenities) ? $hotel->amenities : json_decode($hotel->amenities, true)) : [];
                 
             if (request()->wantsJson()) {
                 return response()->json([
@@ -210,31 +214,64 @@ class HotelMetadataController extends Controller
             'star_rating' => 'required|integer|min:1|max:5',
             'contact_phone' => 'required|string',
             'email' => 'nullable|email',
-            'website_url' => 'nullable|url',
-            'check_in_time' => 'nullable|date_format:H:i',
-            'check_out_time' => 'nullable|date_format:H:i|after:check_in_time',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
+            'website' => 'nullable|url',
             'amenities' => 'nullable|array',
-            'status' => 'required|in:active,inactive',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'existing_images' => 'nullable|array',
+            'existing_images.*' => 'string',
+            'removed_images' => 'nullable|string',
         ]);
 
-        // Handle image upload
+        // Handle main image upload
         if ($request->hasFile('image')) {
             // Delete old image if exists
             if ($hotel->image_url) {
                 Storage::disk('public')->delete($hotel->image_url);
             }
-            
             $path = $request->file('image')->store('hotels', 'public');
             $validated['image_url'] = $path;
         }
 
-        // Handle amenities JSON
-        if (isset($validated['amenities'])) {
-            $validated['amenities'] = json_encode($validated['amenities']);
+        // Handle additional images
+        $additionalImages = [];
+        
+        // 1. Keep existing images that weren't removed
+        if ($request->has('existing_images')) {
+            $additionalImages = $request->input('existing_images');
+            
+            // Remove images that were marked for deletion
+            if ($request->has('removed_images') && !empty($request->removed_images)) {
+                $removedImages = explode(',', $request->removed_images);
+                foreach ($removedImages as $removedImage) {
+                    if (($key = array_search($removedImage, $additionalImages)) !== false) {
+                        // Delete the image file from storage
+                        Storage::disk('public')->delete($removedImage);
+                        unset($additionalImages[$key]);
+                    }
+                }
+                // Re-index array after unset
+                $additionalImages = array_values($additionalImages);
+            }
         }
+        
+        // 2. Add new images
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('hotels/additional', 'public');
+                $additionalImages[] = $path;
+            }
+        }
+        
+        // Update the images field
+        $validated['images'] = !empty($additionalImages) ? json_encode($additionalImages) : null;
+
+        // Handle amenities
+        $validated['amenities'] = $request->has('amenities') ? json_encode($request->input('amenities')) : json_encode([]);
+        
+        // Map website field to website_url
+        $validated['website_url'] = $validated['website'] ?? null;
+        unset($validated['website']);
 
         $hotel->update($validated);
 
@@ -242,11 +279,11 @@ class HotelMetadataController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Hotel updated successfully',
-                'data' => $hotel
+                'data' => $hotel->load(['province', 'adventure'])
             ]);
         }
 
-        return redirect()->route('hotels.show', ['hotel' => $hotel->hotel_id])
+        return redirect()->route('hotels.show', $hotel->hotel_id)
             ->with('success', 'Hotel updated successfully');
     }
 
