@@ -24,6 +24,11 @@ class RouteServiceProvider extends ServiceProvider
     {
         $this->configureRateLimiting();
 
+        Route::model('hotel', \App\Models\HotelMetadata::class);
+        Route::bind('hotel', function ($value) {
+            return \App\Models\HotelMetadata::where('hotel_id', $value)->firstOrFail();
+        });
+
         $this->routes(function () {
             Route::middleware('api')
                 ->prefix('api')
