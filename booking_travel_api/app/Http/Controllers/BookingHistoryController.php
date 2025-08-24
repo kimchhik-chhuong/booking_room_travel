@@ -13,9 +13,9 @@ class BookingHistoryController extends Controller
      */
     public function index(Request $request)
     {
-        $user = Auth::user();
+        $user = Auth::user();   
 
-        if (!$user) {
+        if (!$user) { 
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized'

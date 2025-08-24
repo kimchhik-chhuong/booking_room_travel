@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('packages', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->string('location');
+            $table->string('location'); // already exists
             $table->string('duration');
             $table->decimal('price', 10, 2);
             $table->decimal('rating', 3, 1)->default(0);
@@ -19,7 +19,11 @@ return new class extends Migration
             $table->enum('status', ['Active', 'Draft'])->default('Active');
             $table->string('image')->nullable();
             $table->string('category')->nullable();
+            $table->unsignedBigInteger('destination_id')->nullable(); // newly added
             $table->timestamps();
+
+            // If you want, you can add a foreign key to destinations
+            // $table->foreign('destination_id')->references('id')->on('destinations')->onDelete('set null');
         });
     }
 

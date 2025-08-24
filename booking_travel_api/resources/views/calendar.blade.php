@@ -147,227 +147,60 @@
             </div>
         </div>
 
-        <!-- Schedule Section -->
+        <!-- Today's Schedule -->
         <div class="card-modern p-8">
             <div class="flex items-center justify-between mb-8">
                 <div>
-                    <h3 class="text-2xl font-bold text-dark-800 mb-2" id="scheduleTitle">Today's Schedule</h3>
-                    <p class="text-dark-500" id="scheduleDate">August 5, 2024</p>
+                    <h3 class="text-2xl font-bold text-dark-800 mb-2">Today's Schedule</h3>
+                    <p class="text-dark-500">August 5, 2024</p>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <select id="timeFilter" class="input-modern">
-                        <option value="today">Today</option>
-                        <option value="tomorrow">Tomorrow</option>
-                        <option value="week">This Week</option>
-                        <option value="upcoming">Upcoming</option>
+                    <select class="input-modern">
+                        <option>Today</option>
+                        <option>Tomorrow</option>
+                        <option>This Week</option>
                     </select>
                 </div>
             </div>
 
-            <div class="space-y-6" id="scheduleContainer">
-                <!-- Today's Events -->
-                <div id="todayEvents">
-                    @php
-                    $todayEvents = [
-                        ['time' => '9:00 AM', 'title' => 'Tokyo Cultural Adventure - Group Departure', 'description' => 'Meet clients at airport for departure to Tokyo', 'status' => 'upcoming', 'duration' => '2 hours'],
-                        ['time' => '11:30 AM', 'title' => 'Venice Package Consultation', 'description' => 'Phone consultation with potential clients', 'status' => 'completed', 'duration' => '1 hour'],
-                        ['time' => '2:00 PM', 'title' => 'Team Lunch Meeting', 'description' => 'Discuss new package proposals over lunch', 'status' => 'upcoming', 'duration' => '1.5 hours'],
-                        ['time' => '4:00 PM', 'title' => 'Safari Adventure Planning', 'description' => 'Final preparations for next week\'s safari tour', 'status' => 'upcoming', 'duration' => '2 hours'],
-                        ['time' => '6:30 PM', 'title' => 'Client Follow-up Calls', 'description' => 'Follow up with recent travelers for feedback', 'status' => 'pending', 'duration' => '1 hour']
-                    ];
-                    @endphp
+            <div class="space-y-6">
+                @php
+                $todayEvents = [
+                    ['time' => '9:00 AM', 'title' => 'Tokyo Cultural Adventure - Group Departure', 'description' => 'Meet clients at airport for departure to Tokyo', 'status' => 'upcoming', 'duration' => '2 hours'],
+                    ['time' => '11:30 AM', 'title' => 'Venice Package Consultation', 'description' => 'Phone consultation with potential clients', 'status' => 'completed', 'duration' => '1 hour'],
+                    ['time' => '2:00 PM', 'title' => 'Team Lunch Meeting', 'description' => 'Discuss new package proposals over lunch', 'status' => 'upcoming', 'duration' => '1.5 hours'],
+                    ['time' => '4:00 PM', 'title' => 'Safari Adventure Planning', 'description' => 'Final preparations for next week\'s safari tour', 'status' => 'upcoming', 'duration' => '2 hours'],
+                    ['time' => '6:30 PM', 'title' => 'Client Follow-up Calls', 'description' => 'Follow up with recent travelers for feedback', 'status' => 'pending', 'duration' => '1 hour']
+                ];
+                @endphp
 
-                    @foreach($todayEvents as $event)
-                    <div class="flex items-center space-x-6 p-6 border border-slate-200 rounded-2xl hover:shadow-md transition-all card-modern">
-                        <div class="text-center">
-                            <p class="text-sm font-bold text-dark-800">{{ $event['time'] }}</p>
-                            <p class="text-xs text-dark-500">{{ $event['duration'] }}</p>
-                        </div>
-                        <div class="w-1 h-16 rounded-full 
-                            {{ $event['status'] === 'completed' ? 'bg-emerald-500' : 
-                               ($event['status'] === 'upcoming' ? 'bg-primary-500' : 'bg-yellow-500') }}">
-                        </div>
-                        <div class="flex-1">
-                            <h4 class="text-lg font-bold text-dark-800 mb-2">{{ $event['title'] }}</h4>
-                            <p class="text-sm text-dark-600">{{ $event['description'] }}</p>
-                        </div>
-                        <div class="flex items-center space-x-3">
-                            <span class="badge-modern {{ $event['status'] === 'completed' ? 'bg-emerald-100 text-emerald-800' : 
-                                ($event['status'] === 'upcoming' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800') }}">
-                                {{ ucfirst($event['status']) }}
-                            </span>
-                            <button class="p-2 text-dark-400 hover:text-dark-600 hover:bg-slate-50 rounded-lg transition-all">
-                                <i class="fas fa-ellipsis-h"></i>
-                            </button>
-                        </div>
+                @foreach($todayEvents as $event)
+                <div class="flex items-center space-x-6 p-6 border border-slate-200 rounded-2xl hover:shadow-md transition-all card-modern">
+                    <div class="text-center">
+                        <p class="text-sm font-bold text-dark-800">{{ $event['time'] }}</p>
+                        <p class="text-xs text-dark-500">{{ $event['duration'] }}</p>
                     </div>
-                    @endforeach
-                </div>
-
-                <!-- Tomorrow's Events -->
-                <div id="tomorrowEvents" class="hidden">
-                    @php
-                    $tomorrowEvents = [
-                        ['time' => '10:00 AM', 'title' => 'Marketing Strategy Meeting', 'description' => 'Plan next month\'s marketing campaigns', 'status' => 'upcoming', 'duration' => '1.5 hours'],
-                        ['time' => '1:30 PM', 'title' => 'Client Onboarding - Bali Trip', 'description' => 'New client orientation for Bali package', 'status' => 'upcoming', 'duration' => '1 hour'],
-                        ['time' => '3:00 PM', 'title' => 'Supplier Negotiations', 'description' => 'Discuss rates with hotel partners', 'status' => 'upcoming', 'duration' => '2 hours']
-                    ];
-                    @endphp
-
-                    @foreach($tomorrowEvents as $event)
-                    <div class="flex items-center space-x-6 p-6 border border-slate-200 rounded-2xl hover:shadow-md transition-all card-modern">
-                        <div class="text-center">
-                            <p class="text-sm font-bold text-dark-800">{{ $event['time'] }}</p>
-                            <p class="text-xs text-dark-500">{{ $event['duration'] }}</p>
-                        </div>
-                        <div class="w-1 h-16 rounded-full bg-primary-500"></div>
-                        <div class="flex-1">
-                            <h4 class="text-lg font-bold text-dark-800 mb-2">{{ $event['title'] }}</h4>
-                            <p class="text-sm text-dark-600">{{ $event['description'] }}</p>
-                        </div>
-                        <div class="flex items-center space-x-3">
-                            <span class="badge-modern bg-blue-100 text-blue-800">Upcoming</span>
-                            <button class="p-2 text-dark-400 hover:text-dark-600 hover:bg-slate-50 rounded-lg transition-all">
-                                <i class="fas fa-ellipsis-h"></i>
-                            </button>
-                        </div>
+                    <div class="w-1 h-16 rounded-full 
+                        {{ $event['status'] === 'completed' ? 'bg-emerald-500' : 
+                           ($event['status'] === 'upcoming' ? 'bg-primary-500' : 'bg-yellow-500') }}">
                     </div>
-                    @endforeach
-                </div>
-
-                <!-- This Week's Events -->
-                <div id="weekEvents" class="hidden">
-                    @php
-                    $weekEvents = [
-                        ['date' => 'Aug 7', 'time' => '2:00 PM', 'title' => 'Client Meeting - Venice Package', 'description' => 'Discuss Venice itinerary with clients', 'status' => 'upcoming'],
-                        ['date' => 'Aug 8', 'time' => '11:00 AM', 'title' => 'Content Creation Session', 'description' => 'Create social media content for new packages', 'status' => 'upcoming'],
-                        ['date' => 'Aug 9', 'time' => '9:30 AM', 'title' => 'Team Standup', 'description' => 'Daily team coordination meeting', 'status' => 'upcoming'],
-                        ['date' => 'Aug 10', 'time' => '3:00 PM', 'title' => 'Travel Expo Preparation', 'description' => 'Prepare materials for upcoming travel expo', 'status' => 'upcoming']
-                    ];
-                    @endphp
-
-                    @foreach($weekEvents as $event)
-                    <div class="flex items-center space-x-6 p-6 border border-slate-200 rounded-2xl hover:shadow-md transition-all card-modern">
-                        <div class="text-center">
-                            <p class="text-sm font-bold text-dark-800">{{ $event['date'] }}</p>
-                            <p class="text-xs text-dark-500">{{ $event['time'] }}</p>
-                        </div>
-                        <div class="w-1 h-16 rounded-full bg-primary-500"></div>
-                        <div class="flex-1">
-                            <h4 class="text-lg font-bold text-dark-800 mb-2">{{ $event['title'] }}</h4>
-                            <p class="text-sm text-dark-600">{{ $event['description'] }}</p>
-                        </div>
-                        <div class="flex items-center space-x-3">
-                            <span class="badge-modern bg-blue-100 text-blue-800">Upcoming</span>
-                            <button class="p-2 text-dark-400 hover:text-dark-600 hover:bg-slate-50 rounded-lg transition-all">
-                                <i class="fas fa-ellipsis-h"></i>
-                            </button>
-                        </div>
+                    <div class="flex-1">
+                        <h4 class="text-lg font-bold text-dark-800 mb-2">{{ $event['title'] }}</h4>
+                        <p class="text-sm text-dark-600">{{ $event['description'] }}</p>
                     </div>
-                    @endforeach
-                </div>
-
-                <!-- Upcoming Events -->
-                <div id="upcomingEvents" class="hidden">
-                    @php
-                    $upcomingEvents = [
-                        ['date' => 'Aug 12', 'time' => '10:00 AM', 'title' => 'Safari Adventure Briefing', 'description' => 'Pre-trip briefing for safari clients', 'status' => 'upcoming'],
-                        ['date' => 'Aug 15', 'time' => '11:00 AM', 'title' => 'Team Planning Session', 'description' => 'Quarterly planning meeting', 'status' => 'upcoming'],
-                        ['date' => 'Aug 19', 'time' => '6:00 PM', 'title' => 'Bali Beach Escape Return', 'description' => 'Welcome back clients from Bali trip', 'status' => 'upcoming'],
-                        ['date' => 'Aug 22', 'time' => '2:30 PM', 'title' => 'New Package Launch', 'description' => 'Launch event for new European tour', 'status' => 'upcoming']
-                    ];
-                    @endphp
-
-                    @foreach($upcomingEvents as $event)
-                    <div class="flex items-center space-x-6 p-6 border border-slate-200 rounded-2xl hover:shadow-md transition-all card-modern">
-                        <div class="text-center">
-                            <p class="text-sm font-bold text-dark-800">{{ $event['date'] }}</p>
-                            <p class="text-xs text-dark-500">{{ $event['time'] }}</p>
-                        </div>
-                        <div class="w-1 h-16 rounded-full bg-primary-500"></div>
-                        <div class="flex-1">
-                            <h4 class="text-lg font-bold text-dark-800 mb-2">{{ $event['title'] }}</h4>
-                            <p class="text-sm text-dark-600">{{ $event['description'] }}</p>
-                        </div>
-                        <div class="flex items-center space-x-3">
-                            <span class="badge-modern bg-blue-100 text-blue-800">Upcoming</span>
-                            <button class="p-2 text-dark-400 hover:text-dark-600 hover:bg-slate-50 rounded-lg transition-all">
-                                <i class="fas fa-ellipsis-h"></i>
-                            </button>
-                        </div>
+                    <div class="flex items-center space-x-3">
+                        <span class="badge-modern {{ $event['status'] === 'completed' ? 'bg-emerald-100 text-emerald-800' : 
+                            ($event['status'] === 'upcoming' ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800') }}">
+                            {{ ucfirst($event['status']) }}
+                        </span>
+                        <button class="p-2 text-dark-400 hover:text-dark-600 hover:bg-slate-50 rounded-lg transition-all">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
                     </div>
-                    @endforeach
                 </div>
+                @endforeach
             </div>
         </div>
     </div>
 </div>
-
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const timeFilter = document.getElementById('timeFilter');
-    const scheduleTitle = document.getElementById('scheduleTitle');
-    const scheduleDate = document.getElementById('scheduleDate');
-    
-    // Get current date information
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    
-    // Format dates
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    const todayFormatted = today.toLocaleDateString('en-US', options);
-    const tomorrowFormatted = tomorrow.toLocaleDateString('en-US', options);
-    
-    // Get the start and end of the current week
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay());
-    const endOfWeek = new Date(today);
-    endOfWeek.setDate(today.getDate() + (6 - today.getDay()));
-    
-    const weekRange = `${startOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
-    
-    // Event listener for time filter
-    timeFilter.addEventListener('change', function() {
-        const selectedValue = this.value;
-        
-        // Hide all event containers
-        document.getElementById('todayEvents').classList.add('hidden');
-        document.getElementById('tomorrowEvents').classList.add('hidden');
-        document.getElementById('weekEvents').classList.add('hidden');
-        document.getElementById('upcomingEvents').classList.add('hidden');
-        
-        // Show selected container and update title/date
-        switch(selectedValue) {
-            case 'today':
-                document.getElementById('todayEvents').classList.remove('hidden');
-                scheduleTitle.textContent = "Today's Schedule";
-                scheduleDate.textContent = todayFormatted;
-                break;
-            case 'tomorrow':
-                document.getElementById('tomorrowEvents').classList.remove('hidden');
-                scheduleTitle.textContent = "Tomorrow's Schedule";
-                scheduleDate.textContent = tomorrowFormatted;
-                break;
-            case 'week':
-                document.getElementById('weekEvents').classList.remove('hidden');
-                scheduleTitle.textContent = "This Week's Schedule";
-                scheduleDate.textContent = weekRange;
-                break;
-            case 'upcoming':
-                document.getElementById('upcomingEvents').classList.remove('hidden');
-                scheduleTitle.textContent = "Upcoming Schedule";
-                scheduleDate.textContent = "Future Events";
-                break;
-        }
-    });
-    
-    // Initialize with today's events
-    document.getElementById('todayEvents').classList.remove('hidden');
-    scheduleTitle.textContent = "Today's Schedule";
-    scheduleDate.textContent = todayFormatted;
-});
-</script>
-@endpush
 @endsection

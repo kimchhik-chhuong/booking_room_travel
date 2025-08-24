@@ -1,4 +1,4 @@
-<div class="fixed left-0 top-0 w-64 h-full bg-white shadow-2xl z-50 border-r border-gray-100">
+<div class="fixed left-0 top-0 w-72 h-full sidebar-modern z-50 shadow-2xl">
     <!-- Logo -->
     <div class="p-6 border-b border-gray-100">
         <div class="flex items-center space-x-3">
@@ -6,7 +6,6 @@
                 class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
                 <i class="fas fa-map-marker-alt text-white text-lg"></i>
             </div>
-            <span class="text-xl font-bold text-gray-800">Travelie</span>
         </div>
     </div>
 
