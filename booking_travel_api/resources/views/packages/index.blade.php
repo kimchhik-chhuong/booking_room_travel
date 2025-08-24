@@ -1,5 +1,7 @@
 @extends('layouts.dashboard')
 @section('title', 'Packages Dashboard')
+@section('page-title', 'Packages Dashboard')
+@section('page-subtitle', 'Explore hotels and adventures in Cambodia')
 
 @section('content')
 <div class="min-h-screen">

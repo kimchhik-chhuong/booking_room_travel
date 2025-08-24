@@ -55,22 +55,37 @@ class _AdventuresPageState extends State<AdventuresPage> {
 
   String _getImageUrl(String? imagePath) {
     if (imagePath == null || imagePath.isEmpty) {
-      return 'http://localhost:8000/uploads/adventures/default-adventure.jpg';
+      return 'http://10.0.2.2:8000/images/default-adventure.jpg';
     }
-    
-    // Debug print to see what we're getting
-    print('Image URL from backend: $imagePath');
     
     // If it's already a full URL, return it as is
     if (imagePath.startsWith('http')) {
       return imagePath;
     }
     
-    // If it's a relative path, construct the full URL
-    // Remove leading slash if present to avoid double slashes
-    String cleanPath = imagePath.startsWith('/') ? imagePath.substring(1) : imagePath;
-    String fullUrl = 'http://localhost:8000/$cleanPath';
-    print('Constructed image URL: $fullUrl');
+    // Handle different path formats
+    String cleanPath = imagePath.replaceAll('\\', '/');
+    
+    // Remove any storage/ prefix if it exists
+    if (cleanPath.startsWith('storage/')) {
+      cleanPath = cleanPath.substring('storage/'.length);
+    }
+    
+    // Remove any leading slashes
+    while (cleanPath.startsWith('/')) {
+      cleanPath = cleanPath.substring(1);
+    }
+    
+    // Construct the full URL - use the same domain as your API
+    String baseUrl = 'http://10.0.2.2:8000';
+    String fullUrl = '$baseUrl/storage/$cleanPath';
+    
+    // For debugging
+    debugPrint('Image URL Debug:');
+    debugPrint('  Original path: $imagePath');
+    debugPrint('  Cleaned path: $cleanPath');
+    debugPrint('  Full URL: $fullUrl');
+    
     return fullUrl;
   }
 

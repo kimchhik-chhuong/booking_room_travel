@@ -7,6 +7,7 @@ import 'payment_screen.dart';
 import 'profile_screen.dart';
 import 'history/history_screen.dart';
 import 'message_screen.dart';
+import 'page/hotels_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -192,7 +193,7 @@ class HomePageContent extends StatelessWidget {
   final pages = [
     const TripsPage(),
     const HotelsPage(),
-     CarRentalApp(), // updated navigation target
+    CarRentalApp(), // updated navigation target
     const OffersPage(),
   ];
 
