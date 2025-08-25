@@ -1,131 +1,109 @@
 import 'package:flutter/material.dart';
 
-class OffersPage extends StatelessWidget {
-  const OffersPage({Key? key}) : super(key: key);
+class AllDealsPage extends StatelessWidget {
+  const AllDealsPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // Updated hero image (adjust if needed)
-    final String heroImg =
-        'https://images.unsplash.com/photo-1560347876-aeef00ee58a1?w=800&q=80';
-
-    // Card images (use your 4 URLs; add a fifth if you have one)
-    final List<String> cardImgs = [
-      'https://images.unsplash.com/photo-1505691723518-36a5ac3be353?w=800&q=80',
-      'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&q=80',
-      'assets/room2.jpg',
-      'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80',
-      // Optional fifth image goes here
+    // Example list of deals (you can replace with API data later)
+    final List<Map<String, String>> deals = [
+      {
+        'title': 'Summer Escape',
+        'desc': 'Enjoy 30% off on beach resorts this summer!',
+        'image': 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=800&q=80'
+      },
+      {
+        'title': 'Mountain Adventure',
+        'desc': 'Get 20% discount on mountain cabins.',
+        'image': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80'
+      },
+      {
+        'title': 'Luxury Hotels',
+        'desc': 'Book 2 nights, get 1 free in luxury hotels.',
+        'image': 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80'
+      },
+      {
+        'title': 'City Getaway',
+        'desc': 'Flat 25% off on city tours and stays.',
+        'image': 'https://images.unsplash.com/photo-1528909514045-2fa4ac7a08ba?w=800&q=80'
+      },
     ];
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Offers'),
+        title: const Text('All Deals'),
         backgroundColor: Colors.orange,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Hero/banner section
-            Stack(
+      body: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: deals.length,
+        itemBuilder: (context, index) {
+          final deal = deals[index];
+          return Card(
+            margin: const EdgeInsets.only(bottom: 16),
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Image.network(
-                  heroImg,
-                  width: double.infinity,
-                  height: 200,
-                  fit: BoxFit.cover,
-                ),
-                Container(
-                  height: 200,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.black.withOpacity(0.5), Colors.transparent],
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                    ),
+                // Deal image
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                  child: Image.network(
+                    deal['image']!,
+                    height: 160,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
                   ),
                 ),
-                Positioned(
-                  bottom: 16,
-                  left: 16,
-                  child: const Text(
-                    'Special Offers',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                // Deal details
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        deal['title']!,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        deal['desc']!,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.black54,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('${deal['title']} booked!')),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
+                          child: const Text('Book Now'),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-
-            // Offers section
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: List.generate(5, (index) {
-                  final String img = index < cardImgs.length
-                      ? cardImgs[index]
-                      : 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=800&q=80';
-
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      children: [
-                        ClipRRect(
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                          child: Image.network(
-                            img,
-                            height: 150,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Offer ${index + 1}',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              const Text(
-                                'Get amazing discounts on our services. Limited time offer!',
-                                style: TextStyle(fontSize: 14, color: Colors.black54),
-                              ),
-                              const SizedBox(height: 8),
-                              ElevatedButton(
-                                onPressed: () {},
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.orange,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                ),
-                                child: const Text('Book Now'),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }),
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

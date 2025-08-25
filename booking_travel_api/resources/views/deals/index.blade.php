@@ -244,73 +244,93 @@
 
 
     // Fetch and display create form
-    document.getElementById('createDealBtn').addEventListener('click', function() {
-        fetch('/api/deals/create')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const container = document.getElementById('createDealFormContainer');
-                    container.innerHTML = `
-                        <div class="bg-white rounded-2xl p-8 card-modern">
-                            <form id="createDealForm">
-                                ${Object.entries(data.form).map(([key, field]) => `
-                                    <div class="mb-4">
-                                        <label class="block text-sm font-medium text-dark-600 mb-2" for="${key}">${field.label}</label>
-                                        ${field.type === 'textarea' ? `<textarea id="${key}" name="${key}" class="input-modern w-full" rows="4" placeholder="${field.placeholder}" ${field.required ? 'required' : ''}></textarea>` : 
-                                        field.type === 'select' ? `
-                                            <select id="${key}" name="${key}" class="input-modern w-full" ${field.required ? 'required' : ''}>
-                                                ${field.options.map(option => `<option value="${option}">${option.replace('from-', '').replace('to-', ' to ')}</option>`).join('')}
-                                            </select>` : 
-                                        `<input type="${field.type}" id="${key}" name="${key}" class="input-modern w-full" placeholder="${field.placeholder}" ${field.required ? 'required' : ''}>`}
-                                    </div>
-                                `).join('')}
-                                <div class="flex justify-end space-x-4">
-                                    <a href="{{ url('/deals') }}" class="btn-modern bg-slate-200 text-dark-600">Cancel</a>
-                                    <button type="submit" class="btn-modern bg-primary-600 text-white">Create Deal</button>
-                                </div>
-                            </form>
-                        </div>
-                    `;
-                    container.classList.remove('hidden');
-
-                    // Handle form submission
-                    document.getElementById('createDealForm').addEventListener('submit', function(e) {
-                        e.preventDefault();
-                        const formData = new FormData(this);
-                        fetch('/api/deals', {
-                            method: 'POST',
-                            body: formData
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                alert(data.message);
-                                container.classList.add('hidden');
-                                fetchDeals();
-                                fetchFeaturedDeals();
-                            } else {
-                                alert('Error: ' + (data.message || 'Failed to create deal'));
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('An error occurred. Please try again.');
-                        });
-                    });
-                }
-            })
-            .catch(error => console.error('Error fetching create form:', error));
-    });
-
-    // Initial load
     document.addEventListener('DOMContentLoaded', () => {
-        fetchDeals();
-        fetchFeaturedDeals();
-    });
+    fetchDeals();
+    fetchFeaturedDeals();
 
-    // Search and filter
     document.getElementById('searchDeals').addEventListener('input', fetchDeals);
     document.getElementById('filterStatus').addEventListener('change', fetchDeals);
+
+    const createBtn = document.getElementById('createDealBtn');
+    const formContainer = document.getElementById('createDealFormContainer');
+
+    createBtn.addEventListener('click', async () => {
+        try {
+            const response = await fetch('/api/deals/create');
+            const data = await response.json();
+            if (!data.success) throw new Error('Failed to load create form');
+
+            formContainer.innerHTML = `
+                <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-3xl shadow-xl p-8 card-modern animate-fadeIn">
+                    <form id="createDealForm" class="space-y-6">
+                        ${Object.entries(data.form).map(([key, field]) => `
+                            <div class="flex flex-col">
+                                <label class="text-sm font-semibold text-gray-700 mb-2" for="${key}">${field.label}</label>
+                                ${field.type === 'textarea' ? `<textarea id="${key}" name="${key}" class="input-modern w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 p-3 transition" rows="3" placeholder="${field.placeholder}" ${field.required ? 'required' : ''}></textarea>` :
+                                field.type === 'select' ? `<select id="${key}" name="${key}" class="input-modern w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 p-3 transition" ${field.required ? 'required' : ''}>
+                                    ${field.options.map(option => `<option value="${option}">${option.replace('from-', '').replace('to-', ' to ')}</option>`).join('')}
+                                </select>` :
+                                `<input type="${field.type}" id="${key}" name="${key}" class="input-modern w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 p-3 transition" placeholder="${field.placeholder}" ${field.required ? 'required' : ''}>`}
+                            </div>
+                        `).join('')}
+                        <div class="flex justify-end space-x-4">
+                            <button type="button" class="btn-modern bg-gray-300 text-gray-700 hover:bg-gray-400 transition rounded-lg px-5 py-2" id="cancelCreate">Cancel</button>
+                            <button type="submit" class="btn-modern bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:from-indigo-600 hover:to-purple-600 rounded-lg px-5 py-2 transition">Create Deal</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            formContainer.classList.remove('hidden');
+
+            document.getElementById('cancelCreate').addEventListener('click', () => {
+                formContainer.classList.add('hidden');
+            });
+
+            const createForm = document.getElementById('createDealForm');
+            createForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(createForm);
+
+                try {
+                    const res = await fetch('/api/deals', { method: 'POST', body: formData });
+                    const result = await res.json();
+
+                    if (!result.success) throw new Error(result.message || 'Failed to create deal');
+
+                    // Create a modern card with new colors
+                    const card = document.createElement('div');
+                    card.className = 'bg-gradient-to-br from-purple-400 to-indigo-500 text-white rounded-3xl shadow-lg p-6 mb-6 transition transform hover:scale-105';
+                    card.innerHTML = `
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold">${result.data.title}</h3>
+                            <span class="text-sm font-semibold px-3 py-1 rounded-full ${result.data.status === 'Active' ? 'bg-green-200 text-green-800' : 'bg-blue-200 text-blue-800'}">${result.data.status}</span>
+                        </div>
+                        <p class="text-3xl font-bold mb-2">${result.data.discount}</p>
+                        <p class="text-white/90 mb-4">${result.data.description || ''}</p>
+                        <div class="flex justify-between text-sm">
+                            <span>Expires: ${new Date(result.data.valid_until).toLocaleDateString()}</span>
+                            <span>Used: ${result.data.used} times</span>
+                        </div>
+                    `;
+                    document.getElementById('featuredDeals').prepend(card);
+
+                    alert(result.message);
+                    formContainer.classList.add('hidden');
+                    fetchDeals();
+                    fetchFeaturedDeals();
+                } catch (err) {
+                    console.error(err);
+                    alert('Error: ' + err.message);
+                }
+            }, { once: true });
+
+        } catch (err) {
+            console.error(err);
+            alert('Failed to load create form');
+        }
+    });
+});
+
 </script>
 @endpush
 @endsection

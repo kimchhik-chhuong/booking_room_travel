@@ -74,4 +74,6 @@ class HotelBooking {
   String get formattedTotalPrice => '\$${totalHotelPrice.toStringAsFixed(2)}';
   
   bool get canCancel => status == 'pending' || status == 'confirmed';
+
+  get totalAmount => null;
 }
