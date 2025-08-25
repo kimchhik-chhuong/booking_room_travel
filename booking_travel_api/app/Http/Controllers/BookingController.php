@@ -373,6 +373,7 @@ class BookingController extends Controller
                             'check_out_date' => $hotelBookingData['check_out_date'],
                             'num_rooms' => $hotelBookingData['num_rooms'],
                             'num_guests' => $hotelBookingData['num_guests'],
+                            'nationality' => $hotelBookingData['nationality'] ?? null,
                             'updated_at' => now(),
                         ]);
                     }
