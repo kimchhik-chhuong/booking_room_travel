@@ -16,7 +16,6 @@
     <div class="ml-72 pt-32 p-8">
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-            <!-- Total Travelers -->
             <div class="stat-card">
                 <div class="flex items-center justify-between">
                     <div>
@@ -30,7 +29,6 @@
                 </div>
             </div>
 
-            <!-- Active Travelers -->
             <div class="stat-card">
                 <div class="flex items-center justify-between">
                     <div>
@@ -44,7 +42,6 @@
                 </div>
             </div>
 
-            <!-- New This Month -->
             <div class="stat-card">
                 <div class="flex items-center justify-between">
                     <div>
@@ -58,7 +55,6 @@
                 </div>
             </div>
 
-            <!-- Avg Bookings -->
             <div class="stat-card">
                 <div class="flex items-center justify-between">
                     <div>
@@ -75,24 +71,26 @@
 
         <!-- Travelers Table -->
         <div class="card-modern overflow-hidden">
-            <div class="p-8 border-b border-slate-200 flex items-center justify-between">
-                <div>
-                    <h3 class="text-2xl font-bold text-dark-800 mb-2">All Travelers</h3>
-                    <p class="text-dark-500">Manage customer profiles and travel history</p>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <div class="relative">
-                        <input type="text" placeholder="Search travelers..." class="input-modern pl-10 w-64">
-                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-dark-400"></i>
+            <div class="p-8 border-b border-slate-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-2xl font-bold text-slate-800 mb-2">All Travelers</h3>
+                        <p class="text-slate-500">Manage customer profiles and travel history</p>
                     </div>
-                    <select class="input-modern">
-                        <option>All Status</option>
-                        <option>Active</option>
-                        <option>Inactive</option>
-                    </select>
-                    <button class="btn-modern" onclick="document.getElementById('createModal').classList.remove('hidden')">
-                        <i class="fas fa-plus mr-2"></i> Add Traveler
-                    </button>
+                    <div class="flex items-center space-x-4">
+                        <div class="relative">
+                            <input type="text" placeholder="Search travelers..." class="input-modern pl-10 w-64">
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                        </div>
+                        <select class="input-modern">
+                            <option>All Status</option>
+                            <option>Active</option>
+                            <option>Inactive</option>
+                        </select>
+                        <button class="btn-modern">
+                            <i class="fas fa-plus mr-2"></i> Add Traveler
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -100,58 +98,74 @@
                 <table class="w-full">
                     <thead class="bg-slate-50">
                         <tr>
-                            <th class="px-8 py-4 text-left text-sm font-semibold text-dark-600 uppercase tracking-wider">Name</th>
-                            <th class="px-8 py-4 text-left text-sm font-semibold text-dark-600 uppercase tracking-wider">Contact</th>
-                            <th class="px-8 py-4 text-left text-sm font-semibold text-dark-600 uppercase tracking-wider">Total Bookings</th>
-                            <th class="px-8 py-4 text-left text-sm font-semibold text-dark-600 uppercase tracking-wider">Last Booking</th>
-                            <th class="px-8 py-4 text-left text-sm font-semibold text-dark-600 uppercase tracking-wider">Status</th>
-                            <th class="px-8 py-4 text-left text-sm font-semibold text-dark-600 uppercase tracking-wider">Actions</th>
+                            <th class="px-8 py-4 text-left text-sm font-semibold text-slate-600 uppercase tracking-wider">Name</th>
+                            <th class="px-8 py-4 text-left text-sm font-semibold text-slate-600 uppercase tracking-wider">Contact</th>
+                            <th class="px-8 py-4 text-left text-sm font-semibold text-slate-600 uppercase tracking-wider">Total Bookings</th>
+                            <th class="px-8 py-4 text-left text-sm font-semibold text-slate-600 uppercase tracking-wider">Last Booking</th>
+                            <th class="px-8 py-4 text-left text-sm font-semibold text-slate-600 uppercase tracking-wider">Status</th>
+                            <th class="px-8 py-4 text-left text-sm font-semibold text-slate-600 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-slate-200">
                         @php
                         $travelers = [
-                            ['name' => 'John Doe', 'email' => 'john.doe@example.com', 'phone' => '+1 (555) 123-4567', 'bookings' => 5, 'last_booking' => 'Parisian Romance', 'status' => 'Active', 'avatar' => 'https://ui-avatars.com/api/?name=John+Doe&background=random&size=40'],
-                            ['name' => 'Jane Smith', 'email' => 'jane.smith@example.com', 'phone' => '+1 (555) 987-6543', 'bookings' => 3, 'last_booking' => 'Safari Adventure', 'status' => 'Active', 'avatar' => 'https://ui-avatars.com/api/?name=Jane+Smith&background=random&size=40'],
-                            ['name' => 'Peter Jones', 'email' => 'peter.j@example.com', 'phone' => '+1 (555) 111-2222', 'bookings' => 8, 'last_booking' => 'Venice Dreams', 'status' => 'Active', 'avatar' => 'https://ui-avatars.com/api/?name=Peter+Jones&background=random&size=40'],
-                            ['name' => 'Alice Brown', 'email' => 'alice.b@example.com', 'phone' => '+1 (555) 333-4444', 'bookings' => 2, 'last_booking' => 'Caribbean Cruise', 'status' => 'Inactive', 'avatar' => 'https://ui-avatars.com/api/?name=Alice+Brown&background=random&size=40'],
+                            ['name' => 'John Doe', 'email' => 'john.doe@example.com', 'phone' => '+1 (555) 123-4567', 'bookings' => 5, 'last_booking' => 'Parisian Romance', 'status' => 'Active'],
+                            ['name' => 'Jane Smith', 'email' => 'jane.smith@example.com', 'phone' => '+1 (555) 987-6543', 'bookings' => 3, 'last_booking' => 'Safari Adventure', 'status' => 'Active'],
+                            ['name' => 'Peter Jones', 'email' => 'peter.j@example.com', 'phone' => '+1 (555) 111-2222', 'bookings' => 8, 'last_booking' => 'Venice Dreams', 'status' => 'Active'],
+                            ['name' => 'Alice Brown', 'email' => 'alice.b@example.com', 'phone' => '+1 (555) 333-4444', 'bookings' => 2, 'last_booking' => 'Caribbean Cruise', 'status' => 'Inactive'],
+                            ['name' => 'Michael Wilson', 'email' => 'michael.w@example.com', 'phone' => '+1 (555) 555-6666', 'bookings' => 6, 'last_booking' => 'Tokyo Cultural', 'status' => 'Active'],
+                            ['name' => 'Sarah Davis', 'email' => 'sarah.d@example.com', 'phone' => '+1 (555) 777-8888', 'bookings' => 4, 'last_booking' => 'Bali Beach Escape', 'status' => 'Active'],
                         ];
                         @endphp
-
+                        
                         @foreach($travelers as $traveler)
                         <tr class="table-row transition-all duration-200 hover:bg-slate-50">
-                            <td class="px-8 py-6 flex items-center space-x-4">
-                                <img src="{{ $traveler['avatar'] }}" alt="{{ $traveler['name'] }}" class="w-12 h-12 rounded-xl shadow-md">
-                                <div>
-                                    <p class="font-semibold text-dark-800">{{ $traveler['name'] }}</p>
-                                    <p class="text-sm text-dark-500">Customer ID: #{{ str_pad(array_search($traveler, $travelers) + 1001, 4, '0', STR_PAD_LEFT) }}</p>
+                            <td class="px-8 py-6">
+                                <div class="flex items-center space-x-4">
+                                    <img src="https://ui-avatars.com/api/?name={{ urlencode($traveler['name']) }}&background=random&size=40" alt="{{ $traveler['name'] }}" class="w-12 h-12 rounded-xl shadow-md">
+                                    <div>
+                                        <p class="font-semibold text-slate-800">{{ $traveler['name'] }}</p>
+                                        <p class="text-sm text-slate-500">Customer ID: #{{ str_pad(array_search($traveler, $travelers) + 1001, 4, '0', STR_PAD_LEFT) }}</p>
+                                    </div>
                                 </div>
                             </td>
                             <td class="px-8 py-6">
-                                <p class="font-medium text-dark-800">{{ $traveler['email'] }}</p>
-                                <p class="text-sm text-dark-500">{{ $traveler['phone'] }}</p>
+                                <div>
+                                    <p class="font-medium text-slate-800">{{ $traveler['email'] }}</p>
+                                    <p class="text-sm text-slate-500">{{ $traveler['phone'] }}</p>
+                                </div>
                             </td>
                             <td class="px-8 py-6">
                                 <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">{{ $traveler['bookings'] }}</span>
                             </td>
-                            <td class="px-8 py-6">{{ $traveler['last_booking'] }}</td>
+                            <td class="px-8 py-6">
+                                <p class="font-medium text-slate-800">{{ $traveler['last_booking'] }}</p>
+                            </td>
                             <td class="px-8 py-6">
                                 <span class="badge-modern {{ $traveler['status'] === 'Active' ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800' }}">
                                     {{ $traveler['status'] }}
                                 </span>
                             </td>
-                            <td class="px-8 py-6 flex space-x-3">
-                                <button class="p-2 text-dark-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all"><i class="fas fa-eye"></i></button>
-                                <button class="p-2 text-dark-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"><i class="fas fa-edit"></i></button>
-                                <button class="p-2 text-dark-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"><i class="fas fa-trash"></i></button>
+                            <td class="px-8 py-6">
+                                <div class="flex items-center space-x-3">
+                                    <button class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
-
-            <!-- Pagination (same as your code) -->
+            
+            <!-- Pagination -->
             <div class="px-8 py-6 flex items-center justify-between border-t border-slate-200">
                 <div class="flex items-center space-x-2 text-slate-600">
                     <span>Showing</span>
@@ -177,34 +191,6 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Create Traveler Modal -->
-        <div id="createModal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
-            <div class="bg-white rounded-xl w-96 p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-bold">Add New Traveler</h3>
-                    <button onclick="document.getElementById('createModal').classList.add('hidden')" class="text-dark-500 hover:text-red-500">&times;</button>
-                </div>
-
-                {{-- <form action="{{ route('travelers.store') }}" method="POST" class="space-y-4"> --}}
-                    @csrf
-                    <input type="text" name="name" placeholder="Full Name" class="input-modern w-full" required>
-                    <input type="email" name="email" placeholder="Email" class="input-modern w-full" required>
-                    <input type="text" name="phone" placeholder="Phone" class="input-modern w-full">
-                    <select name="status" class="input-modern w-full" required>
-                        <option value="Active">Active</option>
-                        <option value="Inactive">Inactive</option>
-                    </select>
-
-                    <div class="flex justify-end space-x-2">
-                        <button type="button" onclick="document.getElementById('createModal').classList.add('hidden')" class="btn-modern border border-gray-300">Cancel</button>
-                        <button type="submit" class="btn-modern bg-primary-600 text-white">Create</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
     </div>
 </div>
 @endsection
