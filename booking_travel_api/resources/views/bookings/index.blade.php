@@ -14,32 +14,6 @@
 
     <!-- Main Content -->
     <div class="ml-72 p-8">
-        <div class="flex justify-between items-center mb-8">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-800">Bookings Management</h1>
-                <p class="text-gray-600">Track and manage all your travel bookings and reservations.</p>
-            </div>
-            
-            <div class="flex items-center space-x-4">
-                <div class="relative">
-                    <input type="text" placeholder="Search bookings..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </div>
-                </div>
-                <select class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    <option>All Status</option>
-                    <option>Confirmed</option>
-                    <option>Pending</option>
-                    <option>Cancelled</option>
-                </select>
-                <a href="{{ route('bookings.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-200 flex items-center">
-                    <i class="fas fa-plus mr-2"></i> New Booking
-                </a>
-            </div>
-        </div>
 
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -186,36 +160,59 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm font-medium text-gray-900">{{ $booking->hotelBooking->hotel->name ?? 'N/A' }}</div>
-                                <div class="text-sm text-gray-500">Room Type: {{ $booking->hotelBooking->roomType->name ?? 'N/A' }}</div>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($booking->hotelBookings->isNotEmpty() && $booking->hotelBookings[0]->hotel)
+                                    @php $hotel = $booking->hotelBookings[0]->hotel; @endphp
+                                    <div class="text-sm font-medium text-gray-900">{{ $hotel->name ?? 'N/A' }}</div>
+                                    <div class="text-sm text-gray-500">{{ $hotel->address ?? '' }}</div>
+                                @else
+                                    <div class="text-sm text-gray-500">No hotel information</div>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($booking->hotelBookings->isNotEmpty())
+                                    @php
+                                        $hotelBooking = $booking->hotelBookings[0];
+                                        $checkIn = $hotelBooking->check_in_date ? \Carbon\Carbon::parse($hotelBooking->check_in_date) : null;
+                                        $checkOut = $hotelBooking->check_out_date ? \Carbon\Carbon::parse($hotelBooking->check_out_date) : null;
+                                    @endphp
+                                    <div class="text-sm text-gray-900">
+                                        <div class="font-medium">{{ $checkIn ? $checkIn->format('M d, Y') : 'N/A' }}</div>
+                                        <div class="text-gray-500 text-xs">to</div>
+                                        <div class="font-medium">{{ $checkOut ? $checkOut->format('M d, Y') : 'N/A' }}</div>
+                                        @if($checkIn && $checkOut)
+                                            @php $nights = $checkIn->diffInDays($checkOut); @endphp
+                                            <div class="text-xs text-blue-600 mt-1">{{ $nights }} {{ Str::plural('night', $nights) }}</div>
+                                        @endif
+                                    </div>
+                                @else
+                                    <div class="text-sm text-gray-500">No dates available</div>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($booking->hotelBookings->isNotEmpty() && $booking->hotelBookings[0]->roomType)
+                                    @php $roomType = $booking->hotelBookings[0]->roomType; @endphp
+                                    <div class="text-sm text-gray-900">{{ $roomType->name ?? 'Standard' }}</div>
+                                    <div class="text-sm text-gray-500">
+                                        {{ $roomType->max_occupancy ?? 'N/A' }} {{ Str::plural('guest', $roomType->max_occupancy ?? 0) }}
+                                    </div>
+                                    <div class="text-sm text-blue-600">
+                                        {{ number_format($roomType->price ?? 0, 2) }} {{ config('app.currency', '$') }}<span class="text-xs text-gray-500">/night</span>
+                                    </div>
+                                @else
+                                    <div class="text-sm text-gray-500">No room info</div>
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900">
-                                    <div class="font-medium">{{ $booking->hotelBooking->check_in_date ?? 'N/A' }}</div>
-                                    <div class="text-gray-500 text-xs">to</div>
-                                    <div class="font-medium">{{ $booking->hotelBooking->check_out_date ?? 'N/A' }}</div>
-                                    @if($booking->hotelBooking && $booking->hotelBooking->check_in_date && $booking->hotelBooking->check_out_date)
-                                    @php
-                                        $checkIn = \Carbon\Carbon::parse($booking->hotelBooking->check_in_date);
-                                        $checkOut = \Carbon\Carbon::parse($booking->hotelBooking->check_out_date);
-                                        $nights = $checkIn->diffInDays($checkOut);
-                                    @endphp
-                                    <div class="text-xs text-blue-600 mt-1">{{ $nights }} night(s)</div>
-                                    @endif
+                                    {{ $booking->hotelBookings->sum('num_rooms') ?? 1 }} {{ Str::plural('room', $booking->hotelBookings->sum('num_rooms') ?? 1) }}
+                                </div>
+                                <div class="text-sm text-gray-500">
+                                    {{ $booking->participants ?? 1 }} {{ Str::plural('guest', $booking->participants ?? 1) }}
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ $booking->hotelBooking->roomType->name ?? 'N/A' }}</div>
-                                <div class="text-sm text-gray-500">{{ $booking->hotelBooking->roomType->max_occupancy ?? 'N/A' }} max guests</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">{{ $booking->participants ?? 1 }} guest(s)</div>
-                                <div class="text-sm text-gray-500">{{ $booking->hotelBooking->num_rooms ?? 1 }} room(s)</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">${{ number_format($booking->total_amount, 2) }}</div>
-                                <div class="text-xs text-gray-500">{{ $booking->currency ?? 'USD' }}</div>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ number_format($booking->total_amount, 2) }} {{ $booking->currency ?? config('app.currency', '$') }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @php
@@ -234,21 +231,37 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <div class="flex justify-end space-x-2">
-                                    <a href="#" class="text-blue-600 hover:text-blue-900" title="View Details">
+                                    <a href="{{ route('bookings.show', $booking->id) }}" class="text-blue-600 hover:text-blue-900" title="View Details">
                                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                         </svg>
                                     </a>
-                                    <a href="#" class="text-indigo-600 hover:text-indigo-900" title="Edit">
-                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                    </a>
-                                    <a href="#" class="text-red-600 hover:text-red-900" title="Cancel">
-                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </a>
+                                    @if($booking->status === 'pending')
+                                        <a href="#" class="text-green-600 hover:text-green-900" title="Check-in">
+                                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        </a>
+                                    @endif
+                                    @if(in_array($booking->status, ['pending', 'confirmed']))
+                                        <a href="#" class="text-yellow-600 hover:text-yellow-900" title="Edit">
+                                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                            </svg>
+                                        </a>
+                                    @endif
+                                    @if(in_array($booking->status, ['pending', 'confirmed']))
+                                        <form action="{{ route('bookings.cancel', $booking->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to cancel this booking?')">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" class="text-red-600 hover:text-red-900" title="Cancel">
+                                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
