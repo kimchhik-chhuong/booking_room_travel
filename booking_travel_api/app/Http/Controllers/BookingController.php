@@ -240,7 +240,7 @@ class BookingController extends Controller
                 \DB::commit();
                 \Log::info('Pay at hotel booking created successfully');
                 
-                return redirect()->route('bookings.show', $booking->id)
+                return redirect()->route('bookings.index', $booking->id)
                     ->with('success', 'Your booking has been created successfully! Please present your booking reference at the hotel for payment.');
             } else {
                 // For online payments, redirect to payment gateway
@@ -419,6 +419,54 @@ public function cancelUserBooking($id)
     } catch (\Exception $e) {
         \Log::error('Booking cancellation error: ' . $e->getMessage());
         return back()->with('error', 'Failed to cancel booking. Please try again or contact support.');
+    }
+}
+
+
+    /**
+ * Process check-in for a booking.
+ */
+public function checkIn(Booking $booking)
+{
+    try {
+        // Verify the booking belongs to the authenticated user
+        if ($booking->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Check if check-in is allowed (for pending bookings)
+        if ($booking->status !== 'pending') {
+            return back()->with('error', 'Only pending bookings can be checked in.');
+        }
+
+        \DB::beginTransaction();
+
+        try {
+            // Update booking status to confirmed
+            $booking->update([
+                'status' => 'confirmed',  // Changed from 'checked_in' to 'confirmed'
+                'checked_in_at' => now(),
+                'checked_in_by' => Auth::id()
+            ]);
+
+            // Update related hotel bookings
+            if ($booking->hotelBookings->isNotEmpty()) {
+                $booking->hotelBookings()->update(['status' => 'confirmed']);
+            }
+
+            \DB::commit();
+
+            return redirect()
+                ->route('bookings.index')
+                ->with('success', 'Successfully checked in for booking #' . $booking->id);
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            \Log::error('Failed to process check-in: ' . $e->getMessage());
+            throw $e;
+        }
+    } catch (\Exception $e) {
+        \Log::error('Check-in error: ' . $e->getMessage());
+        return back()->with('error', 'Failed to process check-in. Please try again or contact support.');
     }
 }
 }

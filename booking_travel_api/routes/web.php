@@ -133,6 +133,9 @@ Route::middleware('auth')->group(function () {
         Route::patch('/{booking}/cancel', [\App\Http\Controllers\BookingController::class, 'cancelUserBooking'])
             ->name('cancel')
             ->where('booking', '[0-9]+');
+        Route::patch('/{booking}/check-in', [\App\Http\Controllers\BookingController::class, 'checkIn'])
+            ->name('check-in')
+            ->where('booking', '[0-9]+');
     });
 
     // Adventures Routes

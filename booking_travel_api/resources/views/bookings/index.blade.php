@@ -238,12 +238,16 @@
                                         </svg>
                                     </a>
                                     @if($booking->status === 'pending')
-                                        <a href="#" class="text-green-600 hover:text-green-900" title="Check-in">
-                                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                            </svg>
-                                        </a>
-                                    @endif
+    <form action="{{ route('bookings.check-in', $booking) }}" method="POST" class="inline">
+        @csrf
+        @method('PATCH')
+        <button type="submit" class="text-green-600 hover:text-green-900" title="Check-in">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+        </button>
+    </form>
+@endif
                                     @if(in_array($booking->status, ['pending', 'confirmed']))
                                         <a href="#" class="text-yellow-600 hover:text-yellow-900" title="Edit">
                                             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
