@@ -194,7 +194,7 @@ class HomePageContent extends StatelessWidget {
     const TripsPage(),
     const HotelsPage(),
     CarRentalApp(), // updated navigation target
-    const OffersPage(),
+    const AllDealsPage(),
   ];
 
   return Padding(
