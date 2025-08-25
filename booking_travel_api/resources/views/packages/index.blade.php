@@ -1,4 +1,9 @@
 @extends('layouts.dashboard')
+
+@php
+use Illuminate\Support\Str;
+@endphp
+
 @section('title', 'Packages Dashboard')
 @section('page-title', 'Packages Dashboard')
 @section('page-subtitle', 'Explore hotels and adventures in Cambodia')

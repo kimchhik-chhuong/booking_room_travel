@@ -1,251 +1,401 @@
-@extends('layouts.app')
+@extends('layouts.dashboard')
+
+@section('title', 'Booking Confirmation')
+@section('page-title', 'Booking Confirmation')
+@section('page-subtitle', 'Thank you for your booking!')
+
+@push('styles')
+<style>
+    .booking-container {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    .booking-header {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        color: white;
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    .booking-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+        transform: rotate(30deg);
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: capitalize;
+        margin-bottom: 1rem;
+    }
+    .status-confirmed { background: #10b981; color: white; }
+    .status-pending { background: #f59e0b; color: white; }
+    .status-cancelled { background: #ef4444; color: white; }
+    .info-card {
+        border-left: 4px solid #4f46e5;
+        background: #f8fafc;
+        border-radius: 0 8px 8px 0;
+    }
+    .section-title {
+        position: relative;
+        padding-bottom: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+    .section-title::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 50px;
+        height: 3px;
+        background: #4f46e5;
+        border-radius: 3px;
+    }
+    .price-breakdown {
+        background: #f8fafc;
+        border-radius: 8px;
+    }
+    .price-row {
+        border-bottom: 1px solid #e2e8f0;
+        padding: 0.75rem 0;
+    }
+    .price-row:last-child {
+        border-bottom: none;
+    }
+    .total-row {
+        background: #4f46e5;
+        color: white;
+        border-radius: 0 0 8px 8px;
+        margin-top: 1rem;
+    }
+    .hotel-image {
+        height: 200px;
+        object-fit: cover;
+        border-radius: 8px;
+        transition: transform 0.3s ease;
+    }
+    .hotel-image:hover {
+        transform: scale(1.02);
+    }
+    .print-button {
+        transition: all 0.3s ease;
+    }
+    .print-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+        body {
+            background: white !important;
+            color: black !important;
+        }
+        .booking-container {
+            box-shadow: none !important;
+            border: none !important;
+        }
+    }
+</style>
+@endpush
 
 @section('content')
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0"><i class="fas fa-check-circle me-2"></i>Booking Confirmation</h4>
-                        <span class="badge bg-light text-dark fs-6">#{{ $booking->booking_reference ?? 'N/A' }}</span>
-                    </div>
-                </div>
-                <div class="card-body">
-                    @if(session('success'))
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    @endif
+<div class="min-h-screen">
+    <!-- Sidebar -->
+    @include('partials.sidebar')
 
-                    <div class="text-center mb-4">
-                        <div class="mb-3">
-                            <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
-                        </div>
-                        <h3 class="text-success mb-2">Thank You for Your Booking!</h3>
-                        <p class="text-muted">Your booking has been confirmed. We've sent a confirmation email to <strong>{{ $booking->email ?? 'your email' }}</strong></p>
-                    </div>
+    <!-- Header -->
+    @include('partials.header')
 
-                    <div class="row mb-4">
-                        <div class="col-md-6 mb-3">
-                            <div class="card h-100">
-                                <div class="card-header bg-light">
-                                    <h5 class="mb-0"><i class="fas fa-hotel me-2"></i>Booking Details</h5>
+    <!-- Main Content -->
+    <div class="ml-72 p-8">
+        <div class="container mx-auto">
+            <div class="max-w-6xl mx-auto">
+                <div class="booking-container">
+                    <!-- Header -->
+                    <div class="booking-header relative">
+                        <div class="relative z-10">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    @php
+                                        $statusClass = [
+                                            'confirmed' => 'status-confirmed',
+                                            'pending' => 'status-pending',
+                                            'cancelled' => 'status-cancelled'
+                                        ][$booking->status ?? 'pending'] ?? 'bg-gray-500';
+                                    @endphp
+                                    <!-- <span class="status-badge {{ $statusClass }}">
+                                        {{ ucfirst($booking->status ?? 'pending') }}
+                                    </span> -->
+                                    <h1 class="text-3xl font-bold mb-2">Booking {{ $booking->status ?? 'pending' }}</h1>
+                                    <p class="text-indigo-100">Your booking has been {{ $booking->status ?? 'pending' }}. A message has been sent to {{ $booking->user->email }}</p>
                                 </div>
-                                <div class="card-body">
-                                    <ul class="list-unstyled">
-                                        <li class="mb-2">
-                                            <strong><i class="fas fa-calendar-check me-2"></i>Booking Date:</strong> 
-                                            {{ $booking->booking_date ? \Carbon\Carbon::parse($booking->booking_date)->format('F d, Y') : 'N/A' }}
-                                        </li>
-                                        <li class="mb-2">
-                                            <strong><i class="fas fa-user me-2"></i>Guest Name:</strong> 
-                                            {{ $booking->first_name ?? '' }} {{ $booking->last_name ?? '' }}
-                                        </li>
-                                        <li class="mb-2">
-                                            <strong><i class="fas fa-envelope me-2"></i>Email:</strong> 
-                                            {{ $booking->email ?? 'N/A' }}
-                                        </li>
-                                        <li class="mb-2">
-                                            <strong><i class="fas fa-phone me-2"></i>Phone:</strong> 
-                                            {{ $booking->phone ?? 'N/A' }}
-                                        </li>
-                                        <li class="mb-2">
-                                            <strong><i class="fas fa-flag me-2"></i>Nationality:</strong> 
-                                            {{ $booking->nationality ?? 'N/A' }}
-                                        </li>
-                                        <li>
-                                            <strong><i class="fas fa-info-circle me-2"></i>Status:</strong>
+                                <div class="text-right">
+                                    <p class="text-indigo-100 mb-1">Booking Reference</p>
+                                    <p class="text-2xl font-bold">{{ $booking->booking_reference }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Content -->
+                    <div class="p-0 md:p-0">
+                        <!-- Booking Details -->
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                            <!-- Guest Information -->
+                            <div class="lg:col-span-2">
+                                <h2 class="text-2xl font-bold mb-6 section-title">Your Booking Details</h2>
+                                
+                                @if(isset($hotel) && $hotel)
+                                <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                                    <div class="flex flex-col md:flex-row gap-6">
+                                        @if(isset($hotel->images) && !empty($hotel->images))
                                             @php
-                                                $statusClass = [
-                                                    'confirmed' => 'bg-success',
-                                                    'pending' => 'bg-warning',
-                                                    'cancelled' => 'bg-danger',
-                                                    'completed' => 'bg-info'
-                                                ][$booking->status ?? 'pending'] ?? 'bg-secondary';
+                                                $images = is_string($hotel->images) ? json_decode($hotel->images, true) : $hotel->images;
+                                                $firstImage = is_array($images) ? (is_array($images[0] ?? null) ? ($images[0]['url'] ?? '') : $images[0]) : '';
                                             @endphp
-                                            <span class="badge {{ $statusClass }}">
-                                                {{ ucfirst($booking->status ?? 'pending') }}
-                                            </span>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <div class="card h-100">
-                                <div class="card-header bg-light">
-                                    <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Stay Details</h5>
-                                </div>
-                                <div class="card-body">
-                                    @if(isset($hotelBooking) && $hotelBooking)
-                                        <ul class="list-unstyled">
-                                            <li class="mb-2">
-                                                <strong><i class="fas fa-hotel me-2"></i>Hotel:</strong> 
-                                                {{ $hotel->name ?? 'N/A' }}
-                                            </li>
-                                            <li class="mb-2">
-                                                <strong><i class="fas fa-map-marker-alt me-2"></i>Location:</strong> 
-                                                {{ $hotel->address ?? 'N/A' }}
-                                            </li>
-                                            <li class="mb-2">
-                                                <strong><i class="fas fa-door-open me-2"></i>Room Type:</strong> 
-                                                {{ $roomType->name ?? 'N/A' }}
-                                            </li>
-                                            <li class="mb-2">
-                                                <strong><i class="fas fa-calendar-day me-2"></i>Check-in:</strong> 
-                                                {{ $hotelBooking->check_in_date ? \Carbon\Carbon::parse($hotelBooking->check_in_date)->format('F d, Y') : 'N/A' }}
-                                            </li>
-                                            <li class="mb-2">
-                                                <strong><i class="fas fa-calendar-check me-2"></i>Check-out:</strong> 
-                                                {{ $hotelBooking->check_out_date ? \Carbon\Carbon::parse($hotelBooking->check_out_date)->format('F d, Y') : 'N/A' }}
-                                            </li>
-                                            <li class="mb-2">
-                                                <strong><i class="fas fa-moon me-2"></i>Nights:</strong> 
-                                                {{ $nights ?? 'N/A' }}
-                                            </li>
-                                            <li class="mb-2">
-                                                <strong><i class="fas fa-users me-2"></i>Guests:</strong> 
-                                                {{ $hotelBooking->num_guests ?? '1' }} ({{ $booking->adults ?? '1' }} Adults, {{ $booking->children ?? '0' }} Children)
-                                            </li>
-                                            @if(!empty($hotelBooking->special_requests))
-                                                <li class="mt-3 pt-2 border-top">
-                                                    <strong><i class="fas fa-comment-alt me-2"></i>Special Requests:</strong>
-                                                    <p class="mb-0 mt-1">{{ $hotelBooking->special_requests }}</p>
-                                                </li>
+                                            @if($firstImage)
+                                                <img src="{{ $firstImage }}" alt="{{ $hotel->name }}" class="hotel-image w-full md:w-1/3">
                                             @endif
-                                        </ul>
-                                    @else
-                                        <div class="text-center text-muted py-4">
-                                            <i class="fas fa-exclamation-circle fa-2x mb-2"></i>
-                                            <p class="mb-0">No hotel booking details found.</p>
+                                        @endif
+                                        <div class="flex-1">
+                                            <h3 class="text-xl font-semibold mb-2">{{ $hotel->name }}</h3>
+                                            @if(!empty($hotel->address))
+                                                <p class="text-gray-600 mb-4 flex items-center">
+                                                    <i class="fas fa-map-marker-alt mr-2 text-indigo-500"></i>
+                                                    {{ $hotel->address }}
+                                                </p>
+                                            @endif
+                                            
+                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                                                <div>
+                                                    <p class="text-sm text-gray-500">Check-in</p>
+                                                    <p class="font-medium">{{ \Carbon\Carbon::parse($hotelBooking->check_in_date)->format('D, M j, Y') }}</p>
+                                                    <!-- @if(isset($hotel->check_in_time))
+                                                        <p class="text-sm text-gray-500">After {{ $hotel->check_in_time }}</p>
+                                                    @endif -->
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm text-gray-500">Check-out</p>
+                                                    <p class="font-medium">{{ \Carbon\Carbon::parse($hotelBooking->check_out_date)->format('D, M j, Y') }}</p>
+                                                    <!-- @if(isset($hotel->check_out_time))
+                                                        <p class="text-sm text-gray-500">Before {{ $hotel->check_out_time }}</p>
+                                                    @endif -->
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm text-gray-500">Nights</p>
+                                                    <p class="font-medium">{{ $nights }}</p>
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm text-gray-500">Guests</p>
+                                                    <p class="font-medium">
+                                                        {{ $hotelBooking->num_guests ?? '1' }} 
+                                                        @if(isset($booking->adults) || isset($booking->children))
+                                                            ({{ $booking->adults ?? '1' }} Adults, {{ $booking->children ?? '0' }} Children)
+                                                        @endif
+                                                    </p>
+                                                </div>
+                                                @if(isset($roomType) && $roomType)
+                                                <div class="sm:col-span-2">
+                                                    <p class="text-sm text-gray-500">Room Type</p>
+                                                    <p class="font-medium">{{ $roomType->name }}</p>
+                                                </div>
+                                                @endif
+                                                @if(!empty($hotelBooking->special_requests))
+                                                <div class="sm:col-span-2">
+                                                    <p class="text-sm text-gray-500">Special Requests</p>
+                                                    <p class="font-medium">{{ $hotelBooking->special_requests }}</p>
+                                                </div>
+                                                @endif
+                                            </div>
                                         </div>
+                                    </div>
+                                </div>
+                                @endif
+
+                                <!-- Guest Information -->
+                                <div class="bg-white rounded-lg shadow-sm p-6">
+                                    <h3 class="text-xl font-semibold mb-4 section-title">Guest Information</h3>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <p class="text-sm text-gray-500">Full Name</p>
+                                            <p class="font-medium">{{ $hotelBooking-> guest_name }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Email</p>
+                                            <p class="font-medium">{{ $hotelBooking->guest_email }}</p>
+                                        </div>
+                                        @if($hotelBooking->guest_phone)
+                                        <div>
+                                            <p class="text-sm text-gray-500">Phone</p>
+                                            <p class="font-medium">{{ $hotelBooking->guest_phone }}</p>
+                                        </div>
+                                        @endif
+                                        @if(!empty($hotelBooking->nationality))
+                                        <div>
+                                            <p class="text-sm text-gray-500">Nationality</p>
+                                            <p class="font-medium">{{ $hotelBooking->nationality }}</p>
+                                        </div>
+                                        @endif
+                                        <div class="md:col-span-2">
+                                            <p class="text-sm text-gray-500">Booking Date</p>
+                                            <p class="font-medium">{{ \Carbon\Carbon::parse($booking->created_at)->format('F d, Y h:i A') }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Price Summary -->
+                            <div>
+                                <div class="sticky top-4">
+                                    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                                        <h3 class="text-xl font-semibold mb-4 section-title">Price Summary</h3>
+                                        
+                                        <div class="space-y-3 mb-4">
+                                            @if(isset($roomType) && $roomType && isset($nights))
+                                            <div class="flex justify-between">
+                                                <div>
+                                                    <p class="font-medium">{{ $roomType->name }}</p>
+                                                    <p class="text-sm text-gray-500">{{ $nights }} night{{ $nights > 1 ? 's' : '' }} × {{ number_format($roomType->price, 2) }} {{ config('app.currency', '$') }}</p>
+                                                </div>
+                                                <div class="text-right">
+                                                    <p class="font-medium">{{ number_format($roomType->price * $nights, 2) }} {{ config('app.currency', '$') }}</p>
+                                                </div>
+                                            </div>
+                                            @endif
+                                            
+                                            @if(isset($booking->tax_amount) && $booking->tax_amount > 0)
+                                            <div class="flex justify-between pt-3 border-t border-gray-100">
+                                                <span class="text-gray-600">Taxes & Fees</span>
+                                                <span>{{ number_format($booking->tax_amount, 2) }} {{ config('app.currency', '$') }}</span>
+                                            </div>
+                                            @endif
+                                            
+                                            @if(isset($booking->discount_amount) && $booking->discount_amount > 0)
+                                            <div class="flex justify-between pt-3 border-t border-gray-100 text-green-600">
+                                                <span>Discount</span>
+                                                <span>-{{ number_format($booking->discount_amount, 2) }} {{ config('app.currency', '$') }}</span>
+                                            </div>
+                                            @endif
+                                        </div>
+                                        
+                                        <div class="pt-4 mt-4 border-t border-gray-200">
+                                            <div class="flex justify-between items-center">
+                                                <span class="font-bold text-lg">Total</span>
+                                                <span class="font-bold text-xl text-indigo-600">{{ number_format($booking->total_amount, 2) }} {{ config('app.currency', '$') }}</span>
+                                            </div>
+                                            
+                                            @if($booking->payment_status === 'pending' && $booking->payment_method === 'pay_at_hotel')
+                                            <div class="mt-3 p-3 bg-blue-50 text-blue-700 rounded-md text-sm">
+                                                <i class="fas fa-info-circle mr-1"></i> Payment will be made at the hotel
+                                            </div>
+                                            @endif
+                                        </div>
+                                        
+                                        <div class="mt-6 space-y-3">
+                                            <a href="{{ route('bookings.show', ['booking' => $booking->id, 'download' => 'pdf']) }}" 
+                                               class="w-full flex items-center justify-center px-4 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors print-button no-print">
+                                                <i class="fas fa-download mr-2"></i> Download PDF
+                                            </a>
+                                            <button onclick="window.print()" class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">
+                                                <i class="fas fa-print mr-2"></i> Print Voucher
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    @if(isset($hotel) && (!empty($hotel->cancellation_policy) || !empty($hotel->check_in_policy)))
+                                    <div class="bg-white rounded-lg shadow-sm p-6">
+                                        <h3 class="text-lg font-semibold mb-3">Hotel Policies</h3>
+                                        
+                                        @if(!empty($hotel->cancellation_policy))
+                                        <div class="mb-4">
+                                            <h4 class="font-medium text-gray-700 mb-1">Cancellation Policy</h4>
+                                            <p class="text-sm text-gray-600">{{ $hotel->cancellation_policy }}</p>
+                                        </div>
+                                        @endif
+                                        
+                                        @if(!empty($hotel->check_in_policy))
+                                        <div>
+                                            <h4 class="font-medium text-gray-700 mb-1">Check-in/Check-out Policy</h4>
+                                            <p class="text-sm text-gray-600">{{ $hotel->check_in_policy }}</p>
+                                        </div>
+                                        @endif
+                                    </div>
                                     @endif
+                                    
+                                    <div class="mt-6 bg-white rounded-lg shadow-sm p-6 text-center no-print">
+                                        <h3 class="text-lg font-semibold mb-2">Need Help?</h3>
+                                        <p class="text-gray-600 text-sm mb-4">Our customer service team is available 24/7 to assist you with any questions.</p>
+                                        <div class="space-y-2">
+                                            <div class="flex items-center justify-center text-indigo-600">
+                                                <i class="fas fa-phone-alt mr-2"></i>
+                                                <span>+855 23 999 999</span>
+                                            </div>
+                                            <div class="flex items-center justify-center text-indigo-600">
+                                                <i class="fas fa-envelope mr-2"></i>
+                                                <span>support@bookingtravel.com</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="card mb-4">
-                        <div class="card-header bg-light">
-                            <h5 class="mb-0"><i class="fas fa-file-invoice-dollar me-2"></i>Pricing Summary</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-bordered mb-0">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Description</th>
-                                            <th class="text-end">Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @if(isset($roomType) && $roomType && isset($nights))
-                                            <tr>
-                                                <td>
-                                                    {{ $roomType->name ?? 'Room' }} ({{ $nights }} night{{ $nights > 1 ? 's' : '' }} @ {{ number_format($roomType->price, 2) }} {{ config('app.currency', '$') }}/night)
-                                                </td>
-                                                <td class="text-end">{{ number_format($roomType->price * $nights, 2) }} {{ config('app.currency', '$') }}</td>
-                                            </tr>
-                                        @endif
-                                        
-                                        @if(isset($booking->tax_amount) && $booking->tax_amount > 0)
-                                            <tr>
-                                                <td>Taxes & Fees</td>
-                                                <td class="text-end">{{ number_format($booking->tax_amount, 2) }} {{ config('app.currency', '$') }}</td>
-                                            </tr>
-                                        @endif
-                                        
-                                        @if(isset($booking->discount_amount) && $booking->discount_amount > 0)
-                                            <tr class="table-success">
-                                                <td>Discount</td>
-                                                <td class="text-end">-{{ number_format($booking->discount_amount, 2) }} {{ config('app.currency', '$') }}</td>
-                                            </tr>
-                                        @endif
-                                        
-                                        <tr class="table-active fw-bold">
-                                            <td>Total Amount</td>
-                                            <td class="text-end">{{ number_format($booking->total_amount, 2) }} {{ config('app.currency', '$') }}</td>
-                                        </tr>
-                                        
-                                        @if($booking->payment_status === 'pending' && $booking->payment_method === 'pay_at_hotel')
-                                            <tr class="table-info">
-                                                <td colspan="2" class="text-center">
-                                                    <i class="fas fa-info-circle me-2"></i>Payment will be made at the hotel
-                                                </td>
-                                            </tr>
-                                        @endif
-                                    </tbody>
-                                </table>
+                        
+                        <!-- Map Section -->
+                        @if(isset($hotel) && isset($hotel->latitude) && isset($hotel->longitude))
+                        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+                            <h3 class="text-xl font-semibold mb-4 section-title">Location</h3>
+                            <div class="h-64 bg-gray-100 rounded-lg overflow-hidden relative">
+                                <iframe 
+                                    width="100%" 
+                                    height="100%" 
+                                    frameborder="0" 
+                                    style="border:0" 
+                                    src="https://www.google.com/maps/embed/v1/place?key={{ config('services.google.maps_api_key') }}&q={{ $hotel->latitude }},{{ $hotel->longitude }}&zoom=15" 
+                                    allowfullscreen>
+                                </iframe>
+                                <div class="absolute bottom-4 right-4">
+                                    <a href="https://www.google.com/maps?q={{ $hotel->latitude }},{{ $hotel->longitude }}" 
+                                       target="_blank" 
+                                       class="inline-flex items-center px-4 py-2 bg-white text-indigo-600 rounded-md shadow-sm hover:bg-gray-50">
+                                        <i class="fas fa-directions mr-2"></i> Get Directions
+                                    </a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="d-flex justify-content-between align-items-center">
-                        <a href="{{ route('home') }}" class="btn btn-outline-primary">
-                            <i class="fas fa-home me-2"></i>Back to Home
-                        </a>
-                        <div>
-                            <button onclick="window.print()" class="btn btn-outline-secondary me-2">
-                                <i class="fas fa-print me-2"></i>Print Voucher
-                            </button>
-                            <a href="{{ route('bookings.show', $booking->id) }}?download=pdf" class="btn btn-primary">
-                                <i class="fas fa-download me-2"></i>Download PDF
-                            </a>
-                        </div>
+                        @endif
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-    @media print {
-        body * {
-            visibility: hidden;
-        }
-        .card, .card * {
-            visibility: visible;
-        }
-        .card {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            border: none;
-            box-shadow: none;
-        }
-        .no-print {
-            display: none !important;
-        }
-        .card-header {
-            background-color: #f8f9fa !important;
-            color: #000 !important;
-            border-bottom: 1px solid #dee2e6;
-        }
-    }
-    
-    .card {
-        border: none;
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-        transition: transform 0.2s;
-    }
-    
-    .card:hover {
-        transform: translateY(-2px);
-    }
-    
-    .card-header {
-        font-weight: 600;
-    }
-    
-    .badge {
-        font-size: 0.8rem;
-        padding: 0.4em 0.8em;
-    }
-</style>
-
 @endsection
+
+@push('scripts')
+<script>
+    // Add any JavaScript for interactivity here
+    document.addEventListener('DOMContentLoaded', function() {
+        // Print functionality
+        document.querySelectorAll('.print-button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                if (this.classList.contains('no-print') && window.matchMedia('print').matches) {
+                    e.preventDefault();
+                    window.print();
+                }
+            });
+        });
+    });
+</script>
+@endpush

@@ -9,6 +9,7 @@ use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class HotelBookingController extends Controller
 {
@@ -99,6 +100,8 @@ class HotelBookingController extends Controller
         // For web form submission
         return redirect()->route('hotels.show', $hotel->hotel_id)
             ->with('success', 'Room type created successfully');
+            \Log::info('Booking Store Request Data:', $request->all());
+            \Log::info('Auth User ID: ' . (auth()->check() ? auth()->id() : 'Not authenticated'));
     }
 
     /**
@@ -129,6 +132,7 @@ class HotelBookingController extends Controller
                 'num_guests' => 'required|integer|min:1|max:20',
                 'num_rooms' => 'required|integer|min:1|max:10',
                 'room_type_id' => 'required|exists:room_types,id',
+                'nationality' => 'required|string|max:100',
                 'special_requests' => 'nullable|string|max:1000',
             ]);
             
@@ -181,6 +185,7 @@ class HotelBookingController extends Controller
                     'check_out_date' => $validated['check_out_date'],
                     'num_rooms' => $validated['num_rooms'],
                     'num_guests' => $validated['num_guests'],
+                    'nationality' => $validated['nationality'],
                     'price_per_night' => $roomType->price,
                     'total_hotel_price' => $totalPrice,
                     'special_requests' => $validated['special_requests'] ?? null,

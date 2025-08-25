@@ -8,8 +8,9 @@ use App\Models\HotelMetadata;
 use App\Models\RoomType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class BookingController extends Controller
 {
@@ -156,9 +157,9 @@ class BookingController extends Controller
      */
     public function store(Request $request)
     {
-        // Log the incoming request data
-        \Log::info('Booking Store Request Data:', $request->all());
-        \Log::info('Auth User ID: ' . (auth()->check() ? auth()->id() : 'Not authenticated'));
+        \Illuminate\Support\Facades\Log::info('Room Type Creation Request Data:', $request->all());
+\Illuminate\Support\Facades\Log::info('Auth User ID: ' . (auth()->check() ? auth()->id() : 'Not authenticated'));
+
 
         // Validate the request
         $validated = $request->validate([
@@ -178,16 +179,18 @@ class BookingController extends Controller
         ]);
 
         try {
-            // Start a database transaction
-            \DB::beginTransaction();
+            \Illuminate\Support\Facades\DB::beginTransaction();
+\Illuminate\Support\Facades\DB::commit();
+\Illuminate\Support\Facades\DB::rollBack();
 
             // Get the room type with price and availability
             $roomType = RoomType::findOrFail($validated['room_type_id']);
-            \Log::info('Room Type Found:', $roomType->toArray());
+            \Illuminate\Support\Facades\Log::info('Room Type Found:', $roomType->toArray());
+\Illuminate\Support\Facades\Log::warning('No available rooms for room type: ' . $roomType->id);
             
             // Check room availability
             if ($roomType->available_rooms <= 0) {
-                \Log::warning('No available rooms for room type: ' . $roomType->id);
+                \Illuminate\Support\Facades\Log::warning('No available rooms for room type: ' . $roomType->id);
                 return back()->with('error', 'Sorry, the selected room type is no longer available.')->withInput();
             }
 
@@ -208,7 +211,7 @@ class BookingController extends Controller
             $booking->status = 'pending';
             $booking->payment_status = $validated['payment_method'] === 'pay_at_hotel' ? 'pending' : 'pending_payment';
             $booking->save();
-            \Log::info('Booking created:', $booking->toArray());
+            \Illuminate\Support\Facades\Log::info('Booking created:', $booking->toArray());
 
             // Create the hotel booking record
             $hotelBooking = new HotelBooking();
@@ -227,25 +230,25 @@ class BookingController extends Controller
             $hotelBooking->guest_phone = $validated['phone'];
             $hotelBooking->special_requests = $validated['special_requests'] ?? null;
             $hotelBooking->save();
-            \Log::info('Hotel Booking created:', $hotelBooking->toArray());
+            \Illuminate\Support\Facades\Log::info('Hotel Booking created:', $hotelBooking->toArray());
 
             // Decrement available rooms
             $roomType->decrement('available_rooms');
-            \Log::info('Room availability updated. New available rooms: ' . ($roomType->available_rooms - 1));
+            \Illuminate\Support\Facades\Log::info('Room availability updated. New available rooms: ' . ($roomType->available_rooms - 1));
 
             // Handle payment based on payment method
             if ($validated['payment_method'] === 'pay_at_hotel') {
                 // For pay at hotel, mark as pending and show success
                 $booking->update(['payment_status' => 'pending']);
-                \DB::commit();
-                \Log::info('Pay at hotel booking created successfully');
+                \Illuminate\Support\Facades\DB::commit();
+                \Illuminate\Support\Facades\Log::info('Pay at hotel booking created successfully');
                 
                 return redirect()->route('bookings.index', $booking->id)
                     ->with('success', 'Your booking has been created successfully! Please present your booking reference at the hotel for payment.');
             } else {
                 // For online payments, redirect to payment gateway
-                \DB::commit();
-                \Log::info('Booking created, redirecting to payment');
+                \Illuminate\Support\Facades\DB::commit();
+                \Illuminate\Support\Facades\Log::info('Booking created, redirecting to payment');
                 
                 return redirect()->route('payments.choose-method', ['booking' => $booking->id])
                     ->with('success', 'Booking created successfully! Please complete your payment.');
@@ -253,9 +256,9 @@ class BookingController extends Controller
 
         } catch (\Exception $e) {
             // Rollback the transaction on error
-            \DB::rollBack();
-            \Log::error('Booking creation failed: ' . $e->getMessage());
-            \Log::error($e->getTraceAsString());
+            \Illuminate\Support\Facades\DB::rollBack();
+            \Illuminate\Support\Facades\Log::error('Booking creation failed: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error($e->getTraceAsString());
             
             return back()->with('error', 'Failed to create booking. Please try again. Error: ' . $e->getMessage())
                 ->withInput();
@@ -263,14 +266,21 @@ class BookingController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified booking.
      */
-    public function show($id)
+    public function show(Booking $booking)
     {
         try {
-            $booking = Booking::with(['user', 'payment', 'hotelBookings'])->findOrFail($id);
+            // Eager load all necessary relationships
+            $booking->load([
+                'user',
+                'hotelBookings',
+                'hotelBookings.hotel',
+                'hotelBookings.roomType',
+                'payment'
+            ]);
             
-            // Get the first hotel booking
+            // Get the first hotel booking (assuming one booking per reservation for now)
             $hotelBooking = $booking->hotelBookings->first();
             
             if (!$hotelBooking) {
@@ -278,30 +288,26 @@ class BookingController extends Controller
                     ->with('error', 'No hotel booking found for this reservation.');
             }
             
-            // Get hotel and room type details
-            $hotel = \App\Models\HotelMetadata::find($hotelBooking->hotel_id);
-            $roomType = \App\Models\RoomType::find($hotelBooking->room_type_id);
-            
-            if (!$hotel || !$roomType) {
-                return redirect()->route('bookings.index')
-                    ->with('error', 'Hotel or room type not found for this booking.');
-            }
-            
             // Calculate number of nights
             $checkIn = new \DateTime($hotelBooking->check_in_date);
             $checkOut = new \DateTime($hotelBooking->check_out_date);
             $nights = $checkIn->diff($checkOut)->days;
+
+            // Calculate total amount if not set
+            if (!$booking->total_amount) {
+                $booking->total_amount = $booking->hotelBookings->sum('total_hotel_price');
+            }
             
             return view('bookings.show', [
                 'booking' => $booking,
                 'hotelBooking' => $hotelBooking,
-                'hotel' => $hotel,
-                'roomType' => $roomType,
+                'hotel' => $hotelBooking->hotel,
+                'roomType' => $hotelBooking->roomType,
                 'nights' => $nights
             ]);
             
         } catch (\Exception $e) {
-            \Log::error('Error showing booking: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Error showing booking: ' . $e->getMessage());
             return redirect()->route('bookings.index')
                 ->with('error', 'Error loading booking details. Please try again.');
         }
@@ -343,20 +349,53 @@ class BookingController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the specified booking in storage.
      */
     public function update(Request $request, Booking $booking)
     {
-        // Validate request
-        $request->validate([
-            'user_id' => 'sometimes|exists:users,id',
-            'booking_date' => 'sometimes|date',
-        ]);
-
-        // Update booking with validated data
-        $booking->update($request->only(['user_id', 'booking_date']));
-
-        return response()->json(['status' => 'success', 'data' => $booking], 200);
+        try {
+            // Start database transaction
+            \Illuminate\Support\Facades\DB::beginTransaction();
+            
+            // Update booking status
+            $booking->update([
+                'status' => $request->input('status'),
+                'updated_at' => now(),
+            ]);
+            
+            // Update hotel bookings if they exist
+            if ($request->has('hotel_bookings') && $booking->hotelBookings->isNotEmpty()) {
+                foreach ($request->input('hotel_bookings') as $index => $hotelBookingData) {
+                    if (isset($booking->hotelBookings[$index])) {
+                        $booking->hotelBookings[$index]->update([
+                            'check_in_date' => $hotelBookingData['check_in_date'],
+                            'check_out_date' => $hotelBookingData['check_out_date'],
+                            'num_rooms' => $hotelBookingData['num_rooms'],
+                            'num_guests' => $hotelBookingData['num_guests'],
+                            'updated_at' => now(),
+                        ]);
+                    }
+                }
+            }
+            
+            // Commit transaction
+            \Illuminate\Support\Facades\DB::commit();
+            
+            // Log the update
+            \Illuminate\Support\Facades\Log::info("Booking #{$booking->booking_reference} updated by user #" . auth()->id());
+            
+            return redirect()->route('bookings.show', $booking)
+                ->with('success', 'Booking updated successfully!');
+                
+        } catch (\Exception $e) {
+            // Rollback transaction on error
+            \Illuminate\Support\Facades\DB::rollBack();
+            \Illuminate\Support\Facades\Log::error('Error updating booking: ' . $e->getMessage());
+            
+            return back()
+                ->withInput()
+                ->with('error', 'Failed to update booking. Please try again.');
+        }
     }
 
     /**
@@ -419,7 +458,7 @@ class BookingController extends Controller
                 }
             }
 
-            \DB::beginTransaction();
+            \Illuminate\Support\Facades\DB::beginTransaction();
 
             try {
                 // Update booking status
@@ -434,7 +473,7 @@ class BookingController extends Controller
                     $booking->hotelBookings()->update(['status' => 'cancelled']);
                 }
 
-                \DB::commit();
+                \Illuminate\Support\Facades\DB::commit();
 
                 // Here you can add:
                 // - Send cancellation email
@@ -446,13 +485,13 @@ class BookingController extends Controller
                     ->with('success', 'Booking #' . $booking->id . ' has been cancelled successfully.');
 
             } catch (\Exception $e) {
-                \DB::rollBack();
-                \Log::error('Failed to cancel booking: ' . $e->getMessage());
+                \Illuminate\Support\Facades\DB::rollBack();
+                \Illuminate\Support\Facades\Log::error('Failed to cancel booking: ' . $e->getMessage());
                 throw $e;
             }
 
         } catch (\Exception $e) {
-            \Log::error('Booking cancellation error: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Booking cancellation error: ' . $e->getMessage());
             return back()->with('error', 'Failed to cancel booking. Please try again or contact support.');
         }
     }
@@ -480,7 +519,7 @@ class BookingController extends Controller
             }
             
             // Start database transaction
-            \DB::beginTransaction();
+            \Illuminate\Support\Facades\DB::beginTransaction();
             
             // Update booking status
             $booking->update([
@@ -509,15 +548,15 @@ class BookingController extends Controller
                 ]);
             }
             
-            \DB::commit();
+            \Illuminate\Support\Facades\DB::commit();
             
             return redirect()->route('bookings.index')
                 ->with('success', 'Booking has been cancelled successfully.');
                 
         } catch (\Exception $e) {
-            \DB::rollBack();
-            \Log::error('Error cancelling booking: ' . $e->getMessage());
-            \Log::error($e->getTraceAsString());
+            \Illuminate\Support\Facades\DB::rollBack();
+            \Illuminate\Support\Facades\Log::error('Error cancelling booking: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error($e->getTraceAsString());
             
             return redirect()->back()
                 ->with('error', 'Failed to cancel booking. Please try again.');
@@ -540,7 +579,7 @@ class BookingController extends Controller
                 return back()->with('error', 'Only pending bookings can be checked in.');
             }
 
-            \DB::beginTransaction();
+            \Illuminate\Support\Facades\DB::beginTransaction();
 
             try {
                 // Update booking status to confirmed
@@ -555,19 +594,71 @@ class BookingController extends Controller
                     $booking->hotelBookings()->update(['status' => 'confirmed']);
                 }
 
-                \DB::commit();
+                \Illuminate\Support\Facades\DB::commit();
 
                 return redirect()
                     ->route('bookings.index')
                     ->with('success', 'Successfully checked in for booking #' . $booking->id);
             } catch (\Exception $e) {
-                \DB::rollBack();
-                \Log::error('Failed to process check-in: ' . $e->getMessage());
+                \Illuminate\Support\Facades\DB::rollBack();
+                \Illuminate\Support\Facades\Log::error('Failed to process check-in: ' . $e->getMessage());
                 throw $e;
             }
         } catch (\Exception $e) {
-            \Log::error('Check-in error: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Check-in error: ' . $e->getMessage());
             return back()->with('error', 'Failed to process check-in. Please try again or contact support.');
+        }
+    }
+
+    /**
+     * Show the form for editing the specified booking.
+     */
+    public function edit(Booking $booking)
+    {
+        try {
+            // Eager load all necessary relationships
+            $booking->load([
+                'user',
+                'hotelBookings',
+                'hotelBookings.hotel',
+                'hotelBookings.roomType',
+                'payment'
+            ]);
+            
+            // Get the first hotel booking (assuming one booking per reservation for now)
+            $hotelBooking = $booking->hotelBookings->first();
+            
+            if (!$hotelBooking) {
+                return redirect()->route('bookings.index')
+                    ->with('error', 'No hotel booking found for this reservation.');
+            }
+            
+            // Ensure dates are in the correct format for the form inputs
+            if ($hotelBooking->check_in_date) {
+                $hotelBooking->check_in_date = \Carbon\Carbon::parse($hotelBooking->check_in_date)->format('Y-m-d');
+            }
+            
+            if ($hotelBooking->check_out_date) {
+                $hotelBooking->check_out_date = \Carbon\Carbon::parse($hotelBooking->check_out_date)->format('Y-m-d');
+            }
+            
+            // Get available hotels and room types for the form
+            $hotels = \App\Models\HotelMetadata::all();
+            $roomTypes = $hotelBooking->hotel ? 
+                \App\Models\RoomType::where('hotel_metadata_id', $hotelBooking->hotel->id)->get() : 
+                collect();
+            
+            return view('bookings.edit', [
+                'booking' => $booking,
+                'hotelBooking' => $hotelBooking,
+                'hotels' => $hotels,
+                'roomTypes' => $roomTypes
+            ]);
+            
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error loading booking edit form: ' . $e->getMessage());
+            return redirect()->route('bookings.index')
+                ->with('error', 'Error loading booking form. Please try again.');
         }
     }
 }

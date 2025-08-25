@@ -6,6 +6,7 @@ use App\Models\HotelMetadata;
 use App\Models\RoomType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class RoomTypeController extends \App\Http\Controllers\Controller
@@ -53,59 +54,62 @@ class RoomTypeController extends \App\Http\Controllers\Controller
     public function getAvailableRooms($hotelId)
     {
         try {
-            // Log the incoming request
-            \Log::info('Fetching available rooms for hotel: ' . $hotelId);
-            
-            // Check if hotel exists
+            // First, check if the hotel exists
             $hotel = HotelMetadata::find($hotelId);
             
             if (!$hotel) {
-                $availableHotels = HotelMetadata::pluck('name', 'hotel_id');
-                \Log::warning('Hotel not found. Available hotels: ' . json_encode($availableHotels));
-                
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Hotel not found. Available hotels: ' . $availableHotels->map(fn($name, $id) => "$name (ID: $id)")->implode(', ')
+                    'message' => 'Hotel not found',
+                    'data' => []
                 ], 404);
             }
-            
+
             // Get available rooms for the hotel
-            $roomTypes = RoomType::where('hotel_metadata_id', $hotelId)
+            $rooms = RoomType::where('hotel_metadata_id', $hotelId)
                 ->where('is_available', true)
                 ->where('available_rooms', '>', 0)
-                ->get();
-
-            \Log::info('Found ' . $roomTypes->count() . ' available rooms for hotel ' . $hotelId);
-
-            return response()->json([
-                'status' => 'success',
-                'hotel' => [
-                    'id' => $hotel->hotel_id,
-                    'name' => $hotel->name
-                ],
-                'data' => $roomTypes->map(function($room) {
+                ->get()
+                ->map(function($room) {
                     return [
                         'id' => $room->id,
                         'name' => $room->name,
                         'description' => $room->description,
-                        'price' => $room->price,
-                        'max_occupancy' => $room->max_occupancy,
-                        'available_rooms' => $room->available_rooms,
-                        'amenities' => $room->amenities,
-                        'image_url' => $room->image_url_full,
+                        'price' => (float)$room->price,
+                        'max_occupancy' => (int)$room->max_occupancy,
+                        'available_rooms' => (int)$room->available_rooms,
+                        'amenities' => is_string($room->amenities) 
+                            ? json_decode($room->amenities, true) 
+                            : ($room->amenities ?? []),
+                        'image_url' => $room->image_url ? asset('storage/' . $room->image_url) : null
                     ];
-                })
+                });
+
+            // Log the response for debugging
+            \Log::info('Fetched available rooms', [
+                'hotel_id' => $hotelId,
+                'room_count' => $rooms->count()
             ]);
+
+            return response()->json($rooms);
             
         } catch (\Exception $e) {
-            // Log the full error
-            \Log::error('Error in getAvailableRooms: ' . $e->getMessage());
-            \Log::error($e->getTraceAsString());
-            
+            // Log the full error with context
+            \Log::error('Error in getAvailableRooms', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+                'hotel_id' => $hotelId ?? 'null',
+                'url' => request()->fullUrl(),
+                'method' => request()->method()
+            ]);
+
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to fetch available rooms',
-                'error' => config('app.debug') ? $e->getMessage() : null
+                'error' => config('app.debug') ? $e->getMessage() : null,
+                'data' => []
             ], 500);
         }
     }
@@ -120,50 +124,57 @@ class RoomTypeController extends \App\Http\Controllers\Controller
 
     /**
      * Store a newly created room type.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\HotelMetadata  $hotel
+     * @return \Illuminate\Http\Response
      */
-    public function store(Request $request, $hotelId)
+    public function store(Request $request, HotelMetadata $hotel)
     {
-        // Find the hotel
-        $hotel = HotelMetadata::findOrFail($hotelId);
-        
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'price' => 'required|numeric|min:0',
-            'max_occupancy' => 'required|integer|min:1',
-            'available_rooms' => 'required|integer|min:0',
-            'amenities' => 'nullable|array',
-            'amenities.*' => 'string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
+        try {
+            // Validate the request
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'price' => 'required|numeric|min:0',
+                'max_occupancy' => 'required|integer|min:1',
+                'available_rooms' => 'required|integer|min:0',
+                'amenities' => 'nullable|array',
+                'amenities.*' => 'string',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
 
-        // Handle image upload if present
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('room-types', 'public');
-            $validated['image_url'] = $path;
+            // Handle file upload
+            $imagePath = null;
+            if ($request->hasFile('image')) {
+                $imagePath = $request->file('image')->store('rooms', 'public');
+            }
+
+            // Create the room type
+            $roomType = new RoomType([
+                'hotel_metadata_id' => $hotel->hotel_id,
+                'name' => $validated['name'],
+                'description' => $validated['description'] ?? null,
+                'price' => $validated['price'],
+                'max_occupancy' => $validated['max_occupancy'],
+                'available_rooms' => $validated['available_rooms'],
+                'amenities' => $validated['amenities'] ?? [],
+                'image_url' => $imagePath,
+                'is_available' => true
+            ]);
+
+            $roomType->save();
+
+            return redirect('http://localhost:8000/hotels/' . $hotel->hotel_id)
+                ->with('success', 'Room type created successfully');
+                
+        } catch (\Exception $e) {
+            Log::error('Error creating room type: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+
+            return back()->withInput()
+                ->with('error', 'Error creating room type: ' . $e->getMessage());
         }
-
-        // Handle amenities (convert array to JSON string)
-        $validated['amenities'] = json_encode($validated['amenities'] ?? []);
-
-        // Set hotel ID
-        $validated['hotel_metadata_id'] = $hotel->hotel_id;
-
-        // Create the room type
-        $roomType = RoomType::create($validated);
-
-        // Return JSON response for API
-        if ($request->wantsJson()) {
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Room type created successfully',
-                'data' => $roomType->load('hotelMetadata')
-            ], 201);
-        }
-
-        // For web form submission (if needed)
-        return redirect()->route('hotels.show', $hotel->hotel_id)
-            ->with('success', 'Room type created successfully');
     }
 
     /**

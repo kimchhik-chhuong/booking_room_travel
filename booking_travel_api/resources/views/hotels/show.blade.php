@@ -1,5 +1,9 @@
 @extends('layouts.dashboard')
 
+@php
+use Illuminate\Support\Str;
+@endphp
+
 @section('title', $hotel->name . ' - ' . config('app.name'))
 @section('page-title', $hotel->name)
 @section('page-subtitle', $hotel->location ?? 'Hotel Details')

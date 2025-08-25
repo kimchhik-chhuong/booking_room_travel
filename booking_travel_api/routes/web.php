@@ -89,6 +89,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', fn() => view('dashboard'))->name('dashboard');
     Route::get('/home', fn() => redirect()->route('dashboard'))->name('home');
 
+    // Bookings
+    Route::resource('bookings', BookingController::class);
+    
+    // Additional booking routes
+    Route::prefix('bookings')->name('bookings.')->group(function () {
+        Route::patch('{booking}/check-in', [BookingController::class, 'checkIn'])->name('check-in');
+        Route::patch('{booking}/cancel', [BookingController::class, 'cancel'])->name('cancel');
+        Route::post('{id}/cancel', [BookingController::class, 'cancelUserBooking'])->name('user.cancel');
+    });
+
     /*
     |--------------------------------------------------------------------------
     | Packages
@@ -122,6 +132,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/{hotel}/bookings', [\App\Http\Controllers\HotelBookingController::class, 'storeBooking'])
             ->name('bookings.store')
             ->where('hotel', '[0-9]+');
+            
+        Route::post('/{hotel}/room-types', [RoomTypeController::class, 'store'])->name('room-types.store');
     });
 
     // Add booking routes

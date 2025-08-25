@@ -49,6 +49,14 @@ class HotelMetadata extends Model
         return $this->belongsTo(Province::class);
     }
 
+    /**
+     * Get all room types for the hotel.
+     */
+    public function roomTypes()
+    {
+        return $this->hasMany(RoomType::class, 'hotel_metadata_id', 'hotel_id');
+    }
+
     public function hotelBookings()
     {
         return $this->hasMany(HotelBooking::class, 'hotel_id', 'hotel_id');
@@ -57,11 +65,6 @@ class HotelMetadata extends Model
     public function adventure()
     {
         return $this->belongsTo(Adventure::class);
-    }
-
-    public function roomTypes()
-    {
-        return $this->hasMany(RoomType::class, 'hotel_metadata_id', 'hotel_id');
     }
 
     public function user()

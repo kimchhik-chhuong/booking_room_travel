@@ -34,28 +34,11 @@ class RoomType extends Model
     protected $appends = ['image_url_full'];
 
     /**
-     * The "booting" method of the model.
-     */
-    protected static function boot()
-    {
-        parent::boot();
-
-        // Automatically encode amenities when setting
-        static::saving(function ($model) {
-            if (is_array($model->amenities)) {
-                $model->amenities = json_encode($model->amenities);
-            } elseif (is_null($model->amenities)) {
-                $model->amenities = json_encode([]);
-            }
-        });
-    }
-
-    /**
      * Get the hotel that owns the room type.
      */
     public function hotel()
     {
-        return $this->belongsTo(HotelMetadata::class, 'hotel_metadata_id');
+        return $this->belongsTo(HotelMetadata::class, 'hotel_metadata_id', 'hotel_id');
     }
 
     /**
@@ -63,7 +46,7 @@ class RoomType extends Model
      */
     public function hotelMetadata()
     {
-        return $this->belongsTo(HotelMetadata::class, 'hotel_metadata_id', 'hotel_id');
+        return $this->belongsTo(HotelMetadata::class, 'hotel_metadata_id');
     }
 
     /**
@@ -121,5 +104,22 @@ class RoomType extends Model
         } else {
             $this->attributes['amenities'] = json_encode([]);
         }
+    }
+
+    /**
+     * The "booting" method of the model.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Automatically encode amenities when setting
+        static::saving(function ($model) {
+            if (is_array($model->amenities)) {
+                $model->amenities = json_encode($model->amenities);
+            } elseif (is_null($model->amenities)) {
+                $model->amenities = json_encode([]);
+            }
+        });
     }
 }

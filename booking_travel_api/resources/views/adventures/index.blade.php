@@ -1,5 +1,9 @@
 @extends('layouts.dashboard')
 
+@php
+use Illuminate\Support\Facades\Storage;
+@endphp
+
 @section('title', 'Adventures - ' . config('app.name'))
 @section('page-title', 'Adventures in Cambodia')
 @section('page-subtitle', 'Discover amazing adventures across Cambodia')

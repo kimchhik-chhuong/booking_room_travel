@@ -16,6 +16,7 @@ class HotelBooking extends Model
         'check_out_date',
         'num_rooms',
         'num_guests',
+        'nationality',
         'price_per_night',
         'total_hotel_price',
         'status',

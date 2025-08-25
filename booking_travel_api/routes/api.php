@@ -125,6 +125,11 @@ Route::get('/hotels/{hotel}/room-types', function (\App\Models\HotelMetadata $ho
     return response()->json($roomTypes ?: []);
 })->name('api.hotels.room-types');
 
+// Hotel room availability API
+Route::get('/hotels/{hotelId}/available-rooms', [\App\Http\Controllers\Api\RoomTypeController::class, 'getAvailableRooms'])
+    ->name('api.hotels.available-rooms')
+    ->where('hotelId', '[0-9]+');
+
 // Protected routes
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::resource('users', UserController::class);

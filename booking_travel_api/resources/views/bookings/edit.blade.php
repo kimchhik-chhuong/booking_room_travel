@@ -1,213 +1,143 @@
-@extends('layouts.app')
+@extends('layouts.dashboard')
 
 @section('content')
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-10">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0"><i class="fas fa-edit me-2"></i>Edit Booking #{{ $booking->booking_reference ?? 'N/A' }}</h4>
-                        <a href="{{ route('bookings.show', $booking->id) }}" class="btn btn-light btn-sm">
-                            <i class="fas fa-arrow-left me-1"></i> Back to Booking
-                        </a>
+<div class="min-h-screen">
+    <!-- Sidebar -->
+    @include('partials.sidebar')
+
+    <!-- Header -->
+    @include('partials.header')
+
+    <!-- Main Content -->
+    <div class="ml-72 p-8">
+        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="p-6 bg-white border-b border-gray-200">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-semibold text-gray-800">Edit Booking #{{ $booking->booking_reference }}</h2>
+                    <a href="{{ route('bookings.show', $booking) }}" class="inline-flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md text-sm font-medium text-gray-700">
+                        <svg class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Back to Booking
+                    </a>
+                </div>
+
+                @if(session('success'))
+                    <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+                        {{ session('success') }}
                     </div>
-                </div>
-                <div class="card-body">
-                    @if(session('success'))
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                @endif
+
+                @if($errors->any())
+                    <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                        <ul class="list-disc list-inside">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <form action="{{ route('bookings.update', $booking) }}" method="POST" class="space-y-6">
+                    @csrf
+                    @method('PUT')
+
+                    <!-- Booking Information -->
+                    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+                        <div class="px-4 py-5 sm:px-6 bg-gray-50">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">Booking Information</h3>
                         </div>
+                        <div class="border-t border-gray-200 px-4 py-5 sm:p-0">
+                            <dl class="sm:divide-y sm:divide-gray-200">
+                                <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                    <dt class="text-sm font-medium text-gray-500">Booking Reference</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                        {{ $booking->booking_reference }}
+                                    </dd>
+                                </div>
+                                <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                    <dt class="text-sm font-medium text-gray-500">Status</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                        <select name="status" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                            @foreach(['pending', 'confirmed', 'cancelled', 'completed'] as $status)
+                                                <option value="{{ $status }}" {{ $booking->status === $status ? 'selected' : '' }}>{{ ucfirst($status) }}</option>
+                                            @endforeach
+                                        </select>
+                                    </dd>
+                                </div>
+                            </dl>
+                        </div>
+                    </div>
+
+                    @if($booking->hotelBookings->isNotEmpty())
+                        @foreach($booking->hotelBookings as $index => $hotelBooking)
+                            <div class="bg-white shadow overflow-hidden sm:rounded-lg mt-6">
+                                <div class="px-4 py-5 sm:px-6 bg-gray-50">
+                                    <h3 class="text-lg leading-6 font-medium text-gray-900">Hotel Booking #{{ $index + 1 }}</h3>
+                                </div>
+                                <div class="border-t border-gray-200 px-4 py-5 sm:p-0">
+                                    <dl class="sm:divide-y sm:divide-gray-200">
+                                        <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                            <dt class="text-sm font-medium text-gray-500">Hotel</dt>
+                                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                {{ $hotelBooking->hotel->name ?? 'N/A' }}
+                                            </dd>
+                                        </div>
+                                        <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                            <dt class="text-sm font-medium text-gray-500">Room Type</dt>
+                                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                {{ $hotelBooking->roomType->name ?? $hotelBooking->room_type }}
+                                            </dd>
+                                        </div>
+                                        <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                            <dt class="text-sm font-medium text-gray-500">Check-in Date</dt>
+                                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                <input type="date" name="hotel_bookings[{{ $index }}][check_in_date]" 
+                                                       value="{{ is_string($hotelBooking->check_in_date) ? $hotelBooking->check_in_date : $hotelBooking->check_in_date->format('Y-m-d') }}" 
+                                                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                            </dd>
+                                        </div>
+                                        <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                            <dt class="text-sm font-medium text-gray-500">Check-out Date</dt>
+                                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                <input type="date" name="hotel_bookings[{{ $index }}][check_out_date]" 
+                                                       value="{{ is_string($hotelBooking->check_out_date) ? $hotelBooking->check_out_date : $hotelBooking->check_out_date->format('Y-m-d') }}" 
+                                                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                            </dd>
+                                        </div>
+                                        <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                            <dt class="text-sm font-medium text-gray-500">Number of Rooms</dt>
+                                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                <input type="number" name="hotel_bookings[{{ $index }}][num_rooms]" 
+                                                       value="{{ $hotelBooking->num_rooms }}" min="1"
+                                                       class="mt-1 block w-20 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                            </dd>
+                                        </div>
+                                        <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                                            <dt class="text-sm font-medium text-gray-500">Number of Guests</dt>
+                                            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                                <input type="number" name="hotel_bookings[{{ $index }}][num_guests]" 
+                                                       value="{{ $hotelBooking->num_guests }}" min="1"
+                                                       class="mt-1 block w-20 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                            </dd>
+                                        </div>
+                                    </dl>
+                                </div>
+                            </div>
+                        @endforeach
                     @endif
 
-                    @if($errors->any())
-                        <div class="alert alert-danger">
-                            <ul class="mb-0">
-                                @foreach($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-
-                    <form action="{{ route('bookings.update', $booking->id) }}" method="POST" id="bookingForm">
-                        @csrf
-                        @method('PUT')
-                        
-                        <!-- Guest Information -->
-                        <div class="card mb-4">
-                            <div class="card-header bg-light">
-                                <h5 class="mb-0"><i class="fas fa-user me-2"></i>Guest Information</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="first_name" class="form-label">First Name <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="first_name" name="first_name" 
-                                               value="{{ old('first_name', $booking->first_name ?? '') }}" required>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="last_name" class="form-label">Last Name <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="last_name" name="last_name" 
-                                               value="{{ old('last_name', $booking->last_name ?? '') }}" required>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
-                                        <input type="email" class="form-control" id="email" name="email" 
-                                               value="{{ old('email', $booking->email ?? '') }}" required>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="phone" class="form-label">Phone <span class="text-danger">*</span></label>
-                                        <input type="tel" class="form-control" id="phone" name="phone" 
-                                               value="{{ old('phone', $booking->phone ?? '') }}" required>
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="nationality" class="form-label">Nationality <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="nationality" name="nationality" 
-                                           value="{{ old('nationality', $booking->nationality ?? '') }}" required>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Booking Details -->
-                        <div class="card mb-4">
-                            <div class="card-header bg-light">
-                                <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Booking Details</h5>
-                            </div>
-                            <div class="card-body">
-                                @php
-                                    $hotelBooking = $booking->hotelBookings->first();
-                                    $checkIn = $hotelBooking ? $hotelBooking->check_in_date : now();
-                                    $checkOut = $hotelBooking ? $hotelBooking->check_out_date : now()->addDay();
-                                    $adults = $hotelBooking ? $hotelBooking->num_guests : 2;
-                                    $children = 0; // Default value, adjust as needed
-                                @endphp
-
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="check_in" class="form-label">Check-in Date <span class="text-danger">*</span></label>
-                                        <input type="date" class="form-control" id="check_in" name="check_in" 
-                                               value="{{ old('check_in', $checkIn ? $checkIn->format('Y-m-d') : '') }}" required>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="check_out" class="form-label">Check-out Date <span class="text-danger">*</span></label>
-                                        <input type="date" class="form-control" id="check_out" name="check_out" 
-                                               value="{{ old('check_out', $checkOut ? $checkOut->format('Y-m-d') : '') }}" required>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="adults" class="form-label">Adults <span class="text-danger">*</span></label>
-                                        <select class="form-select" id="adults" name="adults" required>
-                                            @for($i = 1; $i <= 10; $i++)
-                                                <option value="{{ $i }}" {{ (old('adults', $adults) == $i) ? 'selected' : '' }}>
-                                                    {{ $i }} {{ $i == 1 ? 'Adult' : 'Adults' }}
-                                                </option>
-                                            @endfor
-                                        </select>
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="children" class="form-label">Children</label>
-                                        <select class="form-select" id="children" name="children">
-                                            @for($i = 0; $i <= 10; $i++)
-                                                <option value="{{ $i }}" {{ (old('children', $children) == $i) ? 'selected' : '' }}>
-                                                    {{ $i }} {{ $i == 1 ? 'Child' : 'Children' }}
-                                                </option>
-                                            @endfor
-                                        </select>
-                                        <small class="text-muted">Ages 2-12 years</small>
-                                    </div>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="special_requests" class="form-label">Special Requests</label>
-                                    <textarea class="form-control" id="special_requests" name="special_requests" rows="3">{{ old('special_requests', $hotelBooking->special_requests ?? '') }}</textarea>
-                                    <small class="text-muted">Any special requirements or requests</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Hidden fields -->
-                        <input type="hidden" name="hotel_id" value="{{ $hotelBooking->hotel_id ?? '' }}">
-                        <input type="hidden" name="room_type_id" id="room_type_id" value="{{ $hotelBooking->room_type_id ?? '' }}">
-
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a href="{{ route('bookings.show', $booking->id) }}" class="btn btn-outline-secondary me-md-2">
-                                <i class="fas fa-times me-1"></i> Cancel
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-1"></i> Update Booking
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                    <div class="flex justify-end space-x-3 mt-6">
+                        <a href="{{ route('bookings.show', $booking) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Cancel
+                        </a>
+                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Update Booking
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
-
-@push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Date validation
-        const checkInInput = document.getElementById('check_in');
-        const checkOutInput = document.getElementById('check_out');
-        
-        // Set minimum date to today
-        const today = new Date().toISOString().split('T')[0];
-        checkInInput.min = today;
-        
-        // Update check-out min date when check-in date changes
-        checkInInput.addEventListener('change', function() {
-            checkOutInput.min = this.value;
-            if (new Date(checkOutInput.value) < new Date(this.value)) {
-                checkOutInput.value = this.value;
-            }
-        });
-        
-        // Form submission handler
-        document.getElementById('bookingForm').addEventListener('submit', function(e) {
-            if (new Date(checkOutInput.value) <= new Date(checkInInput.value)) {
-                e.preventDefault();
-                alert('Check-out date must be after check-in date');
-                return false;
-            }
-            return true;
-        });
-    });
-</script>
-@endpush
-
-<style>
-    .card {
-        border: none;
-        border-radius: 10px;
-        overflow: hidden;
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    }
-    .card-header {
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    }
-    .form-control:focus, .form-select:focus {
-        border-color: #0d6efd;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-    }
-    .btn-primary {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
-    }
-    .btn-outline-secondary {
-        color: #6c757d;
-        border-color: #6c757d;
-    }
-    .btn-outline-secondary:hover {
-        background-color: #6c757d;
-        color: white;
-    }
-</style>
 @endsection
