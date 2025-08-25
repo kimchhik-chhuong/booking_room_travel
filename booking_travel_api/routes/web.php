@@ -130,7 +130,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [\App\Http\Controllers\BookingController::class, 'index'])->name('index');
         Route::get('/create', [\App\Http\Controllers\BookingController::class, 'create'])->name('create');
         Route::post('/', [\App\Http\Controllers\BookingController::class, 'store'])->name('store');
-        Route::patch('/{booking}/cancel', [\App\Http\Controllers\BookingController::class, 'cancel'])
+        Route::patch('/{booking}/cancel', [\App\Http\Controllers\BookingController::class, 'cancelUserBooking'])
             ->name('cancel')
             ->where('booking', '[0-9]+');
     });

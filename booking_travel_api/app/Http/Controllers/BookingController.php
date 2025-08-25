@@ -359,30 +359,66 @@ class BookingController extends Controller
     }
 
     /**
-     * Cancel the specified booking.
-     */
-    public function cancelUserBooking($id)
-    {
-        $booking = Booking::where('user_id', Auth::id())->findOrFail($id);
-        
-        // Check if cancellation is allowed (e.g., 24 hours before check-in)
-        $checkIn = new \DateTime($booking->hotelBooking->check_in_date);
-        $now = new \DateTime();
-        $hoursUntilCheckIn = $now->diff($checkIn)->h + ($now->diff($checkIn)->days * 24);
-        
-        if ($hoursUntilCheckIn < 24) {
-            return back()->with('error', 'You can only cancel bookings at least 24 hours before check-in.');
+ * Cancel the specified booking.
+ */
+public function cancelUserBooking($id)
+{
+    try {
+        $booking = Booking::with('hotelBookings')
+            ->where('user_id', Auth::id())
+            ->findOrFail($id);
+
+        // Check if booking can be cancelled
+        if (!in_array($booking->status, ['pending', 'confirmed'])) {
+            return back()->with('error', 'Only pending or confirmed bookings can be cancelled.');
         }
-        
-        // Update booking status
-        $booking->status = 'cancelled';
-        $booking->save();
-        
-        // Update hotel booking status
-        $booking->hotelBooking->status = 'cancelled';
-        $booking->hotelBooking->save();
-        
-        return redirect()->route('bookings.show', $booking->id)
-            ->with('success', 'Your booking has been cancelled successfully.');
+
+        // Check cancellation policy (24 hours before check-in)
+        if ($booking->hotelBookings->isNotEmpty()) {
+            $checkIn = new \DateTime($booking->hotelBookings->first()->check_in_date);
+            $now = new \DateTime();
+            $hoursUntilCheckIn = $now->diff($checkIn)->h + ($now->diff($checkIn)->days * 24);
+            
+            if ($hoursUntilCheckIn < 24) {
+                return back()->with('error', 'You can only cancel bookings at least 24 hours before check-in.');
+            }
+        }
+
+        \DB::beginTransaction();
+
+        try {
+            // Update booking status
+            $booking->update([
+                'status' => 'cancelled',
+                'cancelled_at' => now(),
+                'cancelled_by' => Auth::id()
+            ]);
+
+            // Update related hotel bookings
+            if ($booking->hotelBookings->isNotEmpty()) {
+                $booking->hotelBookings()->update(['status' => 'cancelled']);
+            }
+
+            \DB::commit();
+
+            // Here you can add:
+            // - Send cancellation email
+            // - Process refund if needed
+            // - Log the cancellation
+
+            return redirect()
+                ->route('bookings.index')
+                ->with('success', 'Booking #' . $booking->id . ' has been cancelled successfully.');
+
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            \Log::error('Failed to cancel booking: ' . $e->getMessage());
+            throw $e;
+        }
+
+    } catch (\Exception $e) {
+        \Log::error('Booking cancellation error: ' . $e->getMessage());
+        return back()->with('error', 'Failed to cancel booking. Please try again or contact support.');
     }
+}
 }
