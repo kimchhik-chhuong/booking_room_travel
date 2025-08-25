@@ -1,27 +1,111 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(CarRentalApp());
+  runApp(const CarRentalApp());
 }
 
 class CarRentalApp extends StatelessWidget {
+  const CarRentalApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Car Rental Landing',
+      title: 'Car Rental',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primaryColor: Color(0xFFF59C1A),
-        scaffoldBackgroundColor: Color(0xFFF5F5F5),
+        primarySwatch: Colors.orange,
+        scaffoldBackgroundColor: Colors.grey[100],
         fontFamily: 'Arial',
       ),
-      home: LandingPage(),
-      debugShowCheckedModeBanner: false,
+      home: const LandingPage(),
     );
   }
 }
 
-class LandingPage extends StatelessWidget {
-  final orange = Color(0xFFF59C1A);
+class LandingPage extends StatefulWidget {
+  const LandingPage({super.key});
+
+  @override
+  State<LandingPage> createState() => _LandingPageState();
+}
+
+class _LandingPageState extends State<LandingPage> {
+  String? selectedLocation;
+  DateTime? selectedDate;
+  TimeOfDay? selectedTime;
+
+  final List<String> locations = [
+    "Phnom Penh",
+    "Siem Reap",
+    "Battambang",
+    "Sihanoukville"
+  ];
+
+  final List<Map<String, String>> cars = [
+    {
+      "name": "Toyota Corolla",
+      "details": "Mileage: 12,000 km • 1.8 L",
+      "image":
+          "https://images.unsplash.com/photo-1615907848350-d44dcd5a3480?q=80&w=800"
+    },
+    {
+      "name": "BMW X5",
+      "details": "Mileage: 22,000 km • 3.0 L",
+      "image":
+          "https://images.unsplash.com/photo-1571607383061-85b07d5aa36d?q=80&w=800"
+    },
+    {
+      "name": "Mercedes-Benz C-Class",
+      "details": "Mileage: 18,000 km • 2.0 L",
+      "image":
+          "https://images.unsplash.com/photo-1612883720645-7f80d132ef08?q=80&w=800"
+    },
+    {
+      "name": "Jeep Wrangler",
+      "details": "Mileage: 30,000 km • 2.5 L",
+      "image":
+          "https://images.unsplash.com/photo-1612152186673-19dba2e5f95b?q=80&w=800"
+    },
+  ];
+
+  final Color orange = const Color(0xFFF59C1A);
+
+  // Pick Date
+  Future<void> _pickDate() async {
+    DateTime now = DateTime.now();
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: now,
+      firstDate: now,
+      lastDate: DateTime(now.year + 1),
+    );
+    if (picked != null) {
+      setState(() {
+        selectedDate = picked;
+      });
+    }
+  }
+
+  // Pick Time
+  Future<void> _pickTime() async {
+    final TimeOfDay? picked =
+        await showTimePicker(context: context, initialTime: TimeOfDay.now());
+    if (picked != null) {
+      setState(() {
+        selectedTime = picked;
+      });
+    }
+  }
+
+  String getFormattedDate() {
+    if (selectedDate == null) return "Select Date";
+    return "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}";
+  }
+
+  String getFormattedTime() {
+    if (selectedTime == null) return "Select Time";
+    return selectedTime!.format(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,11 +118,11 @@ class LandingPage extends StatelessWidget {
               clipBehavior: Clip.none,
               children: [
                 Container(
-                  height: 430,
+                  height: 300,
                   width: double.infinity,
                   decoration: BoxDecoration(
                     image: DecorationImage(
-                      image: NetworkImage(
+                      image: const NetworkImage(
                         'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1920&auto=format&fit=crop',
                       ),
                       fit: BoxFit.cover,
@@ -49,62 +133,142 @@ class LandingPage extends StatelessWidget {
                   child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
+                      children: const [
                         Text(
-                          "Lorem Ipsum is simply dummy",
+                          "Find Your Perfect Ride 🚗",
                           style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 38,
-                            fontWeight: FontWeight.bold,
-                          ),
+                              color: Colors.white,
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold),
                         ),
                         SizedBox(height: 8),
                         Text(
-                          "Lorem Ipsum is simply dummy text",
+                          "Best cars at the lowest prices",
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.9),
-                            fontSize: 16,
-                          ),
+                              color: Colors.white70,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400),
                         ),
                       ],
                     ),
                   ),
                 ),
+
+                // Search Card
                 Positioned(
-                  bottom: -40,
-                  left: 20,
-                  right: 20,
+                  bottom: -60,
+                  left: 16,
+                  right: 16,
                   child: Card(
-                    color: Colors.black.withOpacity(0.65),
+                    color: Colors.white,
+                    elevation: 12,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8)),
+                        borderRadius: BorderRadius.circular(16)),
                     child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Wrap(
-                        spacing: 10,
-                        runSpacing: 10,
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
                         children: [
-                          _buildDropdownField("Location", ["Location"]),
-                          _buildDropdownField("Type", ["Car Type"]),
-                          _buildDateField("Pickup Date"),
-                          _buildTimeField("Pickup Time"),
-                          _buildDateField("Return Date"),
-                          _buildTimeField("Return Time"),
-                          _buildDropdownField("Members", ["Members"]),
-                          _buildDropdownField("Driver's Age", ["21 - 30"]),
-                          ElevatedButton(
-                            onPressed: () {},
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: orange,
-                              padding: EdgeInsets.symmetric(
-                                  vertical: 14, horizontal: 20),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(6)),
+                          // Location
+                          DropdownButtonFormField<String>(
+                            value: selectedLocation,
+                            hint: const Text("Select Location"),
+                            items: locations.map((location) {
+                              return DropdownMenuItem(
+                                value: location,
+                                child: Text(location),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                selectedLocation = value;
+                              });
+                            },
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(),
+                              labelText: "Pickup Location",
                             ),
-                            child: Text(
-                              "SEARCH NOW",
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 14),
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Date & Time
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  readOnly: true,
+                                  decoration: InputDecoration(
+                                    labelText: getFormattedDate(),
+                                    border: const OutlineInputBorder(),
+                                    suffixIcon:
+                                        const Icon(Icons.calendar_today),
+                                  ),
+                                  onTap: _pickDate,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: TextField(
+                                  readOnly: true,
+                                  decoration: InputDecoration(
+                                    labelText: getFormattedTime(),
+                                    border: const OutlineInputBorder(),
+                                    suffixIcon:
+                                        const Icon(Icons.access_time),
+                                  ),
+                                  onTap: _pickTime,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Search Button with gradient
+                          SizedBox(
+                            width: double.infinity,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                gradient: LinearGradient(
+                                    colors: [orange, Colors.deepOrangeAccent]),
+                              ),
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  if (selectedLocation != null &&
+                                      selectedDate != null &&
+                                      selectedTime != null) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          "Searching cars at $selectedLocation\nDate: ${getFormattedDate()} - Time: ${getFormattedTime()}",
+                                        ),
+                                      ),
+                                    );
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                            "Please select location, date & time."),
+                                      ),
+                                    );
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      Colors.transparent, // gradient used
+                                  shadowColor: Colors.transparent,
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: const Text(
+                                  "SEARCH NOW",
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
                             ),
                           ),
                         ],
@@ -114,326 +278,143 @@ class LandingPage extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(height: 60), // for overlap spacing
 
-            // Why Choose Us Section
-            _sectionTitle("Why Choose Us?"),
+            const SizedBox(height: 100),
+
+            // Cars Section
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  int crossAxis = constraints.maxWidth > 1024
-                      ? 4
-                      : constraints.maxWidth > 700
-                          ? 2
-                          : 1;
-                  return GridView(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: crossAxis,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                        childAspectRatio: 1),
-                    children: [
-                      _featureCard("🚗", "Reliable Service",
-                          "Lorem ipsum dolor sit amet, consectetur adipiscing elit."),
-                      _featureCard("🏷️", "Lowest Prices",
-                          "Best rates with no hidden fees and transparent terms."),
-                      _featureCard("🕑", "24/7 Support",
-                          "Our team is here to help anytime you need us."),
-                      _featureCard("🚙", "Best Cars",
-                          "Only top-condition vehicles from trusted partners."),
-                    ],
-                  );
-                },
-              ),
-            ),
-
-            // Car Cards Section
-            Container(
-              color: Color(0xFFF8F8F8),
-              width: double.infinity,
-              padding: EdgeInsets.symmetric(vertical: 40),
               child: Column(
                 children: [
-                  _sectionTitle("Choose your Cab"),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        int crossAxis = constraints.maxWidth > 1024
-                            ? 4
-                            : constraints.maxWidth > 700
-                                ? 2
-                                : 1;
-                        return GridView(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: crossAxis,
-                                  crossAxisSpacing: 16,
-                                  mainAxisSpacing: 16,
-                                  childAspectRatio: 0.8),
-                          children: [
-                            _carCard(
-                                "https://images.unsplash.com/photo-1606813903025-7b1a6a9cbd02?q=80&w=800&auto=format&fit=crop",
-                                "Cci- Fiat 500",
-                                "Mileage: 14 000 km • Volume: 2.3 l • Air Conditioning: Yes"),
-                            _carCard(
-                                "https://images.unsplash.com/photo-1566186769607-3e83c9a3b2a1?q=80&w=800&auto=format&fit=crop",
-                                "Cci- Fiat 500",
-                                "Mileage: 14 000 km • Volume: 2.0 l • Air Conditioning: Yes"),
-                            _carCard(
-                                "https://images.unsplash.com/photo-1617965547460-2e3a0b1a7d95?q=80&w=800&auto=format&fit=crop",
-                                "Cci- Fiat 500",
-                                "Mileage: 14 000 km • Volume: 2.3 l • Air Conditioning: Yes"),
-                            _carCard(
-                                "https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=800&auto=format&fit=crop",
-                                "Cci- Fiat 500",
-                                "Mileage: 14 000 km • Volume: 2.2 l • Air Conditioning: Yes"),
-                          ],
-                        );
-                      },
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Available Cars",
+                      style:
+                          TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                     ),
+                  ),
+                  const SizedBox(height: 12),
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 16,
+                      crossAxisSpacing: 16,
+                      childAspectRatio: 0.7,
+                    ),
+                    itemCount: cars.length,
+                    itemBuilder: (context, index) {
+                      final car = cars[index];
+                      return InkWell(
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("Booking ${car["name"]}..."),
+                            ),
+                          );
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 150),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: const [
+                              BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 6,
+                                  offset: Offset(0, 4))
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ClipRRect(
+                                borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(16)),
+                                child: Image.network(
+                                  car["image"]!,
+                                  height: 120,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      car["name"]!,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      car["details"]!,
+                                      style: const TextStyle(
+                                          fontSize: 12, color: Colors.grey),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      child: DecoratedBox(
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          gradient: LinearGradient(colors: [
+                                            orange,
+                                            Colors.deepOrangeAccent
+                                          ]),
+                                        ),
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                    "Booking ${car["name"]}..."),
+                                              ),
+                                            );
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor:
+                                                Colors.transparent,
+                                            shadowColor: Colors.transparent,
+                                            minimumSize:
+                                                const Size.fromHeight(36),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                          ),
+                                          child: const Text(
+                                            "Book Now",
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 12),
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
             ),
-
-            // Testimonials
-            _sectionTitle("What our people are saying"),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Container(
-                padding: EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(40),
-                      child: Image.network(
-                        "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop",
-                        width: 80,
-                        height: 80,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "“Lorem ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.”",
-                            style: TextStyle(
-                                fontStyle: FontStyle.italic, color: Colors.grey[700]),
-                          ),
-                          SizedBox(height: 6),
-                          Text("John Smith Founder",
-                              style: TextStyle(fontWeight: FontWeight.w600)),
-                          Text("& CEO, Company Name",
-                              style: TextStyle(color: Colors.grey[600])),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Destination Gallery
-            SizedBox(height: 40),
-            _sectionTitle("Find Destination"),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  int crossAxis = constraints.maxWidth > 1024
-                      ? 5
-                      : constraints.maxWidth > 700
-                          ? 3
-                          : 2;
-                  return GridView.count(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    crossAxisCount: crossAxis,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
-                    children: List.generate(10, (index) {
-                      return ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: Image.network(
-                          "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=300&auto=format&fit=crop&sig=$index",
-                          fit: BoxFit.cover,
-                        ),
-                      );
-                    }),
-                  );
-                },
-              ),
-            ),
-            SizedBox(height: 40),
+            const SizedBox(height: 40),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _sectionTitle(String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Text(
-        text,
-        style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-        textAlign: TextAlign.center,
-      ),
-    );
-  }
-
-  Widget _featureCard(String icon, String title, String desc) {
-    return Container(
-      padding: EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircleAvatar(
-            radius: 32,
-            backgroundColor: Colors.white,
-            child: Text(
-              icon,
-              style: TextStyle(fontSize: 28),
-            ),
-          ),
-          SizedBox(height: 8),
-          Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          SizedBox(height: 4),
-          Text(desc, style: TextStyle(fontSize: 13, color: Colors.grey[600]), textAlign: TextAlign.center),
-        ],
-      ),
-    );
-  }
-
-  Widget _carCard(String imgUrl, String title, String meta) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(6)),
-              child: Image.network(imgUrl, height: 140, width: double.infinity, fit: BoxFit.cover)),
-          Padding(
-            padding: EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                SizedBox(height: 4),
-                Text(meta, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-                SizedBox(height: 6),
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: orange,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4)),
-                  ),
-                  child: Text("Book Now", style: TextStyle(fontWeight: FontWeight.bold)),
-                )
-              ],
-            ),
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDropdownField(String label, List<String> items) {
-    return SizedBox(
-      width: 120,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: TextStyle(color: Colors.white70, fontSize: 12)),
-          SizedBox(height: 4),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 8),
-            decoration: BoxDecoration(
-                color: Colors.white, borderRadius: BorderRadius.circular(4)),
-            child: DropdownButton<String>(
-              isExpanded: true,
-              underline: SizedBox(),
-              value: items[0],
-              items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-              onChanged: (val) {},
-            ),
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDateField(String label) {
-    return SizedBox(
-      width: 120,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: TextStyle(color: Colors.white70, fontSize: 12)),
-          SizedBox(height: 4),
-          Container(
-            decoration: BoxDecoration(
-                color: Colors.white, borderRadius: BorderRadius.circular(4)),
-            child: TextField(
-              readOnly: true,
-              decoration: InputDecoration(
-                  contentPadding: EdgeInsets.symmetric(horizontal: 8),
-                  hintText: "Select Date",
-                  border: InputBorder.none),
-              onTap: () {},
-            ),
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTimeField(String label) {
-    return SizedBox(
-      width: 120,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: TextStyle(color: Colors.white70, fontSize: 12)),
-          SizedBox(height: 4),
-          Container(
-            decoration: BoxDecoration(
-                color: Colors.white, borderRadius: BorderRadius.circular(4)),
-            child: TextField(
-              readOnly: true,
-              decoration: InputDecoration(
-                  contentPadding: EdgeInsets.symmetric(horizontal: 8),
-                  hintText: "Select Time",
-                  border: InputBorder.none),
-              onTap: () {},
-            ),
-          )
-        ],
       ),
     );
   }
