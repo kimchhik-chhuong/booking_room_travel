@@ -45,6 +45,72 @@ class RoomTypeController extends \App\Http\Controllers\Controller
     }
 
     /**
+     * Get available rooms for a specific hotel
+     *
+     * @param int $hotelId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getAvailableRooms($hotelId)
+    {
+        try {
+            // Log the incoming request
+            \Log::info('Fetching available rooms for hotel: ' . $hotelId);
+            
+            // Check if hotel exists
+            $hotel = HotelMetadata::find($hotelId);
+            
+            if (!$hotel) {
+                $availableHotels = HotelMetadata::pluck('name', 'hotel_id');
+                \Log::warning('Hotel not found. Available hotels: ' . json_encode($availableHotels));
+                
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Hotel not found. Available hotels: ' . $availableHotels->map(fn($name, $id) => "$name (ID: $id)")->implode(', ')
+                ], 404);
+            }
+            
+            // Get available rooms for the hotel
+            $roomTypes = RoomType::where('hotel_metadata_id', $hotelId)
+                ->where('is_available', true)
+                ->where('available_rooms', '>', 0)
+                ->get();
+
+            \Log::info('Found ' . $roomTypes->count() . ' available rooms for hotel ' . $hotelId);
+
+            return response()->json([
+                'status' => 'success',
+                'hotel' => [
+                    'id' => $hotel->hotel_id,
+                    'name' => $hotel->name
+                ],
+                'data' => $roomTypes->map(function($room) {
+                    return [
+                        'id' => $room->id,
+                        'name' => $room->name,
+                        'description' => $room->description,
+                        'price' => $room->price,
+                        'max_occupancy' => $room->max_occupancy,
+                        'available_rooms' => $room->available_rooms,
+                        'amenities' => $room->amenities,
+                        'image_url' => $room->image_url_full,
+                    ];
+                })
+            ]);
+            
+        } catch (\Exception $e) {
+            // Log the full error
+            \Log::error('Error in getAvailableRooms: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+            
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch available rooms',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
+    }
+
+    /**
      * Show the form for creating a new room type.
      */
     public function create(HotelMetadata $hotel)

@@ -17,14 +17,16 @@ class RoomType extends Model
         'max_occupancy',
         'available_rooms',
         'amenities',
-        'image_url'
+        'image_url',
+        'is_available'
     ];
 
     protected $casts = [
-        'price' => 'decimal:2',
+        'price' => 'float',
         'max_occupancy' => 'integer',
         'available_rooms' => 'integer',
         'amenities' => 'array',
+        'is_available' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -61,7 +63,7 @@ class RoomType extends Model
      */
     public function hotelMetadata()
     {
-        return $this->belongsTo(HotelMetadata::class);
+        return $this->belongsTo(HotelMetadata::class, 'hotel_metadata_id', 'hotel_id');
     }
 
     /**

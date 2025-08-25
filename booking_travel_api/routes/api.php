@@ -116,6 +116,15 @@ Route::post('/messages/send', [MessageController::class, 'store']);
 //notification
 Route::get('/notifications/count', [NotificationController::class, 'count'])->middleware('auth:api');
 
+// Public API routes
+Route::get('/hotels/{hotel}/room-types', function (\App\Models\HotelMetadata $hotel) {
+    $roomTypes = \App\Models\RoomType::where('hotel_metadata_id', $hotel->hotel_id)
+        ->where('available_rooms', '>', 0)
+        ->get(['id', 'name', 'description', 'price', 'max_occupancy', 'available_rooms', 'amenities']);
+        
+    return response()->json($roomTypes ?: []);
+})->name('api.hotels.room-types');
+
 // Protected routes
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::resource('users', UserController::class);
