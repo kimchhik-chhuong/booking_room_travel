@@ -22,12 +22,21 @@
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-sm font-medium text-gray-500">Total Bookings</p>
-                        <p class="text-2xl font-bold mt-1">1,247</p>
-                        <p class="text-sm text-green-600 mt-2 flex items-center">
-                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M12 7a1 1 0 01.707.293l4 4a1 1 0 01-1.414 1.414L13 9.414V17a1 1 0 11-2 0V9.414l-2.293 2.293a1 1 0 01-1.414-1.414l4-4A1 1 0 0112 7z" clip-rule="evenodd" />
-                            </svg>
-                            +12.5%
+                        <p class="text-2xl font-bold mt-1">{{ number_format($totalBookings) }}</p>
+                        @php
+                            $bookingChange = $previousMonthBookings > 0 ? 
+                                round((($totalBookings - $previousMonthBookings) / $previousMonthBookings) * 100, 1) : 
+                                0;
+                        @endphp
+                        <p class="text-sm {{ $bookingChange >= 0 ? 'text-green-600' : 'text-red-600' }} mt-2 flex items-center">
+                            @if($bookingChange != 0)
+                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M12 7a1 1 0 01.707.293l4 4a1 1 0 01-1.414 1.414L13 9.414V17a1 1 0 11-2 0V9.414l-2.293 2.293a1 1 0 01-1.414-1.414l4-4A1 1 0 0112 7z" clip-rule="evenodd" />
+                                </svg>
+                                {{ abs($bookingChange) }}% {{ $bookingChange >= 0 ? 'increase' : 'decrease' }}
+                            @else
+                                <span>No change</span>
+                            @endif
                         </p>
                     </div>
                     <div class="p-3 bg-blue-100 rounded-lg">
@@ -43,12 +52,12 @@
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-sm font-medium text-gray-500">Confirmed</p>
-                        <p class="text-2xl font-bold mt-1">1,089</p>
+                        <p class="text-2xl font-bold mt-1">{{ number_format($confirmedBookings) }}</p>
+                        @php
+                            $confirmedPercentage = $totalBookings > 0 ? round(($confirmedBookings / $totalBookings) * 100, 1) : 0;
+                        @endphp
                         <p class="text-sm text-green-600 mt-2 flex items-center">
-                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M12 7a1 1 0 01.707.293l4 4a1 1 0 01-1.414 1.414L13 9.414V17a1 1 0 11-2 0V9.414l-2.293 2.293a1 1 0 01-1.414-1.414l4-4A1 1 0 0112 7z" clip-rule="evenodd" />
-                            </svg>
-                            +8.3%
+                            <span>{{ $confirmedPercentage }}% of total</span>
                         </p>
                     </div>
                     <div class="p-3 bg-green-100 rounded-lg">
@@ -64,9 +73,12 @@
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-sm font-medium text-gray-500">Pending</p>
-                        <p class="text-2xl font-bold mt-1">89</p>
+                        <p class="text-2xl font-bold mt-1">{{ number_format($pendingBookings) }}</p>
+                        @php
+                            $pendingPercentage = $totalBookings > 0 ? round(($pendingBookings / $totalBookings) * 100, 1) : 0;
+                        @endphp
                         <p class="text-sm text-yellow-600 mt-2 flex items-center">
-                            <span class="mr-1">Awaiting</span>
+                            <span>{{ $pendingPercentage }}% of total</span>
                         </p>
                     </div>
                     <div class="p-3 bg-yellow-100 rounded-lg">
@@ -82,12 +94,21 @@
                 <div class="flex justify-between items-start">
                     <div>
                         <p class="text-sm font-medium text-gray-500">Revenue</p>
-                        <p class="text-2xl font-bold mt-1">$234K</p>
-                        <p class="text-sm text-green-600 mt-2 flex items-center">
-                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M12 7a1 1 0 01.707.293l4 4a1 1 0 01-1.414 1.414L13 9.414V17a1 1 0 11-2 0V9.414l-2.293 2.293a1 1 0 01-1.414-1.414l4-4A1 1 0 0112 7z" clip-rule="evenodd" />
-                            </svg>
-                            +18.7%
+                        <p class="text-2xl font-bold mt-1">${{ number_format($totalRevenue) }}</p>
+                        @php
+                            $revenueChange = $previousMonthRevenue > 0 ? 
+                                round((($totalRevenue - $previousMonthRevenue) / $previousMonthRevenue) * 100, 1) : 
+                                ($totalRevenue > 0 ? 100 : 0);
+                        @endphp
+                        <p class="text-sm {{ $revenueChange >= 0 ? 'text-green-600' : 'text-red-600' }} mt-2 flex items-center">
+                            @if($revenueChange != 0)
+                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M12 7a1 1 0 01.707.293l4 4a1 1 0 01-1.414 1.414L13 9.414V17a1 1 0 11-2 0V9.414l-2.293 2.293a1 1 0 01-1.414-1.414l4-4A1 1 0 0112 7z" clip-rule="evenodd" />
+                                </svg>
+                                {{ abs($revenueChange) }}% {{ $revenueChange >= 0 ? 'increase' : 'decrease' }}
+                            @else
+                                <span>No change</span>
+                            @endif
                         </p>
                     </div>
                     <div class="p-3 bg-purple-100 rounded-lg">
@@ -256,7 +277,7 @@
                                         </a>
                                     @endif
                                     @if(in_array($booking->status, ['pending', 'confirmed']))
-                                        <form action="{{ route('bookings.cancel', $booking->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to cancel this booking?')">
+                                        <form action="{{ route('bookings.cancel', ['booking' => $booking->id]) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to cancel this booking?')">
                                             @csrf
                                             @method('PATCH')
                                             <button type="submit" class="text-red-600 hover:text-red-900" title="Cancel">

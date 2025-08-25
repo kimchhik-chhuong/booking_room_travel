@@ -206,11 +206,40 @@
         const noRoomsMessage = document.getElementById('noRoomsMessage');
         const checkInInput = document.getElementById('check_in');
         const checkOutInput = document.getElementById('check_out');
-        const adultsSelect = document.querySelector('select[name="adults"]');
-        const childrenSelect = document.querySelector('select[name="children"]');
-        let selectedRoomTypeId = null;
+        const nightCount = document.getElementById('night-count');
+        const totalAmount = document.getElementById('total-amount');
+        let selectedRoomPrice = 0;
 
-        // Set default dates
+        // Format currency
+        const formatCurrency = (amount) => {
+            return parseFloat(amount).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        };
+
+        // Calculate nights between two dates
+        const calculateNights = (checkIn, checkOut) => {
+            if (!checkIn || !checkOut) return 0;
+            const oneDay = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
+            const checkInDate = new Date(checkIn);
+            const checkOutDate = new Date(checkOut);
+            return Math.round(Math.abs((checkOutDate - checkInDate) / oneDay));
+        };
+
+        // Update the booking summary
+        const updateBookingSummary = () => {
+            const nights = calculateNights(checkInInput.value, checkOutInput.value);
+            const total = nights * selectedRoomPrice;
+            
+            nightCount.textContent = nights;
+            totalAmount.textContent = formatCurrency(total);
+        };
+
+        // Handle room type selection
+        const handleRoomTypeSelection = (roomPrice) => {
+            selectedRoomPrice = parseFloat(roomPrice) || 0;
+            updateBookingSummary();
+        };
+
+        // Initialize date inputs
         const today = new Date();
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
@@ -219,31 +248,55 @@
         const formatDate = (date) => date.toISOString().split('T')[0];
         
         // Set default date values
-        checkInInput.min = formatDate(today);
-        checkOutInput.min = formatDate(tomorrow);
-        
         if (!checkInInput.value) checkInInput.value = formatDate(today);
         if (!checkOutInput.value) checkOutInput.value = formatDate(tomorrow);
+        
+        // Set minimum dates
+        checkInInput.min = formatDate(today);
+        checkOutInput.min = formatDate(tomorrow);
 
-        // Handle hotel selection change
+        // Add event listeners for date changes
+        [checkInInput, checkOutInput].forEach(input => {
+            input.addEventListener('change', function() {
+                // Basic date validation
+                if (checkInInput.value && checkOutInput.value) {
+                    const checkIn = new Date(checkInInput.value);
+                    const checkOut = new Date(checkOutInput.value);
+                    
+                    if (checkOut <= checkIn) {
+                        // If check-out is before or same as check-in, set it to next day
+                        const nextDay = new Date(checkIn);
+                        nextDay.setDate(checkIn.getDate() + 1);
+                        checkOutInput.value = formatDate(nextDay);
+                    }
+                    
+                    // Update room availability when dates change
+                    if (hotelSelect.value) {
+                        hotelSelect.dispatchEvent(new Event('change'));
+                    }
+                    
+                    // Update booking summary
+                    updateBookingSummary();
+                }
+            });
+        });
+
         if (hotelSelect) {
             hotelSelect.addEventListener('change', function() {
                 const hotelId = this.value;
                 
                 if (!hotelId) {
                     roomTypeSection.style.display = 'none';
-                    selectedRoomTypeId = null;
                     return;
                 }
 
                 // Show loading state
-                roomTypeSection.style.display = 'block';
                 roomTypeOptions.innerHTML = `
                     <div class="flex items-center justify-center p-4">
                         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                        <span class="ml-2 text-gray-600">Loading available rooms...</span>
-                    </div>
-                `;
+                        <span class="ml-2 text-gray-600">Loading room types...</span>
+                    </div>`;
+                roomTypeSection.style.display = 'block';
                 noRoomsMessage.style.display = 'none';
 
                 // Fetch available rooms for the selected hotel
@@ -260,67 +313,56 @@
                             
                             data.data.forEach(room => {
                                 const roomCard = document.createElement('div');
-                                roomCard.className = 'border rounded-lg p-4 mb-4 hover:shadow-md transition-shadow';
+                                roomCard.className = 'room-type-option mb-4 p-4 border rounded-lg cursor-pointer hover:border-blue-300';
+                                roomCard.dataset.price = room.price || 0;
                                 roomCard.innerHTML = `
-                                    <div class="flex items-start">
-                                        <div class="flex-1">
-                                            <div class="flex justify-between items-start">
-                                                <div>
-                                                    <h4 class="font-medium text-gray-900">${room.name}</h4>
-                                                    ${room.description ? `<p class="text-sm text-gray-500 mt-1">${room.description}</p>` : ''}
-                                                    <div class="mt-2">
-                                                        <span class="text-lg font-semibold text-blue-600">$${parseFloat(room.price).toFixed(2)}</span>
-                                                        <span class="text-sm text-gray-500">/night</span>
-                                                    </div>
-                                                    <div class="mt-2">
-                                                        <span class="text-sm text-gray-600">Max occupancy: ${room.max_occupancy} guests</span>
-                                                        <span class="mx-2 text-gray-300">•</span>
-                                                        <span class="text-sm text-gray-600">Available: ${room.available_rooms} rooms</span>
-                                                    </div>
-                                                </div>
-                                                <div class="ml-4 flex items-center">
-                                                    <input 
-                                                        id="room_${room.id}" 
-                                                        name="room_type_id" 
-                                                        type="radio" 
-                                                        value="${room.id}"
-                                                        class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                                        required
-                                                        ${selectedRoomTypeId === room.id ? 'checked' : ''}
-                                                        onchange="document.querySelector('input[name=\'room_type_id\']').value = this.value;"
-                                                    >
-                                                    <label for="room_${room.id}" class="ml-2 block text-sm text-gray-700">
-                                                        Select
-                                                    </label>
-                                                </div>
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <h4 class="font-medium text-gray-900">${room.name}</h4>
+                                            <p class="text-sm text-gray-500">${room.description || 'Comfortable room with all amenities'}</p>
+                                            <div class="mt-2">
+                                                <span class="text-sm font-medium text-gray-900">
+                                                    $${parseFloat(room.price || 0).toFixed(2)}
+                                                </span>
+                                                <span class="text-xs text-gray-500"> / night</span>
                                             </div>
+                                            <div class="mt-1 text-xs text-green-600">
+                                                ${room.available_rooms || 0} ${(room.available_rooms === 1 ? 'room' : 'rooms')} available
+                                            </div>
+                                        </div>
+                                        <div class="flex-shrink-0 ml-4">
+                                            <input type="radio" name="room_type_id" value="${room.id}" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                                         </div>
                                     </div>
                                 `;
-                                roomTypeOptions.appendChild(roomCard);
                                 
-                                // Add click event to select the room when clicking anywhere on the card
-                                roomCard.addEventListener('click', (e) => {
-                                    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'LABEL') {
-                                        const radio = roomCard.querySelector('input[type="radio"]');
-                                        if (radio) {
-                                            radio.checked = true;
-                                            selectedRoomTypeId = radio.value;
-                                            // Update hidden input if it exists
-                                            const hiddenInput = document.querySelector('input[name="room_type_id"]');
-                                            if (hiddenInput) {
-                                                hiddenInput.value = selectedRoomTypeId;
-                                            }
-                                        }
-                                    }
+                                roomCard.addEventListener('click', function() {
+                                    // Update radio button
+                                    const radio = this.querySelector('input[type="radio"]');
+                                    radio.checked = true;
+                                    // Handle selection with the room price
+                                    handleRoomTypeSelection(this.dataset.price);
                                 });
+                                
+                                roomTypeOptions.appendChild(roomCard);
                             });
                             
+                            // Select first room by default if none selected
+                            const firstRoom = roomTypeOptions.querySelector('.room-type-option');
+                            if (firstRoom) {
+                                firstRoom.click();
+                            }
+                            
+                            roomTypeSection.style.display = 'block';
                             noRoomsMessage.style.display = 'none';
                         } else {
                             roomTypeOptions.innerHTML = '';
                             noRoomsMessage.style.display = 'block';
                             noRoomsMessage.textContent = data.message || 'No available rooms for the selected dates.';
+                            
+                            // Reset booking summary
+                            selectedRoomPrice = 0;
+                            updateBookingSummary();
                         }
                     })
                     .catch(error => {
@@ -329,7 +371,7 @@
                             <div class="bg-red-50 border-l-4 border-red-400 p-4">
                                 <div class="flex">
                                     <div class="flex-shrink-0">
-                                        <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                                         </svg>
                                     </div>
@@ -337,43 +379,17 @@
                                         <p class="text-sm text-red-700">Error loading room types. Please try again later.</p>
                                     </div>
                                 </div>
-                            </div>
-                        `;
-                        noRoomsMessage.style.display = 'none';
+                            </div>`;
+                        
+                        // Reset booking summary
+                        selectedRoomPrice = 0;
+                        updateBookingSummary();
                     });
             });
         }
 
-        // Handle date changes to update room availability
-        [checkInInput, checkOutInput].forEach(input => {
-            input.addEventListener('change', function() {
-                if (hotelSelect.value) {
-                    hotelSelect.dispatchEvent(new Event('change'));
-                }
-            });
-        });
-
-        // Add a hidden input to store the selected room type
-        const hiddenInput = document.createElement('input');
-        hiddenInput.type = 'hidden';
-        hiddenInput.name = 'room_type_id';
-        hiddenInput.value = '';
-        document.querySelector('form').appendChild(hiddenInput);
-
-        // Handle form submission
-        const bookingForm = document.querySelector('form');
-        if (bookingForm) {
-            bookingForm.addEventListener('submit', function(e) {
-                const selectedRoom = document.querySelector('input[name="room_type_id"]:checked');
-                if (!selectedRoom || !selectedRoom.value) {
-                    e.preventDefault();
-                    alert('Please select a room type before proceeding.');
-                    roomTypeSection.scrollIntoView({ behavior: 'smooth' });
-                    return false;
-                }
-                return true;
-            });
-        }
+        // Initialize booking summary
+        updateBookingSummary();
     });
 </script>
 @endpush

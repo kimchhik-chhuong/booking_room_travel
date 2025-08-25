@@ -265,11 +265,46 @@ class BookingController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Booking $booking)
+    public function show($id)
     {
-        // Load relationships
-        $booking->load(['user', 'payment', 'hotelBookings']);
-        return response()->json(['status' => 'success', 'data' => $booking], 200);
+        try {
+            $booking = Booking::with(['user', 'payment', 'hotelBookings'])->findOrFail($id);
+            
+            // Get the first hotel booking
+            $hotelBooking = $booking->hotelBookings->first();
+            
+            if (!$hotelBooking) {
+                return redirect()->route('bookings.index')
+                    ->with('error', 'No hotel booking found for this reservation.');
+            }
+            
+            // Get hotel and room type details
+            $hotel = \App\Models\HotelMetadata::find($hotelBooking->hotel_id);
+            $roomType = \App\Models\RoomType::find($hotelBooking->room_type_id);
+            
+            if (!$hotel || !$roomType) {
+                return redirect()->route('bookings.index')
+                    ->with('error', 'Hotel or room type not found for this booking.');
+            }
+            
+            // Calculate number of nights
+            $checkIn = new \DateTime($hotelBooking->check_in_date);
+            $checkOut = new \DateTime($hotelBooking->check_out_date);
+            $nights = $checkIn->diff($checkOut)->days;
+            
+            return view('bookings.show', [
+                'booking' => $booking,
+                'hotelBooking' => $hotelBooking,
+                'hotel' => $hotel,
+                'roomType' => $roomType,
+                'nights' => $nights
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error showing booking: ' . $e->getMessage());
+            return redirect()->route('bookings.index')
+                ->with('error', 'Error loading booking details. Please try again.');
+        }
     }
 
     /**
@@ -359,114 +394,180 @@ class BookingController extends Controller
     }
 
     /**
- * Cancel the specified booking.
- */
-public function cancelUserBooking($id)
-{
-    try {
-        $booking = Booking::with('hotelBookings')
-            ->where('user_id', Auth::id())
-            ->findOrFail($id);
-
-        // Check if booking can be cancelled
-        if (!in_array($booking->status, ['pending', 'confirmed'])) {
-            return back()->with('error', 'Only pending or confirmed bookings can be cancelled.');
-        }
-
-        // Check cancellation policy (24 hours before check-in)
-        if ($booking->hotelBookings->isNotEmpty()) {
-            $checkIn = new \DateTime($booking->hotelBookings->first()->check_in_date);
-            $now = new \DateTime();
-            $hoursUntilCheckIn = $now->diff($checkIn)->h + ($now->diff($checkIn)->days * 24);
-            
-            if ($hoursUntilCheckIn < 24) {
-                return back()->with('error', 'You can only cancel bookings at least 24 hours before check-in.');
-            }
-        }
-
-        \DB::beginTransaction();
-
+     * Cancel the specified booking.
+     */
+    public function cancelUserBooking($id)
+    {
         try {
+            $booking = Booking::with('hotelBookings')
+                ->where('user_id', Auth::id())
+                ->findOrFail($id);
+
+            // Check if booking can be cancelled
+            if (!in_array($booking->status, ['pending', 'confirmed'])) {
+                return back()->with('error', 'Only pending or confirmed bookings can be cancelled.');
+            }
+
+            // Check cancellation policy (24 hours before check-in)
+            if ($booking->hotelBookings->isNotEmpty()) {
+                $checkIn = new \DateTime($booking->hotelBookings->first()->check_in_date);
+                $now = new \DateTime();
+                $hoursUntilCheckIn = $now->diff($checkIn)->h + ($now->diff($checkIn)->days * 24);
+                
+                if ($hoursUntilCheckIn < 24) {
+                    return back()->with('error', 'You can only cancel bookings at least 24 hours before check-in.');
+                }
+            }
+
+            \DB::beginTransaction();
+
+            try {
+                // Update booking status
+                $booking->update([
+                    'status' => 'cancelled',
+                    'cancelled_at' => now(),
+                    'cancelled_by' => Auth::id()
+                ]);
+
+                // Update related hotel bookings
+                if ($booking->hotelBookings->isNotEmpty()) {
+                    $booking->hotelBookings()->update(['status' => 'cancelled']);
+                }
+
+                \DB::commit();
+
+                // Here you can add:
+                // - Send cancellation email
+                // - Process refund if needed
+                // - Log the cancellation
+
+                return redirect()
+                    ->route('bookings.index')
+                    ->with('success', 'Booking #' . $booking->id . ' has been cancelled successfully.');
+
+            } catch (\Exception $e) {
+                \DB::rollBack();
+                \Log::error('Failed to cancel booking: ' . $e->getMessage());
+                throw $e;
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('Booking cancellation error: ' . $e->getMessage());
+            return back()->with('error', 'Failed to cancel booking. Please try again or contact support.');
+        }
+    }
+
+    /**
+     * Cancel the specified booking.
+     */
+    public function cancel($id)
+    {
+        try {
+            $booking = Booking::with('hotelBookings')->findOrFail($id);
+            
+            // Check if user is authorized to cancel this booking
+            if (auth()->id() !== $booking->user_id && !auth()->user()->hasRole('admin')) {
+                return redirect()->back()->with('error', 'You are not authorized to cancel this booking.');
+            }
+            
+            // Check if booking can be cancelled
+            if ($booking->status === 'cancelled') {
+                return redirect()->back()->with('error', 'This booking has already been cancelled.');
+            }
+            
+            if ($booking->status === 'completed') {
+                return redirect()->back()->with('error', 'Completed bookings cannot be cancelled.');
+            }
+            
+            // Start database transaction
+            \DB::beginTransaction();
+            
             // Update booking status
             $booking->update([
                 'status' => 'cancelled',
-                'cancelled_at' => now(),
-                'cancelled_by' => Auth::id()
+                'cancelled_at' => now()
             ]);
-
-            // Update related hotel bookings
-            if ($booking->hotelBookings->isNotEmpty()) {
-                $booking->hotelBookings()->update(['status' => 'cancelled']);
+            
+            // Update hotel booking status
+            foreach ($booking->hotelBookings as $hotelBooking) {
+                $hotelBooking->update(['status' => 'cancelled']);
+                
+                // Increase room availability
+                $roomType = \App\Models\RoomType::find($hotelBooking->room_type_id);
+                if ($roomType) {
+                    $roomType->increment('available_rooms', $hotelBooking->num_rooms);
+                }
             }
-
+            
+            // If there's a payment, process refund if applicable
+            if ($booking->payment && $booking->payment->status === 'completed') {
+                // Here you would typically integrate with your payment gateway to process refund
+                // For now, we'll just update the payment status
+                $booking->payment->update([
+                    'status' => 'refunded',
+                    'refunded_at' => now()
+                ]);
+            }
+            
             \DB::commit();
-
-            // Here you can add:
-            // - Send cancellation email
-            // - Process refund if needed
-            // - Log the cancellation
-
-            return redirect()
-                ->route('bookings.index')
-                ->with('success', 'Booking #' . $booking->id . ' has been cancelled successfully.');
-
+            
+            return redirect()->route('bookings.index')
+                ->with('success', 'Booking has been cancelled successfully.');
+                
         } catch (\Exception $e) {
             \DB::rollBack();
-            \Log::error('Failed to cancel booking: ' . $e->getMessage());
-            throw $e;
+            \Log::error('Error cancelling booking: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+            
+            return redirect()->back()
+                ->with('error', 'Failed to cancel booking. Please try again.');
         }
-
-    } catch (\Exception $e) {
-        \Log::error('Booking cancellation error: ' . $e->getMessage());
-        return back()->with('error', 'Failed to cancel booking. Please try again or contact support.');
     }
-}
-
 
     /**
- * Process check-in for a booking.
- */
-public function checkIn(Booking $booking)
-{
-    try {
-        // Verify the booking belongs to the authenticated user
-        if ($booking->user_id !== Auth::id()) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        // Check if check-in is allowed (for pending bookings)
-        if ($booking->status !== 'pending') {
-            return back()->with('error', 'Only pending bookings can be checked in.');
-        }
-
-        \DB::beginTransaction();
-
+     * Process check-in for a booking.
+     */
+    public function checkIn(Booking $booking)
+    {
         try {
-            // Update booking status to confirmed
-            $booking->update([
-                'status' => 'confirmed',  // Changed from 'checked_in' to 'confirmed'
-                'checked_in_at' => now(),
-                'checked_in_by' => Auth::id()
-            ]);
-
-            // Update related hotel bookings
-            if ($booking->hotelBookings->isNotEmpty()) {
-                $booking->hotelBookings()->update(['status' => 'confirmed']);
+            // Verify the booking belongs to the authenticated user
+            if ($booking->user_id !== Auth::id()) {
+                abort(403, 'Unauthorized action.');
             }
 
-            \DB::commit();
+            // Check if check-in is allowed (for pending bookings)
+            if ($booking->status !== 'pending') {
+                return back()->with('error', 'Only pending bookings can be checked in.');
+            }
 
-            return redirect()
-                ->route('bookings.index')
-                ->with('success', 'Successfully checked in for booking #' . $booking->id);
+            \DB::beginTransaction();
+
+            try {
+                // Update booking status to confirmed
+                $booking->update([
+                    'status' => 'confirmed',  // Changed from 'checked_in' to 'confirmed'
+                    'checked_in_at' => now(),
+                    'checked_in_by' => Auth::id()
+                ]);
+
+                // Update related hotel bookings
+                if ($booking->hotelBookings->isNotEmpty()) {
+                    $booking->hotelBookings()->update(['status' => 'confirmed']);
+                }
+
+                \DB::commit();
+
+                return redirect()
+                    ->route('bookings.index')
+                    ->with('success', 'Successfully checked in for booking #' . $booking->id);
+            } catch (\Exception $e) {
+                \DB::rollBack();
+                \Log::error('Failed to process check-in: ' . $e->getMessage());
+                throw $e;
+            }
         } catch (\Exception $e) {
-            \DB::rollBack();
-            \Log::error('Failed to process check-in: ' . $e->getMessage());
-            throw $e;
+            \Log::error('Check-in error: ' . $e->getMessage());
+            return back()->with('error', 'Failed to process check-in. Please try again or contact support.');
         }
-    } catch (\Exception $e) {
-        \Log::error('Check-in error: ' . $e->getMessage());
-        return back()->with('error', 'Failed to process check-in. Please try again or contact support.');
     }
-}
 }
