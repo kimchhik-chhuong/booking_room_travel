@@ -23,8 +23,9 @@ class BookingController extends Controller
         $status = $request->input('status');
         $search = $request->input('search');
         $sort = $request->input('sort', 'latest');
+        $perPage = $request->input('per_page', 10);
         
-        // Base query
+        // Base query with eager loading
         $query = Booking::with(['user', 'hotelBookings', 'hotelBookings.hotel', 'hotelBookings.roomType']);
         
         // Apply filters
@@ -38,6 +39,9 @@ class BookingController extends Controller
                   ->orWhereHas('user', function($q) use ($search) {
                       $q->where('name', 'like', "%{$search}%")
                         ->orWhere('email', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('hotelBookings.hotel', function($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
                   });
             });
         }
@@ -45,50 +49,45 @@ class BookingController extends Controller
         // Apply sorting
         switch ($sort) {
             case 'oldest':
-                $query->orderBy('created_at');
+                $query->orderBy('created_at', 'asc');
                 break;
-            case 'amount_asc':
-                $query->orderBy('total_amount');
-                break;
-            case 'amount_desc':
+            case 'amount_high':
                 $query->orderBy('total_amount', 'desc');
+                break;
+            case 'amount_low':
+                $query->orderBy('total_amount', 'asc');
                 break;
             case 'latest':
             default:
-                $query->latest();
+                $query->orderBy('created_at', 'desc');
                 break;
         }
 
         // Get paginated results
-        $bookings = $query->paginate(10);
-
-        // Calculate statistics
+        $bookings = $query->paginate($perPage)->withQueryString();
+        
+        // Get statistics for the dashboard
         $totalBookings = Booking::count();
         $confirmedBookings = Booking::where('status', 'confirmed')->count();
         $pendingBookings = Booking::where('status', 'pending')->count();
-        $totalRevenue = Booking::where('status', '!=', 'cancelled')
-            ->sum('total_amount');
-
-        // Previous month statistics
-        $previousMonthStart = now()->subMonth()->startOfMonth();
-        $previousMonthEnd = now()->subMonth()->endOfMonth();
+        $totalRevenue = Booking::where('status', 'confirmed')->sum('total_amount');
         
-        $previousMonthBookings = Booking::whereBetween('created_at', [$previousMonthStart, $previousMonthEnd])
+        // Previous month comparison
+        $previousMonthBookings = Booking::whereMonth('created_at', now()->subMonth()->month)
+            ->whereYear('created_at', now()->subMonth()->year)
             ->count();
             
-        $previousMonthRevenue = Booking::where('status', '!=', 'cancelled')
-            ->whereBetween('created_at', [$previousMonthStart, $previousMonthEnd])
+        $previousMonthRevenue = Booking::where('status', 'confirmed')
+            ->whereMonth('created_at', now()->subMonth()->month)
+            ->whereYear('created_at', now()->subMonth()->year)
             ->sum('total_amount');
-
-        // Monthly booking data for the last 6 months for chart
+            
+        // Monthly bookings for chart
         $monthlyBookings = Booking::select(
-                DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month'),
-                DB::raw('count(*) as total'),
-                DB::raw('SUM(CASE WHEN status = "confirmed" THEN 1 ELSE 0 END) as confirmed'),
-                DB::raw('SUM(CASE WHEN status = "pending" THEN 1 ELSE 0 END) as pending'),
-                DB::raw('SUM(CASE WHEN status != "cancelled" THEN total_amount ELSE 0 END) as revenue')
+                DB::raw('MONTH(created_at) as month'),
+                DB::raw('COUNT(*) as count')
             )
-            ->where('created_at', '>=', now()->subMonths(6))
+            ->whereYear('created_at', date('Y'))
             ->groupBy('month')
             ->orderBy('month')
             ->get();
@@ -105,6 +104,7 @@ class BookingController extends Controller
             'status' => $status,
             'search' => $search,
             'sort' => $sort,
+            'perPage' => (int)$perPage,
         ]);
     }
 
