@@ -228,6 +228,7 @@ class BookingController extends Controller
             $hotelBooking->guest_name = $validated['first_name'] . ' ' . $validated['last_name'];
             $hotelBooking->guest_email = $validated['email'];
             $hotelBooking->guest_phone = $validated['phone'];
+            $hotelBooking->nationality = $validated['nationality'];
             $hotelBooking->special_requests = $validated['special_requests'] ?? null;
             $hotelBooking->save();
             \Illuminate\Support\Facades\Log::info('Hotel Booking created:', $hotelBooking->toArray());
