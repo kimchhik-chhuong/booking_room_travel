@@ -3,8 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\HotelBooking;
+use App\Models\HotelMetadata;
 use App\Models\RoomType;
+use App\Models\Booking;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class HotelBookingController extends Controller
 {
@@ -95,6 +99,141 @@ class HotelBookingController extends Controller
         // For web form submission
         return redirect()->route('hotels.show', $hotel->hotel_id)
             ->with('success', 'Room type created successfully');
+    }
+
+    /**
+     * Show the form for creating a new booking.
+     */
+    public function create($hotelId)
+    {
+        $hotel = HotelMetadata::findOrFail($hotelId);
+        $roomTypes = $hotel->roomTypes()->where('is_available', true)->get();
+        
+        if ($roomTypes->isEmpty()) {
+            return redirect()->back()->with('error', 'No rooms available for booking at this time.');
+        }
+        
+        return view('hotels.book', compact('hotel', 'roomTypes'));
+    }
+
+    /**
+     * Store a newly created booking in storage.
+     */
+    public function storeBooking(Request $request, $hotelId)
+    {
+        try {
+            // Validate the request
+            $validated = $request->validate([
+                'check_in_date' => 'required|date|after_or_equal:today',
+                'check_out_date' => 'required|date|after:check_in_date',
+                'num_guests' => 'required|integer|min:1|max:20',
+                'num_rooms' => 'required|integer|min:1|max:10',
+                'room_type_id' => 'required|exists:room_types,id',
+                'special_requests' => 'nullable|string|max:1000',
+            ]);
+            
+            // Find the hotel and room type
+            $hotel = HotelMetadata::findOrFail($hotelId);
+            $roomType = RoomType::findOrFail($validated['room_type_id']);
+            
+            // Check room availability
+            $isAvailable = $this->checkRoomAvailability(
+                $hotel->hotel_id, 
+                $roomType->id, 
+                $validated['check_in_date'], 
+                $validated['check_out_date'],
+                $validated['num_rooms']
+            );
+            
+            if (!$isAvailable) {
+                return back()
+                    ->withInput()
+                    ->with('error', 'Sorry, the selected room type is not available for the selected dates.');
+            }
+            
+            // Calculate total price
+            $checkIn = new \DateTime($validated['check_in_date']);
+            $checkOut = new \DateTime($validated['check_out_date']);
+            $nights = $checkIn->diff($checkOut)->days;
+            $totalPrice = $roomType->price * $nights * $validated['num_rooms'];
+            
+            // Start database transaction
+            return \DB::transaction(function () use ($validated, $hotel, $roomType, $totalPrice, $nights) {
+                // Create the main booking record
+                $booking = new Booking([
+                    'user_id' => Auth::id(),
+                    'booking_reference' => 'BOOK-' . strtoupper(Str::random(8)),
+                    'booking_date' => now(),
+                    'travel_date' => $validated['check_in_date'],
+                    'participants' => $validated['num_guests'],
+                    'total_amount' => $totalPrice,
+                    'status' => 'confirmed',
+                    'payment_status' => 'pending',
+                ]);
+                $booking->save();
+                
+                // Create the hotel booking record
+                $hotelBooking = new HotelBooking([
+                    'booking_id' => $booking->id,
+                    'hotel_id' => $hotel->hotel_id,  
+                    'room_type_id' => $roomType->id,
+                    'check_in_date' => $validated['check_in_date'],
+                    'check_out_date' => $validated['check_out_date'],
+                    'num_rooms' => $validated['num_rooms'],
+                    'num_guests' => $validated['num_guests'],
+                    'price_per_night' => $roomType->price,
+                    'total_hotel_price' => $totalPrice,
+                    'special_requests' => $validated['special_requests'] ?? null,
+                    'status' => 'confirmed',
+                ]);
+                $hotelBooking->save();
+                
+                // Redirect to payment page or booking confirmation
+                return redirect()->route('bookings.show', $booking->id)
+                    ->with('success', 'Your booking has been confirmed!');
+            });
+            
+        } catch (\Exception $e) {
+            \Log::error('Hotel booking error: ' . $e->getMessage());
+            return back()
+                ->withInput()
+                ->with('error', 'An error occurred while processing your booking. Please try again.');
+        }
+    }
+    
+    /**
+     * Check room availability for the given dates
+     */
+    private function checkRoomAvailability($hotelId, $roomTypeId, $checkIn, $checkOut, $numRooms)
+    {
+        $availableRooms = RoomType::where('id', $roomTypeId)
+            ->where('hotel_metadata_id', $hotelId)
+            ->where('is_available', true)
+            ->where('max_occupancy', '>=', request('num_guests', 1))
+            ->first();
+            
+        if (!$availableRooms) {
+            return false;
+        }
+        
+        // Check if there are enough available rooms
+        $bookedRooms = HotelBooking::where('room_type_id', $roomTypeId)
+            ->where('hotel_id', $hotelId)
+            ->where(function($query) use ($checkIn, $checkOut) {
+                $query->whereBetween('check_in_date', [$checkIn, $checkOut])
+                      ->orWhereBetween('check_out_date', [$checkIn, $checkOut])
+                      ->orWhere(function($q) use ($checkIn, $checkOut) {
+                          $q->where('check_in_date', '<=', $checkIn)
+                            ->where('check_out_date', '>=', $checkOut);
+                      });
+            })
+            ->whereIn('status', ['confirmed', 'pending'])
+            ->sum('num_rooms');
+            
+        $totalRooms = $availableRooms->available_rooms;
+        $available = ($totalRooms - $bookedRooms) >= $numRooms;
+        
+        return $available;
     }
 
     /**

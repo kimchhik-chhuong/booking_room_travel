@@ -47,6 +47,11 @@ Route::prefix('hotels')->name('hotels.')->group(function () {
     Route::get('/create', [\App\Http\Controllers\HotelMetadataController::class, 'create'])->name('create');
     Route::post('/', [\App\Http\Controllers\HotelMetadataController::class, 'store'])->name('store');
     
+    // Get available rooms for a hotel
+    Route::get('/{hotel}/available-rooms', [\App\Http\Controllers\RoomTypeController::class, 'getAvailableRooms'])
+        ->name('available-rooms')
+        ->where('hotel', '[0-9]+');
+        
     // Explicitly define routes with hotel_id parameter
     Route::get('/{hotel}', [\App\Http\Controllers\HotelMetadataController::class, 'show'])
         ->name('show')
@@ -105,6 +110,34 @@ Route::middleware('auth')->group(function () {
     | Bookings
     |--------------------------------------------------------------------------
     */
+    // Hotel Booking Routes
+    Route::prefix('hotels')->name('hotels.')->group(function () {
+        // Existing hotel routes...
+        
+        // Add these new routes for hotel bookings
+        Route::get('/{hotel}/book', [\App\Http\Controllers\HotelBookingController::class, 'create'])
+            ->name('book')
+            ->where('hotel', '[0-9]+');
+            
+        Route::post('/{hotel}/bookings', [\App\Http\Controllers\HotelBookingController::class, 'storeBooking'])
+            ->name('bookings.store')
+            ->where('hotel', '[0-9]+');
+    });
+
+    // Add booking routes
+    Route::prefix('bookings')->name('bookings.')->group(function () {
+        Route::get('/{booking}', [\App\Http\Controllers\BookingController::class, 'show'])->name('show');
+        Route::get('/', [\App\Http\Controllers\BookingController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\BookingController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\BookingController::class, 'store'])->name('store');
+        Route::patch('/{booking}/cancel', [\App\Http\Controllers\BookingController::class, 'cancel'])
+            ->name('cancel')
+            ->where('booking', '[0-9]+');
+        Route::patch('/{booking}/check-in', [\App\Http\Controllers\BookingController::class, 'checkIn'])
+            ->name('check-in')
+            ->where('booking', '[0-9]+');
+    });
+
     // Adventures Routes
     Route::prefix('adventures')->name('adventures.')->group(function () {
         Route::get('/', [\App\Http\Controllers\AdventureController::class, 'index'])->name('index');
@@ -136,9 +169,23 @@ Route::middleware('auth')->group(function () {
 
     // Bookings Routes
     Route::prefix('bookings')->name('bookings.')->group(function () {
-        Route::get('/', fn() => view('bookings.index'))->name('index');
-        Route::get('/create', [BookingController::class, 'create'])->name('create');
-        Route::post('/', [BookingController::class, 'store'])->name('store');
+        Route::get('/', [\App\Http\Controllers\BookingController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\BookingController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\BookingController::class, 'store'])->name('store');
+        Route::get('/{booking}', [\App\Http\Controllers\BookingController::class, 'show'])
+            ->name('show')
+            ->where('booking', '[0-9]+');
+    });
+
+    // Payment Routes
+    Route::prefix('payments')->name('payments.')->group(function () {
+        Route::get('/booking/{booking}', [\App\Http\Controllers\PaymentController::class, 'showPaymentForm'])
+            ->name('show')
+            ->middleware('auth');
+        
+        Route::post('/process/{booking}', [\App\Http\Controllers\PaymentController::class, 'processPayment'])
+            ->name('process')
+            ->middleware('auth');
     });
 
     /*
@@ -245,7 +292,7 @@ Route::get('/uploads/adventures/default-adventure.jpg', function () {
     $defaultImage = base64_decode('...'); // your base64 image
     return response($defaultImage)->header('Content-Type', 'image/jpeg')->header('Access-Control-Allow-Origin', '*');
     // Create a simple default image (orange gradient)
-    $defaultImage = base64_decode('/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCAAyADIDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9/KKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA//Z');
+    $defaultImage = base64_decode('/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCAAyADIDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9/KKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA//Z');
     
     return response($defaultImage)
         ->header('Content-Type', 'image/jpeg')
