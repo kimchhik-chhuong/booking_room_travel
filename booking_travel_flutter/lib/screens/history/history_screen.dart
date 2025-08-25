@@ -9,9 +9,9 @@ class HistoryScreen extends StatefulWidget {
 }
 
 class _HistoryScreenState extends State<HistoryScreen> {
-  String _selectedStatus = 'All';
+  String _selectedStatus = 'All';         
 
-  @override
+  @override                 
   void initState() {
     super.initState();
     // Show alerts for new completed bookings when screen first loads

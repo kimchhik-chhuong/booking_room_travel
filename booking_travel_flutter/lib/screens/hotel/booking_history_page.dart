@@ -482,7 +482,7 @@ class _BookingHistoryPageState extends State<BookingHistoryPage>
 
     try {
       final result = await BookingService.cancelBooking(
-        booking.id,
+        booking.id as String,
         reason: reason.isNotEmpty ? reason : null,
       );
 
