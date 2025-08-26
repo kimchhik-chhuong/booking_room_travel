@@ -577,7 +577,7 @@ Status: ${_booking.status.toUpperCase()}
       final result = await BookingService.cancelBooking(
         _booking.id,
         reason: reason.isNotEmpty ? reason : null,
-      );
+      );         
 
       setState(() {
         _isLoading = false;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:booking_travel/models/hotel_booking_model.dart';
 import 'package:booking_travel/services/booking_service.dart';
 import 'package:booking_travel/screens/hotel/booking_detail_page.dart';
+import 'package:booking_travel/screens/hotel/cancellation_reason_page.dart';
 
 class BookingHistoryPage extends StatefulWidget {
   const BookingHistoryPage({Key? key}) : super(key: key);
@@ -14,15 +15,15 @@ class _BookingHistoryPageState extends State<BookingHistoryPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   List<HotelBooking> _allBookings = [];
-  List<HotelBooking> _currentBookings = [];
-  List<HotelBooking> _pastBookings = [];
+  List<HotelBooking> _completedBookings = [];
+  List<HotelBooking> _upcomingBookings = [];
   List<HotelBooking> _cancelledBookings = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _fetchBookings();
   }
 
@@ -44,12 +45,12 @@ class _BookingHistoryPageState extends State<BookingHistoryPage>
       setState(() {
         _allBookings = bookings;
         
-        _currentBookings = bookings.where((booking) {
+        _upcomingBookings = bookings.where((booking) {
           return booking.status == 'confirmed' && 
                  booking.checkOutDate.isAfter(now);
         }).toList();
         
-        _pastBookings = bookings.where((booking) {
+        _completedBookings = bookings.where((booking) {
           return booking.status == 'confirmed' && 
                  booking.checkOutDate.isBefore(now);
         }).toList();
@@ -74,24 +75,17 @@ class _BookingHistoryPageState extends State<BookingHistoryPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Bookings'),
+        title: const Text('Booking History'),
         backgroundColor: Colors.blue,
         elevation: 0,
         bottom: TabBar(
           controller: _tabController,
-          tabs: [
-            Tab(
-              text: 'Current (${_currentBookings.length})',
-              icon: const Icon(Icons.hotel),
-            ),
-            Tab(
-              text: 'Past (${_pastBookings.length})',
-              icon: const Icon(Icons.history),
-            ),
-            Tab(
-              text: 'Cancelled (${_cancelledBookings.length})',
-              icon: const Icon(Icons.cancel),
-            ),
+          isScrollable: true,
+          tabs: const [
+            Tab(text: 'All'),
+            Tab(text: 'Completed'),
+            Tab(text: 'Upcoming'),
+            Tab(text: 'Cancelled'),
           ],
         ),
       ),
@@ -100,8 +94,9 @@ class _BookingHistoryPageState extends State<BookingHistoryPage>
           : TabBarView(
               controller: _tabController,
               children: [
-                _buildBookingsList(_currentBookings, 'current'),
-                _buildBookingsList(_pastBookings, 'past'),
+                _buildBookingsList(_allBookings, 'all'),
+                _buildBookingsList(_completedBookings, 'completed'),
+                _buildBookingsList(_upcomingBookings, 'upcoming'),
                 _buildBookingsList(_cancelledBookings, 'cancelled'),
               ],
             ),
@@ -136,12 +131,12 @@ class _BookingHistoryPageState extends State<BookingHistoryPage>
     IconData icon;
     
     switch (type) {
-      case 'current':
-        message = 'No current bookings';
+      case 'upcoming':
+        message = 'No upcoming bookings';
         icon = Icons.hotel_outlined;
         break;
-      case 'past':
-        message = 'No past bookings';
+      case 'completed':
+        message = 'No completed bookings';
         icon = Icons.history;
         break;
       case 'cancelled':
@@ -185,8 +180,9 @@ class _BookingHistoryPageState extends State<BookingHistoryPage>
 
   Widget _buildBookingCard(HotelBooking booking, String type) {
     final Color statusColor = _getStatusColor(booking.status);
-    final bool canCancel = type == 'current' && booking.canCancel;
-    final int nights = booking.checkOutDate.difference(booking.checkInDate).inDays;
+    final bool canCancel = type == 'upcoming' && booking.canCancel;
+    final bool canCancelWithin24Hours = _canCancelWithin24Hours(booking);
+    final bool showCancelButton = canCancel && canCancelWithin24Hours;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -194,12 +190,21 @@ class _BookingHistoryPageState extends State<BookingHistoryPage>
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => BookingDetailPage(booking: booking),
-            ),
-          );
+          if (showCancelButton) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CancellationReasonPage(booking: booking),
+              ),
+            );
+          } else {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => BookingDetailPage(booking: booking),
+              ),
+            );
+          }
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
@@ -207,22 +212,67 @@ class _BookingHistoryPageState extends State<BookingHistoryPage>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header with booking ID and status
+              // Hotel name as clickable text
+              InkWell(
+                onTap: () {
+                  if (showCancelButton) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CancellationReasonPage(booking: booking),
+                      ),
+                    );
+                  } else {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => BookingDetailPage(booking: booking),
+                      ),
+                    );
+                  }
+                },
+                child: Text(
+                  booking.hotelName ?? 'Hotel Name',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              
+              // Booking date and time
+              Text(
+                '${_formatDate(booking.createdAt)} at ${_formatTime(booking.createdAt)}',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 8),
+              
+              // Price
+              Text(
+                '\$${booking.totalAmount.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green,
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              // Status and actions row
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Booking #${booking.id}',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: statusColor.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text(
                       booking.status.toUpperCase(),
@@ -233,185 +283,96 @@ class _BookingHistoryPageState extends State<BookingHistoryPage>
                       ),
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              
-              // Hotel information
-              Row(
-                children: [
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color: Colors.grey[300],
-                    ),
-                    child: const Icon(Icons.hotel, size: 30),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          booking.hotelName ?? 'Hotel Name',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                  
+                  Row(
+                    children: [
+                      if (booking.status.toLowerCase() == 'completed' || 
+                          booking.status.toLowerCase() == 'cancelled')
+                        TextButton(
+                          onPressed: () {
+                            _viewReceipt(booking);
+                          },
+                          child: const Text(
+                            'View Receipt',
+                            style: TextStyle(color: Colors.blue),
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          booking.roomTypeName ?? 'Room Type',
+                      if (booking.status.toLowerCase() == 'completed' || 
+                          booking.status.toLowerCase() == 'confirmed')
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.green.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            'Paid',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.green[700],
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+              
+              // Cancellation info for upcoming bookings
+              if (showCancelButton) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.blue[50],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.blue[700], size: 16),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Free cancellation available until ${_getCancellationDeadline(booking)}',
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 12,
+                            color: Colors.blue[700],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ] else if (canCancel && !canCancelWithin24Hours) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.grey[600], size: 16),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Cancellation deadline passed (${_getCancellationDeadline(booking)})',
+                          style: TextStyle(
+                            fontSize: 12,
                             color: Colors.grey[600],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              
-              // Booking details
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildDetailItem(
-                      Icons.calendar_today,
-                      'Check-in',
-                      '${booking.checkInDate.day}/${booking.checkInDate.month}/${booking.checkInDate.year}',
-                    ),
-                  ),
-                  Expanded(
-                    child: _buildDetailItem(
-                      Icons.calendar_today_outlined,
-                      'Check-out',
-                      '${booking.checkOutDate.day}/${booking.checkOutDate.month}/${booking.checkOutDate.year}',
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildDetailItem(
-                      Icons.nights_stay,
-                      'Duration',
-                      '$nights night${nights > 1 ? 's' : ''}',
-                    ),
-                  ),
-                  Expanded(
-                    child: _buildDetailItem(
-                      Icons.people,
-                      'Guests',
-                      '${booking.numberOfGuests} guest${booking.numberOfGuests > 1 ? 's' : ''}',
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              
-              // Total amount
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Total Amount',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    '\$${booking.totalAmount.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green,
-                    ),
-                  ),
-                ],
-              ),
-              
-              // Action buttons for current bookings
-              if (canCancel) ...[
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => _showCancelDialog(booking),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Colors.red),
-                        ),
-                        icon: const Icon(Icons.cancel, color: Colors.red),
-                        label: const Text(
-                          'Cancel Booking',
-                          style: TextStyle(color: Colors.red),
-                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => BookingDetailPage(booking: booking),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                        ),
-                        icon: const Icon(Icons.info, color: Colors.white),
-                        label: const Text(
-                          'View Details',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildDetailItem(IconData icon, String label, String value) {
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: Colors.grey[600]),
-        const SizedBox(width: 8),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
-            ),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ],
     );
   }
 
@@ -430,50 +391,264 @@ class _BookingHistoryPageState extends State<BookingHistoryPage>
     }
   }
 
-  void _showCancelDialog(HotelBooking booking) {
-    final TextEditingController reasonController = TextEditingController();
-    
+  bool _canCancelWithin24Hours(HotelBooking booking) {
+    final now = DateTime.now();
+    final cancellationDeadline = booking.createdAt.add(const Duration(hours: 24));
+    return now.isBefore(cancellationDeadline);
+  }
+
+  String _getCancellationDeadline(HotelBooking booking) {
+    final cancellationDeadline = booking.createdAt.add(const Duration(hours: 24));
+    return '${cancellationDeadline.day}/${cancellationDeadline.month}/${cancellationDeadline.year} ${cancellationDeadline.hour}:${cancellationDeadline.minute.toString().padLeft(2, '0')}';
+  }
+
+  String _formatDate(DateTime date) {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return '${months[date.month - 1]} ${date.day}, ${date.year}';
+  }
+
+  String _formatTime(DateTime date) {
+    final hour = date.hour % 12;
+    final period = date.hour < 12 ? 'AM' : 'PM';
+    final minute = date.minute.toString().padLeft(2, '0');
+    return '${hour == 0 ? 12 : hour}:$minute $period';
+  }
+
+  void _viewReceipt(HotelBooking booking) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Cancel Booking'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Are you sure you want to cancel booking #${booking.id}?'),
+      builder: (context) => AlertDialog(
+        title: const Text('Receipt'),
+        content: Text('Receipt for booking #${booking.id}'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class CancellationReasonPage extends StatefulWidget {
+  final HotelBooking booking;
+
+  const CancellationReasonPage({Key? key, required this.booking}) : super(key: key);
+
+  @override
+  State<CancellationReasonPage> createState() => _CancellationReasonPageState();
+}
+
+class _CancellationReasonPageState extends State<CancellationReasonPage> {
+  String? selectedReason;
+  final TextEditingController otherReasonController = TextEditingController();
+  
+  final List<Map<String, dynamic>> cancellationReasons = [
+    {
+      'title': 'Change of plans',
+      'icon': Icons.event_busy,
+    },
+    {
+      'title': 'Found better option',
+      'icon': Icons.star_border,
+    },
+    {
+      'title': 'Price too high',
+      'icon': Icons.attach_money,
+    },
+    {
+      'title': 'Travel restrictions',
+      'icon': Icons.warning,
+    },
+    {
+      'title': 'Personal emergency',
+      'icon': Icons.emergency,
+    },
+    {
+      'title': 'Other reason',
+      'icon': Icons.more_horiz,
+    },
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Cancel Booking'),
+        backgroundColor: Colors.blue,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Cancel ${widget.booking.hotelName} Booking',
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Booking #${widget.booking.id}',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            // Cancellation policy info
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue[50],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.blue[700], size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'You can cancel free of charge until ${_getCancellationDeadline(widget.booking)}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.blue[700],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            
+            const Text(
+              'Please select a reason for cancellation:',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            // Circular reason selection
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: cancellationReasons.map((reason) {
+                final bool isSelected = selectedReason == reason['title'];
+                return InkWell(
+                  onTap: () {
+                    setState(() {
+                      selectedReason = reason['title'];
+                      if (reason['title'] != 'Other reason') {
+                        otherReasonController.clear();
+                      }
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isSelected ? Colors.blue[100] : Colors.grey[200],
+                      borderRadius: BorderRadius.circular(20),
+                      border: isSelected 
+                          ? Border.all(color: Colors.blue, width: 2) 
+                          : null,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          reason['icon'],
+                          size: 18,
+                          color: isSelected ? Colors.blue[800] : Colors.grey[700],
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          reason['title'],
+                          style: TextStyle(
+                            color: isSelected ? Colors.blue[800] : Colors.grey[700],
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          ),
+                        ),
+                        if (isSelected) ...[
+                          const SizedBox(width: 6),
+                          Icon(
+                            Icons.check_circle,
+                            size: 18,
+                            color: Colors.blue[800],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+            
+            // Other reason text field
+            if (selectedReason == 'Other reason') ...[
               const SizedBox(height: 16),
               TextField(
-                controller: reasonController,
+                controller: otherReasonController,
                 decoration: const InputDecoration(
-                  labelText: 'Reason for cancellation (optional)',
+                  labelText: 'Please specify your reason',
                   border: OutlineInputBorder(),
                 ),
                 maxLines: 3,
               ),
             ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Keep Booking'),
-            ),
-            ElevatedButton(
-              onPressed: () => _cancelBooking(booking, reasonController.text),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('Cancel Booking', style: TextStyle(color: Colors.white)),
+            
+            const Spacer(),
+            
+            // Action buttons
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: const Text('Go Back'),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: selectedReason == null
+                        ? null
+                        : () => _cancelBooking(widget.booking, 
+                            selectedReason == 'Other reason' 
+                                ? otherReasonController.text 
+                                : selectedReason!),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: const Text(
+                      'Cancel Booking',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
-        );
-      },
+        ),
+      ),
     );
   }
 
+  String _getCancellationDeadline(HotelBooking booking) {
+    final cancellationDeadline = booking.createdAt.add(const Duration(hours: 24));
+    return '${cancellationDeadline.day}/${cancellationDeadline.month}/${cancellationDeadline.year} ${cancellationDeadline.hour}:${cancellationDeadline.minute.toString().padLeft(2, '0')}';
+  }
+
   Future<void> _cancelBooking(HotelBooking booking, String reason) async {
-    Navigator.of(context).pop(); // Close dialog
-    
-    // Show loading indicator
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -486,7 +661,7 @@ class _BookingHistoryPageState extends State<BookingHistoryPage>
         reason: reason.isNotEmpty ? reason : null,
       );
 
-      Navigator.of(context).pop(); // Close loading dialog
+      Navigator.of(context).pop();
 
       if (result['success']) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -495,7 +670,7 @@ class _BookingHistoryPageState extends State<BookingHistoryPage>
             backgroundColor: Colors.green,
           ),
         );
-        _fetchBookings(); // Refresh the list
+        Navigator.of(context).pop();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -505,7 +680,7 @@ class _BookingHistoryPageState extends State<BookingHistoryPage>
         );
       }
     } catch (e) {
-      Navigator.of(context).pop(); // Close loading dialog
+      Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error cancelling booking: $e'),
