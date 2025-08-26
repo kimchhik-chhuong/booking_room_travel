@@ -125,7 +125,7 @@ class BookingHistoryController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => [
+            'data' => [           
                 'total_bookings' => $totalBookings,
                 'confirmed_bookings' => $confirmedBookings,
                 'pending_bookings' => $pendingBookings,
