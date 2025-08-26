@@ -10,13 +10,7 @@
         <h2 class="text-lg font-semibold text-gray-800">Upcoming Trips</h2>
     </div>
 
-    <!-- Upcoming Trips -->
-    <div class="space-y-4 mb-8">
-        @php
-        $upcomingTrips = [
-            [
-                'destination' => 'Paris, France',
-                'type' => 'Romantic Getaway',
+
                 'participants' => '+2',
                 'date' => '5 - 10 July',
                 'rating' => '4.8',
