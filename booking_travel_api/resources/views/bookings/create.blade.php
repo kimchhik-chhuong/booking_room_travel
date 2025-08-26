@@ -204,7 +204,59 @@ use Illuminate\Support\Facades\Auth;
 
 @push('scripts')
 <script>
+    function validateForm() {
+        // Basic validation - check required fields
+        const requiredFields = ['first_name', 'last_name', 'email', 'phone', 'nationality', 
+                              'check_in_date', 'check_out_date', 'adults', 'room_type_id', 'payment_method'];
+        
+        for (const field of requiredFields) {
+            const element = document.getElementById(field);
+            if (element && !element.value.trim()) {
+                alert(`Please fill in the ${field.replace('_', ' ')} field`);
+                element.focus();
+                return false;
+            }
+        }
+
+        // Validate email format
+        const email = document.getElementById('email').value;
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            alert('Please enter a valid email address');
+            return false;
+        }
+
+        // Validate check-in date is before check-out date
+        const checkIn = new Date(document.getElementById('check_in_date').value);
+        const checkOut = new Date(document.getElementById('check_out_date').value);
+        if (checkIn >= checkOut) {
+            alert('Check-out date must be after check-in date');
+            return false;
+        }
+
+        // Show loading state
+        const submitBtn = document.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Processing...';
+            submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+        }
+
+        return true;
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('bookingForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                console.log('Form submitted');
+                if (!validateForm()) {
+                    e.preventDefault();
+                    return false;
+                }
+                return true;
+            });
+        }
+
         const hotelSelect = document.getElementById('hotel_id');
         const roomTypeSection = document.getElementById('roomTypeSection');
         const roomTypeOptions = document.getElementById('roomTypeOptions');

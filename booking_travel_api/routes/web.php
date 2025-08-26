@@ -94,6 +94,7 @@ Route::middleware('auth')->group(function () {
     
     // Additional booking routes
     Route::prefix('bookings')->name('bookings.')->group(function () {
+        Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
         Route::patch('{booking}/check-in', [BookingController::class, 'checkIn'])->name('check-in');
         Route::patch('{booking}/cancel', [BookingController::class, 'cancel'])->name('cancel');
         Route::post('{id}/cancel', [BookingController::class, 'cancelUserBooking'])->name('user.cancel');

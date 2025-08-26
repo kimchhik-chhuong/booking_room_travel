@@ -21,6 +21,15 @@ use Illuminate\Support\Str;
 
         <!-- Search and Filter Bar -->
         <div class="mb-6 bg-white p-4 rounded-lg shadow">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-medium text-gray-900">Bookings</h2>
+                <a href="{{ route('bookings.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    Create Booking
+                </a>
+            </div>
             <form action="{{ route('bookings.index') }}" method="GET" class="space-y-4 md:space-y-0 md:flex md:space-x-4">
                 <!-- Search Input -->
                 <div class="flex-1">

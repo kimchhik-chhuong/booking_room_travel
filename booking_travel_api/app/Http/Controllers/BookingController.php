@@ -6,10 +6,11 @@ use App\Models\Booking;
 use App\Models\HotelBooking;
 use App\Models\HotelMetadata;
 use App\Models\RoomType;
+use App\Models\Traveler;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\DB; // Import the DB facade
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class BookingController extends Controller
@@ -157,9 +158,8 @@ class BookingController extends Controller
      */
     public function store(Request $request)
     {
-        \Illuminate\Support\Facades\Log::info('Room Type Creation Request Data:', $request->all());
-\Illuminate\Support\Facades\Log::info('Auth User ID: ' . (auth()->check() ? auth()->id() : 'Not authenticated'));
-
+        \Illuminate\Support\Facades\Log::info('Booking Creation Request Data:', $request->all());
+        \Illuminate\Support\Facades\Log::info('Auth User ID: ' . (auth()->check() ? auth()->id() : 'Not authenticated'));
 
         // Validate the request
         $validated = $request->validate([
@@ -178,15 +178,13 @@ class BookingController extends Controller
             'payment_method' => 'required|in:credit_card,paypal,pay_at_hotel',
         ]);
 
-        try {
-            \Illuminate\Support\Facades\DB::beginTransaction();
-\Illuminate\Support\Facades\DB::commit();
-\Illuminate\Support\Facades\DB::rollBack();
+        // Start database transaction
+        DB::beginTransaction(); // Use the fully qualified namespace for the DB facade
 
+        try {
             // Get the room type with price and availability
             $roomType = RoomType::findOrFail($validated['room_type_id']);
             \Illuminate\Support\Facades\Log::info('Room Type Found:', $roomType->toArray());
-\Illuminate\Support\Facades\Log::warning('No available rooms for room type: ' . $roomType->id);
             
             // Check room availability
             if ($roomType->available_rooms <= 0) {
@@ -200,7 +198,7 @@ class BookingController extends Controller
             $nights = $checkIn->diffInDays($checkOut);
             $totalPrice = $roomType->price * $nights;
 
-            // Create the main booking record (without package_id for hotel-only bookings)
+            // Create the main booking record
             $booking = new Booking();
             $booking->user_id = auth()->id();
             $booking->booking_reference = Booking::generateBookingReference();
@@ -211,7 +209,6 @@ class BookingController extends Controller
             $booking->status = 'pending';
             $booking->payment_status = $validated['payment_method'] === 'pay_at_hotel' ? 'pending' : 'pending_payment';
             $booking->save();
-            \Illuminate\Support\Facades\Log::info('Booking created:', $booking->toArray());
 
             // Create the hotel booking record
             $hotelBooking = new HotelBooking();
@@ -220,48 +217,35 @@ class BookingController extends Controller
             $hotelBooking->room_type_id = $roomType->id;
             $hotelBooking->check_in_date = $checkIn;
             $hotelBooking->check_out_date = $checkOut;
-            $hotelBooking->num_rooms = 1; // Default to 1 room, can be updated if needed
+            $hotelBooking->num_rooms = 1;
             $hotelBooking->num_guests = $validated['adults'] + $validated['children'];
             $hotelBooking->price_per_night = $roomType->price;
             $hotelBooking->total_hotel_price = $totalPrice;
-            $hotelBooking->status = 'pending';
+            $hotelBooking->status = 'confirmed';
             $hotelBooking->guest_name = $validated['first_name'] . ' ' . $validated['last_name'];
             $hotelBooking->guest_email = $validated['email'];
             $hotelBooking->guest_phone = $validated['phone'];
             $hotelBooking->nationality = $validated['nationality'];
             $hotelBooking->special_requests = $validated['special_requests'] ?? null;
             $hotelBooking->save();
-            \Illuminate\Support\Facades\Log::info('Hotel Booking created:', $hotelBooking->toArray());
 
             // Decrement available rooms
             $roomType->decrement('available_rooms');
-            \Illuminate\Support\Facades\Log::info('Room availability updated. New available rooms: ' . ($roomType->available_rooms - 1));
 
-            // Handle payment based on payment method
-            if ($validated['payment_method'] === 'pay_at_hotel') {
-                // For pay at hotel, mark as pending and show success
-                $booking->update(['payment_status' => 'pending']);
-                \Illuminate\Support\Facades\DB::commit();
-                \Illuminate\Support\Facades\Log::info('Pay at hotel booking created successfully');
-                
-                return redirect()->route('bookings.index', $booking->id)
-                    ->with('success', 'Your booking has been created successfully! Please present your booking reference at the hotel for payment.');
-            } else {
-                // For online payments, redirect to payment gateway
-                \Illuminate\Support\Facades\DB::commit();
-                \Illuminate\Support\Facades\Log::info('Booking created, redirecting to payment');
-                
-                return redirect()->route('payments.choose-method', ['booking' => $booking->id])
-                    ->with('success', 'Booking created successfully! Please complete your payment.');
-            }
+            // Commit the transaction
+            DB::commit(); // Use the fully qualified namespace for the DB facade
+
+            // Redirect to bookings index with success message
+            return redirect()->route('bookings.index')
+                ->with('success', 'Booking created successfully!');
 
         } catch (\Exception $e) {
             // Rollback the transaction on error
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack(); // Use the fully qualified namespace for the DB facade
             \Illuminate\Support\Facades\Log::error('Booking creation failed: ' . $e->getMessage());
             \Illuminate\Support\Facades\Log::error($e->getTraceAsString());
             
-            return back()->with('error', 'Failed to create booking. Please try again. Error: ' . $e->getMessage())
+            return back()->with('error', 'Failed to create booking. Please try again.')
                 ->withInput();
         }
     }
