@@ -210,6 +210,21 @@ class BookingController extends Controller
             $booking->payment_status = $validated['payment_method'] === 'pay_at_hotel' ? 'pending' : 'pending_payment';
             $booking->save();
 
+            // Find or create traveler
+            $traveler = Traveler::firstOrCreate(
+                ['email' => $validated['email']],
+                [
+                    'first_name' => $validated['first_name'],
+                    'last_name' => $validated['last_name'],
+                    'phone' => $validated['phone'],
+                    'nationality' => $validated['nationality']
+                ]
+            );
+
+            // Associate the booking with the traveler
+            $booking->traveler_id = $traveler->id;
+            $booking->save();
+
             // Create the hotel booking record
             $hotelBooking = new HotelBooking();
             $hotelBooking->booking_id = $booking->id;

@@ -9,16 +9,6 @@ class Traveler extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'first_name', 'last_name', 'email', 'phone',
-        'date_of_birth', 'passport_number', 'nationality',
-        'address', 'status'
-    ];
-
-    protected $casts = [
-        'date_of_birth' => 'date',
-    ];
-
     // Relationships
     public function bookings()
     {
@@ -41,9 +31,4 @@ class Traveler extends Model
         return "{$this->first_name} {$this->last_name}";
     }
 
-    // Scope for active travelers
-    public function scopeActive($query)
-    {
-        return $query->where('status', 'active');
-    }
 }

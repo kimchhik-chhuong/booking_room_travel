@@ -38,7 +38,7 @@ use Illuminate\Support\Str;
                                 </svg>
                                 Edit
                             </a>
-                            <form action="{{ route('hotels.destroy', ['hotel' => $hotel->hotel_id]) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this hotel? This action cannot be undone.');">
+                            <form action="{{ route('hotels.destroy', $hotel->hotel_id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this hotel? This action cannot be undone.');">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
@@ -201,6 +201,7 @@ use Illuminate\Support\Str;
                                                     
                                                     $amenityData = $amenityIcons[$amenity] ?? ['icon' => 'check', 'label' => ucfirst(str_replace('_', ' ', $amenity))];
                                                 @endphp
+                                                
                                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                                                     <i class="fas fa-{{ $amenityData['icon'] }} mr-1"></i>
                                                     {{ $amenityData['label'] }}
@@ -309,20 +310,22 @@ use Illuminate\Support\Str;
                                             </div>
                                         </div>
                                         <div class="mt-4 flex justify-end space-x-3">
-                                            <a href="{{ route('hotels.room-types.edit', ['hotel' => $hotel->hotel_id, 'roomType' => $roomType->id]) }}" 
-                                               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                                Edit Room
-                                            </a>
-                                            <form action="{{ route('hotels.room-types.destroy', ['hotel' => $hotel->hotel_id, 'roomType' => $roomType->id]) }}" 
-                                                  method="POST" 
-                                                  onsubmit="return confirm('Are you sure you want to delete this room type? This action cannot be undone.');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" 
-                                                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                                                    Delete Room
-                                                </button>
-                                            </form>
+                                            <div class="flex items-center gap-2">
+                                                <a href="{{ route('hotels.room-types.edit', ['hotel' => $hotel->hotel_id, 'roomType' => $roomType->id]) }}" 
+                                                   class="text-blue-600 hover:text-blue-900">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </a>
+                                                <span class="text-gray-400">|</span>
+                                                <form action="{{ route('hotels.room-types.destroy', ['hotel' => $hotel->hotel_id, 'roomType' => $roomType->id]) }}" 
+                                                      method="POST" class="inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-600 hover:text-red-900"
+                                                            onclick="return confirm('Are you sure you want to delete this room type?')">
+                                                        <i class="fas fa-trash"></i> Delete
+                                                    </button>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
                                 </li>

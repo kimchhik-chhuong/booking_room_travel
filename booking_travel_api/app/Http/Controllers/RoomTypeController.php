@@ -191,16 +191,16 @@ class RoomTypeController extends \App\Http\Controllers\Controller
      */
     public function edit(HotelMetadata $hotel, RoomType $roomType)
     {
-        // Bypass policy check for admin users
-        if (!auth()->user()->hasRole('admin')) {
-            $this->authorize('update', $roomType);
+        // Ensure the room type belongs to the specified hotel
+        if ($roomType->hotel_metadata_id != $hotel->hotel_id) {
+            abort(404, 'Room type not found for this hotel');
         }
-        
-        // Ensure amenities is an array
+
+        // Decode amenities if it's a JSON string
         if (is_string($roomType->amenities)) {
-            $roomType->amenities = json_decode($roomType->amenities, true);
+            $roomType->amenities = json_decode($roomType->amenities, true) ?: [];
         }
-        
+
         return view('room_types.edit', compact('hotel', 'roomType'));
     }
 
@@ -242,15 +242,35 @@ class RoomTypeController extends \App\Http\Controllers\Controller
      */
     public function destroy(HotelMetadata $hotel, RoomType $roomType)
     {
-        $this->authorize('delete', $roomType);
+        try {
+            $user = auth()->user();
+            
+            // Verify the room type belongs to the specified hotel
+            if ($roomType->hotel_metadata_id != $hotel->hotel_id) {
+                abort(404, 'Room type not found for this hotel');
+            }
 
-        if ($roomType->image_url) {
-            Storage::disk('public')->delete($roomType->image_url);
+            // Check if user is admin or hotel owner
+            if (!$user->hasRole('admin') && !($hotel->user_id && $hotel->user_id === $user->id)) {
+                abort(403, 'You are not authorized to delete this room type.');
+            }
+
+            // Delete the image if it exists
+            if ($roomType->image_url) {
+                Storage::disk('public')->delete($roomType->image_url);
+            }
+
+            $roomType->delete();
+
+            return redirect()->route('hotels.show', $hotel->hotel_id)
+                ->with('success', 'Room type deleted successfully');
+
+        } catch (\Exception $e) {
+            \Log::error('Error deleting room type: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+            
+            return back()->with('error', 'Error deleting room type: ' . $e->getMessage());
         }
-
-        $roomType->delete();
-
-        return back()->with('success', 'Room type deleted successfully');
     }
 
     /**

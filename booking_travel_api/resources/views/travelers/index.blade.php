@@ -98,7 +98,7 @@
                             <th class="px-8 py-4 text-left text-sm font-semibold text-slate-600 uppercase tracking-wider">Contact</th>
                             <th class="px-8 py-4 text-left text-sm font-semibold text-slate-600 uppercase tracking-wider">Bookings</th>
                             <th class="px-8 py-4 text-left text-sm font-semibold text-slate-600 uppercase tracking-wider">Last Booking</th>
-                            <th class="px-8 py-4 text-left text-sm font-semibold text-slate-600 uppercase tracking-wider">Status</th>
+                            <th class="px-8 py-4 text-left text-sm font-semibold text-slate-600 uppercase tracking-wider">Nationality</th>
                             <th class="px-8 py-4 text-right text-sm font-semibold text-slate-600 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
@@ -133,23 +133,7 @@
                                 @endif
                             </td>
                             <td class="px-8 py-4 whitespace-nowrap">
-                                @if($traveler->status === 'active')
-                                <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
-                                    Active
-                                </span>
-                                @elseif($traveler->status === 'inactive')
-                                <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
-                                    Inactive
-                                </span>
-                                @elseif($traveler->status === 'banned')
-                                <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                    Banned
-                                </span>
-                                @else
-                                <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                    {{ ucfirst($traveler->status) }}
-                                </span>
-                                @endif
+                                {{ $traveler->nationality }}
                             </td>
                             <td class="px-8 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <a href="{{ route('travelers.show', $traveler) }}" class="text-blue-600 hover:text-blue-900 mr-4">View</a>

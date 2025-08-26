@@ -86,17 +86,14 @@ class AdventureController extends Controller
 
         try {
             // Handle image upload
-            $imagePath = $request->file('image')->store('public/adventures');
-            // Store the relative path without 'public/' prefix
-            $relativePath = str_replace('public/', '', $imagePath);
+            $imagePath = $request->file('image')->store('adventures', 'public');
 
-            // Create adventure
+            // Create adventure with the correct storage path
             $adventure = Adventure::create([
                 'name' => $validated['name'],
                 'description' => $validated['description'] ?? null,
                 'province_id' => $validated['province_id'],
-                'image_url' => $relativePath,
-                'status' => 'active',
+                'image_url' => $imagePath, // Store just the path relative to storage/app/public
             ]);
 
             if ($request->wantsJson() || $request->ajax()) {
@@ -111,6 +108,8 @@ class AdventureController extends Controller
                 ->with('success', 'Adventure created successfully');
                 
         } catch (\Exception $e) {
+            \Log::error('Error creating adventure: ' . $e->getMessage());
+            
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'status' => 'error',
@@ -180,7 +179,6 @@ class AdventureController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'province_id' => 'required|exists:provinces,id',
-            'status' => 'required|in:active,inactive',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
@@ -188,13 +186,13 @@ class AdventureController extends Controller
             // Handle image upload if a new image is provided
             if ($request->hasFile('image')) {
                 // Delete old image if it exists
-                if ($adventure->image_url && Storage::disk('public')->exists($adventure->image_url)) {
+                if ($adventure->image_url) {
                     Storage::disk('public')->delete($adventure->image_url);
                 }
                 
-                $imagePath = $request->file('image')->store('public/adventures');
-                $relativePath = str_replace('public/', '', $imagePath);
-                $validated['image_url'] = $relativePath;
+                // Store the new image
+                $imagePath = $request->file('image')->store('adventures', 'public');
+                $validated['image_url'] = $imagePath;
             }
 
             $adventure->update($validated);
@@ -208,12 +206,12 @@ class AdventureController extends Controller
                 ]);
             }
 
-            // For web requests, redirect to show page with success message
-            return redirect()->route('adventures.show', $adventure)
+            return redirect()->route('adventures.index')
                 ->with('success', 'Adventure updated successfully');
                 
         } catch (\Exception $e) {
-            // For API responses
+            \Log::error('Error updating adventure: ' . $e->getMessage());
+            
             if ($request->wantsJson() || $request->ajax()) {
                 return response()->json([
                     'status' => 'error',
@@ -221,7 +219,6 @@ class AdventureController extends Controller
                 ], 500);
             }
 
-            // For web requests, redirect back with error message
             return back()->withInput()
                 ->with('error', 'Failed to update adventure: ' . $e->getMessage());
         }
@@ -239,10 +236,13 @@ class AdventureController extends Controller
 
         $adventure->delete();
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Adventure deleted successfully'
-        ], 200);
+        // return response()->json([
+        //     'status' => 'success',
+        //     'message' => 'Adventure deleted successfully'
+        // ], 200);
+
+        return redirect()->route('adventures.index')
+            ->with('success', 'Adventure deleted successfully');
     }
 
     /**
