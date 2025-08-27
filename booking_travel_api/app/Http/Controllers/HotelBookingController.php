@@ -10,6 +10,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
 
 class HotelBookingController extends Controller
 {
@@ -50,58 +53,115 @@ class HotelBookingController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, $hotelId)
+    public function store(Request $request)
     {
-        // Find the hotel
-        $hotel = HotelMetadata::findOrFail($hotelId);
-    
-    $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'description' => 'required|string',
-        'price' => 'required|numeric|min:0',
-        'max_occupancy' => 'required|integer|min:1',
-        'available_rooms' => 'required|integer|min:0',
-        'amenities' => 'nullable|array',
-        'amenities.*' => 'string|max:255',
-        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-    ]);
+        $validated = $request->validate([
+            'hotel_id' => 'required|exists:hotel_metadata,hotel_id',
+            'room_type_id' => 'required|exists:room_types,id',
+            'check_in_date' => 'required|date|after_or_equal:today',
+            'check_out_date' => 'required|date|after:check_in_date',
+            'num_rooms' => 'required|integer|min:1',
+            'num_guests' => 'required|integer|min:1',
+            'guest_name' => 'required|string|max:255',
+            'guest_email' => 'required|email|max:255',
+            'guest_phone' => 'required|string|max:20',
+            'special_requests' => 'nullable|string',
+        ]);
 
-    // Handle image upload if present
-    if ($request->hasFile('image')) {
-        $path = $request->file('image')->store('room-types', 'public');
-        $validated['image_url'] = $path;
-    }
+        try {
+            // Start a database transaction
+            DB::beginTransaction();
 
-    // Format amenities array
-    if (isset($validated['amenities'])) {
-        // Clean up the array to ensure proper formatting
-        $validated['amenities'] = array_map('trim', $validated['amenities']);
-        $validated['amenities'] = array_filter($validated['amenities']); // Remove empty values
-        $validated['amenities'] = array_values($validated['amenities']); // Reset array keys
-    } else {
-        $validated['amenities'] = [];
-    }
+            // Get the room type with price
+            $roomType = RoomType::findOrFail($validated['room_type_id']);
+            
+            // Verify the room type belongs to the specified hotel
+            if ($roomType->hotel_id != $validated['hotel_id']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'The selected room type does not belong to the specified hotel.'
+                ], 422);
+            }
 
-    // Set hotel ID
-    $validated['hotel_metadata_id'] = $hotel->hotel_id;
+            // Check room availability
+            if ($roomType->available_rooms < $validated['num_rooms']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Not enough rooms available.'
+                ], 422);
+            }
 
-    // Create the room type
-    $roomType = RoomType::create($validated);
-    
-        // Return JSON response for API
-        if ($request->wantsJson()) {
+            // Calculate the number of nights
+            $checkIn = Carbon::parse($validated['check_in_date']);
+            $checkOut = Carbon::parse($validated['check_out_date']);
+            $nights = $checkIn->diffInDays($checkOut);
+
+            // Calculate the total price
+            $pricePerNight = $roomType->price;
+            $totalPrice = $pricePerNight * $validated['num_rooms'] * $nights;
+
+            // Create the booking
+            $booking = new Booking([
+                'user_id' => auth()->id(),
+                'booking_reference' => 'HTL-' . strtoupper(Str::random(10)),
+                'booking_date' => now(),
+                'travel_date' => $validated['check_in_date'],
+                'participants' => $validated['num_guests'],
+                'total_amount' => $totalPrice,
+                'status' => 'confirmed',
+                'payment_status' => 'pending',
+            ]);
+
+            $booking->save();
+
+            // Create the hotel booking
+            $hotelBooking = new HotelBooking([
+                'booking_id' => $booking->id,
+                'hotel_id' => $validated['hotel_id'],
+                'room_type_id' => $validated['room_type_id'],
+                'check_in_date' => $validated['check_in_date'],
+                'check_out_date' => $validated['check_out_date'],
+                'num_rooms' => $validated['num_rooms'],
+                'num_guests' => $validated['num_guests'],
+                'price_per_night' => $pricePerNight,
+                'total_hotel_price' => $totalPrice,
+                'status' => 'confirmed',
+                'guest_name' => $validated['guest_name'],
+                'guest_email' => $validated['guest_email'],
+                'guest_phone' => $validated['guest_phone'],
+                'special_requests' => $validated['special_requests'] ?? null,
+            ]);
+
+            $hotelBooking->save();
+
+            // Update the available rooms count
+            $roomType->decrement('available_rooms', $validated['num_rooms']);
+
+            // Commit the transaction
+            DB::commit();
+
+            // Send confirmation email (you can implement this)
+            // Mail::to($validated['guest_email'])->send(new BookingConfirmation($booking, $hotelBooking));
+
             return response()->json([
-                'status' => 'success',
-                'message' => 'Room type created successfully',
-                'data' => $roomType->load('hotelMetadata')
+                'success' => true,
+                'message' => 'Hotel booking created successfully',
+                'data' => [
+                    'booking' => $booking,
+                    'hotel_booking' => $hotelBooking
+                ]
             ], 201);
+
+        } catch (\Exception $e) {
+            // Rollback the transaction in case of error
+            DB::rollBack();
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create hotel booking',
+                'error' => $e->getMessage()
+            ], 500);
         }
-    
-        // For web form submission
-        return redirect()->route('hotels.show', $hotel->hotel_id)
-            ->with('success', 'Room type created successfully');
-            \Log::info('Booking Store Request Data:', $request->all());
-            \Log::info('Auth User ID: ' . (auth()->check() ? auth()->id() : 'Not authenticated'));
     }
 
     /**

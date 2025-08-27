@@ -10,7 +10,7 @@ class RoomType extends Model
     protected $primaryKey = 'id';
     
     protected $fillable = [
-        'hotel_metadata_id',
+        'hotel_id',
         'name',
         'description',
         'price',
@@ -38,15 +38,16 @@ class RoomType extends Model
      */
     public function hotel()
     {
-        return $this->belongsTo(HotelMetadata::class, 'hotel_metadata_id', 'hotel_id');
+        return $this->belongsTo(HotelMetadata::class, 'hotel_id', 'hotel_id');
     }
 
     /**
      * Get the hotel metadata that owns the room type.
+     * This is an alias of the hotel() relationship for backward compatibility.
      */
     public function hotelMetadata()
     {
-        return $this->belongsTo(HotelMetadata::class, 'hotel_metadata_id');
+        return $this->belongsTo(HotelMetadata::class, 'hotel_id', 'hotel_id');
     }
 
     /**

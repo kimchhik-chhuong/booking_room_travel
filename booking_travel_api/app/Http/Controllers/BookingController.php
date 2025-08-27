@@ -7,10 +7,15 @@ use App\Models\HotelBooking;
 use App\Models\HotelMetadata;
 use App\Models\RoomType;
 use App\Models\Traveler;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB; // Import the DB facade
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Str;
+use Illuminate\Support\Facades\Validator;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class BookingController extends Controller
@@ -146,8 +151,20 @@ class BookingController extends Controller
             ->orderBy('name')
             ->get();
 
+        // If a specific hotel is selected, pre-select it in the form
+        $selectedHotelId = request('hotel_id');
+        
+        if ($selectedHotelId) {
+            $hotel = \App\Models\HotelMetadata::findOrFail($selectedHotelId);
+            $roomTypes = $hotel->roomTypes()->where('is_available', true)->get();
+        } else {
+            $roomTypes = collect();
+        }
+
         return view('bookings.create', [
             'hotels' => $hotels,
+            'roomTypes' => $roomTypes,
+            'selectedHotelId' => $selectedHotelId,
             'defaultCheckIn' => now()->format('Y-m-d'),
             'defaultCheckOut' => now()->addDays(1)->format('Y-m-d')
         ]);
@@ -172,97 +189,173 @@ class BookingController extends Controller
             'nationality' => 'required|string|max:100',
             'check_in' => 'required|date|after_or_equal:today',
             'check_out' => 'required|date|after:check_in',
-            'adults' => 'required|integer|min:1',
-            'children' => 'required|integer|min:0',
+            'adults' => 'required|integer|min:1|max:10',
+            'children' => 'required|integer|min:0|max:5',
+            'payment_method' => 'required|in:credit_card,bank_transfer,paypal,pay_at_hotel',
             'special_requests' => 'nullable|string|max:1000',
-            'payment_method' => 'required|in:credit_card,paypal,pay_at_hotel',
         ]);
 
-        // Start database transaction
-        DB::beginTransaction(); // Use the fully qualified namespace for the DB facade
-
         try {
-            // Get the room type with price and availability
-            $roomType = RoomType::findOrFail($validated['room_type_id']);
-            \Illuminate\Support\Facades\Log::info('Room Type Found:', $roomType->toArray());
-            
-            // Check room availability
-            if ($roomType->available_rooms <= 0) {
-                \Illuminate\Support\Facades\Log::warning('No available rooms for room type: ' . $roomType->id);
-                return back()->with('error', 'Sorry, the selected room type is no longer available.')->withInput();
-            }
+            // Start database transaction
+            DB::beginTransaction();
 
-            // Calculate total price based on nights and room price
+            // Get room type with price and availability
+            $roomType = RoomType::with('hotel')
+                ->where('id', $validated['room_type_id'])
+                ->where('hotel_id', $validated['hotel_id'])
+                ->firstOrFail();
+
+            // Check room availability
             $checkIn = new \Carbon\Carbon($validated['check_in']);
             $checkOut = new \Carbon\Carbon($validated['check_out']);
             $nights = $checkIn->diffInDays($checkOut);
-            $totalPrice = $roomType->price * $nights;
+            
+            // Get number of rooms already booked for the selected dates
+            $bookedRooms = HotelBooking::where('room_type_id', $validated['room_type_id'])
+                ->where('status', '!=', 'cancelled')
+                ->where(function($query) use ($checkIn, $checkOut) {
+                    $query->whereBetween('check_in_date', [$checkIn, $checkOut->copy()->subDay()])
+                          ->orWhereBetween('check_out_date', [$checkIn->copy()->addDay(), $checkOut])
+                          ->orWhere(function($q) use ($checkIn, $checkOut) {
+                              $q->where('check_in_date', '<=', $checkIn)
+                                ->where('check_out_date', '>=', $checkOut);
+                          });
+                })
+                ->sum('num_rooms');
 
-            // Create the main booking record
-            $booking = new Booking();
-            $booking->user_id = auth()->id();
-            $booking->booking_reference = Booking::generateBookingReference();
-            $booking->booking_date = now();
-            $booking->travel_date = $checkIn;
-            $booking->participants = $validated['adults'] + $validated['children'];
-            $booking->total_amount = $totalPrice;
-            $booking->status = 'pending';
-            $booking->payment_status = $validated['payment_method'] === 'pay_at_hotel' ? 'pending' : 'pending_payment';
+            $availableRooms = $roomType->available_rooms - $bookedRooms;
+            
+            if ($availableRooms < 1) {
+                throw new \Exception('Sorry, no rooms of this type are available for the selected dates.');
+            }
+
+            // Get the authenticated user or create a guest user
+            $user = auth()->user();
+            if (!$user) {
+                // Create a guest user
+                $user = User::firstOrCreate(
+                    ['email' => $validated['email']],
+                    [
+                        'name' => $validated['first_name'] . ' ' . $validated['last_name'],
+                        'password' => Hash::make(Str::random(10)),
+                        'phone' => $validated['phone'],
+                        'role' => 'guest',
+                        'email_verified_at' => now(),
+                    ]
+                );
+            }
+
+            // Calculate total price with taxes and fees
+            $basePrice = $roomType->price * $nights;
+            $taxRate = 0.1; // 10% tax
+            $serviceFee = 5.00; // Fixed service fee
+            $totalPrice = ($basePrice * (1 + $taxRate)) + $serviceFee;
+
+            // Create the booking
+            $booking = new Booking([
+                'user_id' => $user->id,
+                'booking_reference' => Booking::generateBookingReference(),
+                'booking_date' => now(),
+                'travel_date' => $validated['check_in'],
+                'participants' => $validated['adults'] + $validated['children'],
+                'total_amount' => $totalPrice,
+                'currency' => 'USD',
+                'status' => 'confirmed',
+                'payment_status' => $validated['payment_method'] === 'pay_at_hotel' ? 'pending' : 'completed',
+            ]);
+
             $booking->save();
 
-            // Find or create traveler
-            $traveler = Traveler::firstOrCreate(
-                ['email' => $validated['email']],
-                [
-                    'first_name' => $validated['first_name'],
-                    'last_name' => $validated['last_name'],
-                    'phone' => $validated['phone'],
-                    'nationality' => $validated['nationality']
-                ]
-            );
+            // Create hotel booking
+            $hotelBooking = new HotelBooking([
+                'hotel_id' => $validated['hotel_id'],
+                'room_type_id' => $validated['room_type_id'],
+                'check_in_date' => $checkIn,
+                'check_out_date' => $checkOut,
+                'num_guests' => $validated['adults'] + $validated['children'],
+                'num_rooms' => 1,
+                'price_per_night' => $roomType->price,
+                'total_hotel_price' => $totalPrice,
+                'status' => 'confirmed',
+                'guest_name' => $validated['first_name'] . ' ' . $validated['last_name'],
+                'guest_email' => $validated['email'],
+                'guest_phone' => $validated['phone'],
+                'nationality' => $validated['nationality'],
+                'special_requests' => $validated['special_requests'] ?? null,
+            ]);
 
-            // Associate the booking with the traveler
-            $booking->traveler_id = $traveler->id;
-            $booking->save();
+            $booking->hotelBookings()->save($hotelBooking);
 
-            // Create the hotel booking record
-            $hotelBooking = new HotelBooking();
-            $hotelBooking->booking_id = $booking->id;
-            $hotelBooking->hotel_id = $validated['hotel_id'];
-            $hotelBooking->room_type_id = $roomType->id;
-            $hotelBooking->check_in_date = $checkIn;
-            $hotelBooking->check_out_date = $checkOut;
-            $hotelBooking->num_rooms = 1;
-            $hotelBooking->num_guests = $validated['adults'] + $validated['children'];
-            $hotelBooking->price_per_night = $roomType->price;
-            $hotelBooking->total_hotel_price = $totalPrice;
-            $hotelBooking->status = 'confirmed';
-            $hotelBooking->guest_name = $validated['first_name'] . ' ' . $validated['last_name'];
-            $hotelBooking->guest_email = $validated['email'];
-            $hotelBooking->guest_phone = $validated['phone'];
-            $hotelBooking->nationality = $validated['nationality'];
-            $hotelBooking->special_requests = $validated['special_requests'] ?? null;
-            $hotelBooking->save();
+            // Create payment record
+            $payment = new \App\Models\Payment([
+                'amount' => $totalPrice,
+                'status' => $validated['payment_method'] === 'pay_at_hotel' ? 'pending' : 'completed',
+                'payment_method' => $validated['payment_method'],
+                'transaction_id' => 'TXN-' . strtoupper(Str::random(10)),
+                'payment_date' => $validated['payment_method'] === 'pay_at_hotel' ? null : now(),
+                'currency' => 'USD',
+                'description' => 'Hotel Booking #' . $booking->booking_reference,
+            ]);
 
-            // Decrement available rooms
-            $roomType->decrement('available_rooms');
+            $booking->payment()->save($payment);
+
+            // Send confirmation email
+            try {
+                // Uncomment and implement your email sending logic
+                // Mail::to($user->email)->send(new BookingConfirmation($booking));
+            } catch (\Exception $e) {
+                \Log::error('Failed to send booking confirmation email: ' . $e->getMessage());
+                // Don't fail the booking if email fails
+            }
 
             // Commit the transaction
-            DB::commit(); // Use the fully qualified namespace for the DB facade
+            DB::commit();
 
-            // Redirect to bookings index with success message
-            return redirect()->route('bookings.index')
+            return redirect()->route('bookings.show', $booking->id)
                 ->with('success', 'Booking created successfully!');
 
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            DB::rollBack();
+            return back()->with('error', 'Room type not found or not available at the selected hotel.')
+                ->withInput();
+                
         } catch (\Exception $e) {
-            // Rollback the transaction on error
-            DB::rollBack(); // Use the fully qualified namespace for the DB facade
-            \Illuminate\Support\Facades\Log::error('Booking creation failed: ' . $e->getMessage());
-            \Illuminate\Support\Facades\Log::error($e->getTraceAsString());
+            DB::rollBack();
+            \Log::error('Booking creation failed: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
             
-            return back()->with('error', 'Failed to create booking. Please try again.')
+            return back()->with('error', $e->getMessage() ?: 'Failed to create booking. Please try again.')
                 ->withInput();
         }
+    }
+
+    /**
+     * Calculate and update prices for the booking and hotel booking
+     */
+    private function calculateAndUpdatePrices($booking, $hotelBooking)
+    {
+        // Get the room type with pricing information
+        $roomType = \App\Models\RoomType::find($hotelBooking->room_type_id);
+        
+        if (!$roomType) {
+            throw new \Exception('Room type not found');
+        }
+        
+        // Calculate number of nights
+        $checkIn = \Carbon\Carbon::parse($hotelBooking->check_in_date);
+        $checkOut = \Carbon\Carbon::parse($hotelBooking->check_out_date);
+        $nights = $checkIn->diffInDays($checkOut);
+        
+        // Calculate total price (base price * number of nights * number of rooms)
+        $totalPrice = $roomType->price * $nights * $hotelBooking->num_rooms;
+        
+        // Update hotel booking with calculated price
+        $hotelBooking->total_price = $totalPrice;
+        $hotelBooking->save();
+        
+        // Update booking total amount
+        $booking->total_amount = $totalPrice;
+        $booking->save();
     }
 
     /**
@@ -646,7 +739,7 @@ class BookingController extends Controller
             // Get available hotels and room types for the form
             $hotels = \App\Models\HotelMetadata::all();
             $roomTypes = $hotelBooking->hotel ? 
-                \App\Models\RoomType::where('hotel_metadata_id', $hotelBooking->hotel->id)->get() : 
+                \App\Models\RoomType::where('hotel_id', $hotelBooking->hotel->id)->get() : 
                 collect();
             
             return view('bookings.edit', [

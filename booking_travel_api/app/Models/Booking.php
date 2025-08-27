@@ -19,7 +19,6 @@ class Booking extends Model
     protected $primaryKey = 'id';
     protected $fillable = [
         'user_id',
-        'traveler_id',
         'package_id',  // This will be null for hotel-only bookings
         'booking_reference',
         'booking_date',
@@ -83,14 +82,6 @@ class Booking extends Model
     public function payment()
     {
         return $this->hasOne(Payment::class);
-    }
-
-    /**
-     * Get the traveler for this booking.
-     */
-    public function traveler()
-    {
-        return $this->belongsTo(Traveler::class);
     }
 
     /**

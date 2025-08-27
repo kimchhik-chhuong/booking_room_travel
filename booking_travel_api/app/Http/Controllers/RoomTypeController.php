@@ -22,7 +22,7 @@ class RoomTypeController extends \App\Http\Controllers\Controller
 
         // Filter by hotel if provided
         if ($request->has('hotel_id') && $request->hotel_id) {
-            $query->where('hotel_metadata_id', $request->hotel_id);
+            $query->where('hotel_id', $request->hotel_id);
         }
 
         // Filter by price range
@@ -66,7 +66,7 @@ class RoomTypeController extends \App\Http\Controllers\Controller
             }
 
             // Get available rooms for the hotel
-            $rooms = RoomType::where('hotel_metadata_id', $hotelId)
+            $rooms = RoomType::where('hotel_id', $hotelId)
                 ->where('is_available', true)
                 ->where('available_rooms', '>', 0)
                 ->get()
@@ -152,7 +152,7 @@ class RoomTypeController extends \App\Http\Controllers\Controller
 
             // Create the room type
             $roomType = new RoomType([
-                'hotel_metadata_id' => $hotel->hotel_id,
+                'hotel_id' => $hotel->hotel_id,
                 'name' => $validated['name'],
                 'description' => $validated['description'] ?? null,
                 'price' => $validated['price'],
@@ -192,7 +192,7 @@ class RoomTypeController extends \App\Http\Controllers\Controller
     public function edit(HotelMetadata $hotel, RoomType $roomType)
     {
         // Ensure the room type belongs to the specified hotel
-        if ($roomType->hotel_metadata_id != $hotel->hotel_id) {
+        if ($roomType->hotel_id != $hotel->hotel_id) {
             abort(404, 'Room type not found for this hotel');
         }
 
@@ -210,7 +210,7 @@ class RoomTypeController extends \App\Http\Controllers\Controller
     public function update(Request $request, HotelMetadata $hotel, RoomType $roomType)
     {
         // Ensure the room type belongs to the hotel
-        if ($roomType->hotel_metadata_id !== $hotel->hotel_id) {
+        if ($roomType->hotel_id !== $hotel->hotel_id) {
             abort(403, 'Room type does not belong to this hotel.');
         }
     
@@ -286,7 +286,7 @@ class RoomTypeController extends \App\Http\Controllers\Controller
             $user = auth()->user();
             
             // Verify the room type belongs to the specified hotel
-            if ($roomType->hotel_metadata_id != $hotel->hotel_id) {
+            if ($roomType->hotel_id != $hotel->hotel_id) {
                 abort(404);
             }
 
@@ -317,15 +317,29 @@ class RoomTypeController extends \App\Http\Controllers\Controller
 
     /**
      * Get room types by hotel.
+     * 
+     * @param  \App\Models\HotelMetadata  $hotel
+     * @return \Illuminate\Http\JsonResponse
      */
     public function getByHotel(HotelMetadata $hotel)
     {
-        $roomTypes = $hotel->roomTypes()->get();
-
-        return response()->json([
-            'status' => 'success',
-            'data' => $roomTypes
-        ], 200);
+        try {
+            $roomTypes = RoomType::where('hotel_id', $hotel->hotel_id)
+                ->where('is_available', true)
+                ->where('available_rooms', '>', 0)
+                ->get(['id', 'name', 'description', 'price', 'max_occupancy', 'available_rooms', 'amenities', 'image_url']);
+                
+            return response()->json([
+                'success' => true,
+                'data' => $roomTypes
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch room types',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

@@ -49,7 +49,7 @@ class HotelBooking extends Model
     }
 
     /**
-     * Get the hotel that was booked.
+     * Get the hotel that owns the booking.
      */
     public function hotel()
     {
@@ -57,11 +57,11 @@ class HotelBooking extends Model
     }
 
     /**
-     * Get the room type that was booked.
+     * Get the room type for the booking.
      */
     public function roomType()
     {
-        return $this->belongsTo(RoomType::class);
+        return $this->belongsTo(RoomType::class, 'room_type_id');
     }
 
     /**

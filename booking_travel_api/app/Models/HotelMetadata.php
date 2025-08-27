@@ -50,11 +50,11 @@ class HotelMetadata extends Model
     }
 
     /**
-     * Get all room types for the hotel.
+     * Get the room types for the hotel.
      */
     public function roomTypes()
     {
-        return $this->hasMany(RoomType::class, 'hotel_metadata_id', 'hotel_id');
+        return $this->hasMany(RoomType::class, 'hotel_id', 'hotel_id');
     }
 
     public function hotelBookings()

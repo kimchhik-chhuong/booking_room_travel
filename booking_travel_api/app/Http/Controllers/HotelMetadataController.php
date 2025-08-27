@@ -46,15 +46,18 @@ class HotelMetadataController extends Controller
                 $query->orderBy('name', 'desc');
                 break;
             case 'price_asc':
-                $query->orderBy(DB::raw('(SELECT MIN(price) FROM room_types WHERE room_types.hotel_metadata_id = hotel_metadata.hotel_id)'), 'asc');
+                $query->orderBy(DB::raw('(SELECT MIN(price) FROM room_types WHERE room_types.hotel_id = hotel_metadata.hotel_id)'), 'asc');
                 break;
             case 'price_desc':
-                $query->orderBy(DB::raw('(SELECT MAX(price) FROM room_types WHERE room_types.hotel_metadata_id = hotel_metadata.hotel_id)'), 'desc');
+                $query->orderBy(DB::raw('(SELECT MIN(price) FROM room_types WHERE room_types.hotel_id = hotel_metadata.hotel_id)'), 'desc');
                 break;
-            case 'rating':
+            case 'rating_asc':
+                $query->orderBy('star_rating', 'asc');
+                break;
+            case 'rating_desc':
                 $query->orderBy('star_rating', 'desc');
                 break;
-            default: // name_asc
+            default:
                 $query->orderBy('name', 'asc');
         }
 

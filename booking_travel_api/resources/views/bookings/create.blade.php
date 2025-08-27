@@ -18,8 +18,30 @@ use Illuminate\Support\Facades\Auth;
     <!-- Main Content -->
     <div class="ml-72 p-8">
         <div class="bg-white rounded-lg shadow overflow-hidden">
-            <form action="{{ route('bookings.store') }}" method="POST">
+            @if ($errors->any())
+                <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-red-700">
+                                @foreach ($errors->all() as $error)
+                                    {{ $error }}<br>
+                                @endforeach
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            <form id="bookingForm" action="{{ route('bookings.store') }}" method="POST" onsubmit="return validateForm()">
                 @csrf
+                
+                <!-- Hidden field for hotel_metadata_id -->
+                <input type="hidden" name="hotel_metadata_id" id="hotel_metadata_id" value="{{ $selectedHotelId ?? '' }}">
                 
                 <!-- Guest Information Section -->
                 <div class="p-6 border-b border-gray-200">
@@ -55,25 +77,33 @@ use Illuminate\Support\Facades\Auth;
 
                 <!-- Hotel Selection -->
                 <div class="mb-6">
-                    <label for="hotel_id" class="block text-sm font-medium text-gray-700 mb-2">Select Hotel</label>
-                    <select id="hotel_id" name="hotel_id" required 
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <label for="hotel_metadata_id_select" class="block text-sm font-medium text-gray-700 mb-2">Select Hotel</label>
+                    <select id="hotel_metadata_id_select" name="hotel_metadata_id" required 
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            onchange="updateRoomTypes(this.value)">
                         <option value="">-- Select a Hotel --</option>
                         @foreach($hotels as $hotel)
-                            <option value="{{ $hotel->hotel_id }}">{{ $hotel->name }} - {{ $hotel->address }}</option>
+                            <option value="{{ $hotel->hotel_id }}" {{ ($selectedHotelId ?? '') == $hotel->hotel_id ? 'selected' : '' }}>
+                                {{ $hotel->name }} - {{ $hotel->address }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
 
-                <!-- Room Type Selection (will be populated by JavaScript) -->
-                <div class="mb-6" id="roomTypeSection" style="display: none;">
+                <!-- Room Type Selection -->
+                <div class="mb-6" id="roomTypeSection" style="display: {{ $selectedHotelId ? 'block' : 'none' }}">
                     <label for="room_type_id" class="block text-sm font-medium text-gray-700 mb-2">Select Room Type</label>
-                    <div id="roomTypeOptions">
-                        <!-- Room types will be loaded here -->
-                    </div>
-                    <div id="noRoomsMessage" class="text-red-500 text-sm mt-2" style="display: none;">
-                        No available rooms for the selected hotel.
-                    </div>
+                    <select name="room_type_id" id="room_type_id" required
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="">-- Select a Room Type --</option>
+                        @if(isset($roomTypes) && $roomTypes->count() > 0)
+                            @foreach($roomTypes as $roomType)
+                                <option value="{{ $roomType->id }}" data-price="{{ $roomType->price }}">
+                                    {{ $roomType->name }} - ${{ number_format($roomType->price, 2) }} per night
+                                </option>
+                            @endforeach
+                        @endif
+                    </select>
                 </div>
 
                 <!-- Booking Details Section -->
@@ -83,12 +113,14 @@ use Illuminate\Support\Facades\Auth;
                         <div>
                             <label for="check_in" class="block text-sm font-medium text-gray-700">Check-in Date</label>
                             <input type="date" name="check_in" id="check_in_date" required
-                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                min="{{ date('Y-m-d') }}">
                         </div>
                         <div>
                             <label for="check_out" class="block text-sm font-medium text-gray-700">Check-out Date</label>
                             <input type="date" name="check_out" id="check_out_date" required
-                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                min="{{ date('Y-m-d', strtotime('+1 day')) }}">
                         </div>
                     </div>
                 </div>
@@ -244,286 +276,76 @@ use Illuminate\Support\Facades\Auth;
         return true;
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('bookingForm');
-        if (form) {
-            form.addEventListener('submit', function(e) {
-                console.log('Form submitted');
-                if (!validateForm()) {
-                    e.preventDefault();
-                    return false;
-                }
-                return true;
-            });
-        }
-
-        const hotelSelect = document.getElementById('hotel_id');
+    function updateRoomTypes(hotelId) {
         const roomTypeSection = document.getElementById('roomTypeSection');
-        const roomTypeOptions = document.getElementById('roomTypeOptions');
-        const noRoomsMessage = document.getElementById('noRoomsMessage');
+        const roomTypeSelect = document.getElementById('room_type_id');
+        const hotelMetadataIdInput = document.getElementById('hotel_metadata_id');
+        
+        // Update the hidden input
+        hotelMetadataIdInput.value = hotelId;
+        
+        if (!hotelId) {
+            roomTypeSection.style.display = 'none';
+            return;
+        }
+        
+        // Show loading state
+        roomTypeSection.style.display = 'block';
+        roomTypeSelect.innerHTML = '<option value="">Loading room types...</option>';
+        
+        // Fetch room types for the selected hotel
+        fetch(`/api/hotels/${hotelId}/room-types`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.length > 0) {
+                    let options = '<option value="">-- Select a Room Type --</option>';
+                    data.forEach(room => {
+                        options += `<option value="${room.id}" data-price="${room.price}">
+                            ${room.name} - $${parseFloat(room.price).toFixed(2)} per night
+                        </option>`;
+                    });
+                    roomTypeSelect.innerHTML = options;
+                } else {
+                    roomTypeSelect.innerHTML = '<option value="">No rooms available for this hotel</option>';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching room types:', error);
+                roomTypeSelect.innerHTML = '<option value="">Error loading room types</option>';
+            });
+    }
+    
+    // Initialize form validation and event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+        // Update total amount when dates or room type changes
+        const form = document.getElementById('bookingForm');
         const checkInInput = document.getElementById('check_in_date');
         const checkOutInput = document.getElementById('check_out_date');
-        const nightCount = document.getElementById('total-nights');
-        const totalAmount = document.getElementById('total-amount');
-
-        // Set minimum check-in date to today
-        const today = new Date().toISOString().split('T')[0];
-        checkInInput.min = today;
-
-        // Update check-out date minimum when check-in date changes
-        checkInInput.addEventListener('change', function() {
-            if (this.value) {
-                const nextDay = new Date(this.value);
-                nextDay.setDate(nextDay.getDate() + 1);
-                checkOutInput.min = nextDay.toISOString().split('T')[0];
-                
-                if (!checkOutInput.value || new Date(checkOutInput.value) <= new Date(this.value)) {
-                    checkOutInput.value = nextDay.toISOString().split('T')[0];
-                }
-                
-                updateBookingSummary();
-            }
-        });
-
-        // Update booking summary when check-out date changes
-        checkOutInput.addEventListener('change', function() {
-            if (checkInInput.value && this.value) {
-                updateBookingSummary();
-            }
-        });
-
-        // Function to update booking summary
-        function updateBookingSummary() {
-            if (checkInInput.value && checkOutInput.value) {
-                const start = new Date(checkInInput.value);
-                const end = new Date(checkOutInput.value);
-                const nights = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-                nightCount.textContent = nights;
-                
-                // Update total amount if a room is selected
-                const selectedRoom = document.querySelector('input[name="room_type_id"]:checked');
-                if (selectedRoom) {
-                    const pricePerNight = parseFloat(selectedRoom.dataset.price);
-                    const total = (pricePerNight * nights).toFixed(2);
-                    totalAmount.textContent = total;
-                }
-            }
-        }
-
-        // Handle hotel selection change
-        if (hotelSelect) {
-            hotelSelect.addEventListener('change', function() {
-                const hotelId = this.value;
-                
-                if (!hotelId) {
-                    roomTypeSection.style.display = 'none';
-                    return;
-                }
-                
-                // Show loading state
-                roomTypeOptions.innerHTML = '<div class="p-4 text-center"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div><p class="mt-2 text-sm text-gray-600">Loading rooms...</p></div>';
-                roomTypeSection.style.display = 'block';
-                noRoomsMessage.style.display = 'none';
-                
-                // Fetch available rooms for the selected hotel
-                fetch(`/api/hotels/${hotelId}/available-rooms`)
-                    .then(async response => {
-                        const data = await response.json();
-                        
-                        if (!response.ok) {
-                            // Handle HTTP errors (4xx, 5xx)
-                            const error = (data && data.message) || `HTTP error! status: ${response.status}`;
-                            throw new Error(error);
-                        }
-                        
-                        // Check if the response is an array (success) or has an error
-                        if (Array.isArray(data)) {
-                            return data; // Success case - return the rooms array
-                        } else if (data && data.status === 'error') {
-                            // Handle application-level errors
-                            throw new Error(data.message || 'Failed to load rooms');
-                        } else {
-                            throw new Error('Invalid response format from server');
-                        }
-                    })
-                    .then(rooms => {
-                        // Clear previous options and hide error message
-                        roomTypeOptions.innerHTML = '';
-                        noRoomsMessage.style.display = 'none';
-
-                        if (rooms.length === 0) {
-                            noRoomsMessage.style.display = 'block';
-                            return;
-                        }
-                        
-                        // Add room type options
-                        rooms.forEach(room => {
-                            const roomDiv = document.createElement('div');
-                            roomDiv.className = 'flex items-center p-4 border rounded-lg mb-3 hover:bg-gray-50';
-                            
-                            // Format amenities for display
-                            const amenities = Array.isArray(room.amenities) 
-                                ? room.amenities.join(', ')
-                                : (room.amenities || 'No amenities');
-                            
-                            roomDiv.innerHTML = `
-                                <div class="flex-1">
-                                    <h4 class="font-medium text-gray-900">${room.name || 'Unnamed Room'}</h4>
-                                    <p class="text-sm text-gray-500">${room.description || 'No description available'}</p>
-                                    <div class="mt-2">
-                                        <span class="text-sm text-gray-600">Max occupancy: ${room.max_occupancy || 2} guests</span>
-                                        <span class="mx-2 text-gray-400">•</span>
-                                        <span class="text-sm text-gray-600">Available: ${room.available_rooms || 0} room(s)</span>
-                                    </div>
-                                    <div class="mt-1">
-                                        <span class="text-sm text-gray-600">Amenities: ${amenities}</span>
-                                    </div>
-                                </div>
-                                <div class="ml-4 text-right">
-                                    <div class="text-lg font-bold text-blue-600">$${parseFloat(room.price || 0).toFixed(2)}</div>
-                                    <div class="text-sm text-gray-500">per night</div>
-                                    <div class="mt-2 flex items-center justify-end">
-                                        <input type="radio" 
-                                               name="room_type_id" 
-                                               value="${room.id}" 
-                                               data-price="${room.price || 0}" 
-                                               class="h-4 w-4 text-blue-600 focus:ring-blue-500"
-                                               onchange="window.updateTotalAmount(${room.price || 0}, ${room.id})">
-                                        <label class="ml-1 text-sm text-gray-700">Select</label>
-                                    </div>
-                                </div>
-                            `;
-                            roomTypeOptions.appendChild(roomDiv);
-                        });
-                        
-                        roomTypeSection.style.display = 'block';
-                    })
-                    .catch(error => {
-                        console.error('Error fetching rooms:', error);
-                        roomTypeOptions.innerHTML = `
-                            <div class="bg-red-50 border-l-4 border-red-400 p-4">
-                                <div class="flex">
-                                    <div class="flex-shrink-0">
-                                        <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                                        </svg>
-                                    </div>
-                                    <div class="ml-3">
-                                        <p class="text-sm text-red-700">${error.message || 'Error loading room types. Please try again later.'}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    });
-            });
-        }
-
-        // Make the function available globally
-        window.updateTotalAmount = function(pricePerNight, roomId) {
-            const checkInDate = document.getElementById('check_in_date')?.value;
-            const checkOutDate = document.getElementById('check_out_date')?.value;
-            
-            // If dates are not selected yet, show base price only
-            if (!checkInDate || !checkOutDate) {
-                document.getElementById('total-amount').textContent = parseFloat(pricePerNight || 0).toFixed(2);
-                document.getElementById('total-nights').textContent = '1';
-                document.getElementById('price-per-night').style.display = 'block';
-                document.getElementById('price-per-night').textContent = `Price per night: $${parseFloat(pricePerNight || 0).toFixed(2)}`;
-                document.getElementById('cancellation-policy').style.display = 'block';
-                return;
-            }
-            
-            // Calculate number of nights
-            const oneDay = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
-            const startDate = new Date(checkInDate);
-            const endDate = new Date(checkOutDate);
-            const nights = Math.round(Math.abs((endDate - startDate) / oneDay)) || 1;
-            
-            // Calculate total amount
-            const totalAmount = (pricePerNight * nights).toFixed(2);
-            
-            // Update the UI
-            document.getElementById('total-amount').textContent = totalAmount;
-            document.getElementById('total-nights').textContent = nights;
-            document.getElementById('price-per-night').style.display = 'block';
-            document.getElementById('price-per-night').textContent = `Price per night: $${parseFloat(pricePerNight || 0).toFixed(2)}`;
-            document.getElementById('cancellation-policy').style.display = 'block';
-            
-            // Store the selected room ID in a hidden input if needed
-            if (roomId) {
-                let roomTypeInput = document.getElementById('room_type_id');
-                if (!roomTypeInput) {
-                    roomTypeInput = document.createElement('input');
-                    roomTypeInput.type = 'hidden';
-                    roomTypeInput.name = 'room_type_id';
-                    roomTypeInput.id = 'room_type_id';
-                    document.querySelector('form').appendChild(roomTypeInput);
-                }
-                roomTypeInput.value = roomId;
-            }
-        };
-
-        // Add event listeners for date changes
-        document.addEventListener('change', function(e) {
-            if (e.target.matches('#check_in_date, #check_out_date')) {
-                const selectedRoom = document.querySelector('input[name="room_type_id"]:checked');
-                if (selectedRoom) {
-                    window.updateTotalAmount(
-                        parseFloat(selectedRoom.dataset.price || 0),
-                        selectedRoom.value
-                    );
-                }
-            }
-        });
-
-        // Handle children age fields
-        const childrenSelect = document.querySelector('select[name="children"]');
-        const childrenAgesContainer = document.getElementById('children-ages');
+        const roomTypeSelect = document.getElementById('room_type_id');
         
-        if (childrenSelect && childrenAgesContainer) {
-            childrenSelect.addEventListener('change', function() {
-                const numChildren = parseInt(this.value);
-                
-                if (numChildren > 0) {
-                    childrenAgesContainer.innerHTML = '';
-                    childrenAgesContainer.classList.remove('hidden');
-                    
-                    for (let i = 1; i <= numChildren; i++) {
-                        const div = document.createElement('div');
-                        div.className = 'mt-2';
-                        div.innerHTML = `
-                            <label class="block text-sm font-medium text-gray-700">Child ${i} Age</label>
-                            <select name="children_ages[]" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                                <option value="0">Under 1</option>
-                                ${Array.from({length: 17}, (_, i) => 
-                                    `<option value="${i + 1}">${i + 1} years</option>`
-                                ).join('')}
-                            </select>
-                        `;
-                        childrenAgesContainer.appendChild(div);
-                    }
-                } else {
-                    childrenAgesContainer.innerHTML = '';
-                    childrenAgesContainer.classList.add('hidden');
-                }
-            });
-        }
-
-        // Handle payment method change
-        const paymentMethod = document.getElementById('payment_method');
-        const creditCardFields = document.getElementById('credit-card-fields');
-        
-        if (paymentMethod && creditCardFields) {
-            paymentMethod.addEventListener('change', function() {
-                if (this.value === 'credit_card') {
-                    creditCardFields.classList.remove('hidden');
-                } else {
-                    creditCardFields.classList.add('hidden');
-                }
-            });
+        function updateTotalAmount() {
+            const checkIn = new Date(checkInInput.value);
+            const checkOut = new Date(checkOutInput.value);
+            const roomOption = roomTypeSelect.options[roomTypeSelect.selectedIndex];
             
-            // Trigger change event to set initial state
-            paymentMethod.dispatchEvent(new Event('change'));
+            if (checkIn && checkOut && roomOption && roomOption.value) {
+                const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+                const pricePerNight = parseFloat(roomOption.dataset.price);
+                const total = nights * pricePerNight;
+                
+                document.getElementById('total-nights').textContent = nights;
+                document.getElementById('total-amount').textContent = total.toFixed(2);
+            }
+        }
+        
+        // Add event listeners
+        checkInInput?.addEventListener('change', updateTotalAmount);
+        checkOutInput?.addEventListener('change', updateTotalAmount);
+        roomTypeSelect?.addEventListener('change', updateTotalAmount);
+        
+        // Initialize total amount if we have all required values
+        if (checkInInput?.value && checkOutInput?.value && roomTypeSelect?.value) {
+            updateTotalAmount();
         }
     });
 </script>

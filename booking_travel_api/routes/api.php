@@ -73,25 +73,20 @@ Route::get('/images/adventures/{filename}', function ($filename) {
 })->where('filename', '.*');
 
 // Hotel Metadata Routes
-Route::apiResource('hotelmetadata', HotelMetadataController::class);
-Route::get('/hotelmetadata/search', [HotelMetadataController::class, 'search']);
-Route::get('/hotelmetadata/price-range', [HotelMetadataController::class, 'getByPriceRange']);
-Route::get('/hotelmetadata/top-rated', [HotelMetadataController::class, 'getTopRated']);
-Route::get('/hotelmetadata/paginate', [HotelMetadataController::class, 'paginate']);
+Route::apiResource('hotels', HotelMetadataController::class);
+Route::get('hotels/{hotel}/room-types', [RoomTypeController::class, 'getByHotel'])->name('hotels.room-types');
 
 // Room Type Routes
-Route::apiResource('roomtypes', RoomTypeController::class);
-Route::get('/hotels/{hotel}/roomtypes', [RoomTypeController::class, 'getByHotel']);
-Route::post('/hotels/{hotel}/roomtypes', [RoomTypeController::class, 'store']);
-Route::post('/roomtypes/{roomType}/check-availability', [RoomTypeController::class, 'checkAvailability']);
-Route::patch('/roomtypes/{roomType}/availability', [RoomTypeController::class, 'updateAvailability']);
+Route::apiResource('room-types', RoomTypeController::class)->except(['index', 'store']);
+Route::post('hotels/{hotel}/room-types', [RoomTypeController::class, 'store'])->name('room-types.store');
+
+// Hotel Booking Routes
+Route::apiResource('hotel-bookings', HotelBookingController::class);
+Route::get('hotels/{hotel}/available-rooms', [RoomTypeController::class, 'getAvailableRooms'])->name('hotels.available-rooms');
 
 // Resource routes
 Route::apiResource('booking', BookingController::class);
 Route::apiResource('destination', DestinationController::class);
-Route::apiResource('hotelbooking', HotelBookingController::class);
-Route::patch('/hotelbooking/{hotelBooking}/cancel', [HotelBookingController::class, 'cancel']);
-Route::get('/users/{userId}/hotelbookings', [HotelBookingController::class, 'getByUser']);
 
 // Travelers
 Route::get('/travelers', [TravelerController::class, 'index']);
@@ -119,16 +114,12 @@ Route::get('/notifications/count', [NotificationController::class, 'count'])->mi
 // Public API routes
 Route::get('/hotels/{hotel}/room-types', function (\App\Models\HotelMetadata $hotel) {
     $roomTypes = \App\Models\RoomType::where('hotel_metadata_id', $hotel->hotel_id)
+        ->where('is_available', true)
         ->where('available_rooms', '>', 0)
         ->get(['id', 'name', 'description', 'price', 'max_occupancy', 'available_rooms', 'amenities']);
         
-    return response()->json($roomTypes ?: []);
+    return response()->json($roomTypes);
 })->name('api.hotels.room-types');
-
-// Hotel room availability API
-Route::get('/hotels/{hotelId}/available-rooms', [\App\Http\Controllers\Api\RoomTypeController::class, 'getAvailableRooms'])
-    ->name('api.hotels.available-rooms')
-    ->where('hotelId', '[0-9]+');
 
 // Protected routes
 Route::middleware(['auth:sanctum'])->group(function () {
