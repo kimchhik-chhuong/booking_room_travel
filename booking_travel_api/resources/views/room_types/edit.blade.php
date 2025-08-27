@@ -28,7 +28,7 @@
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 mt-6">
                     <div class="bg-white shadow overflow-hidden sm:rounded-lg">
                         <div class="px-4 py-5 sm:p-6">
-                            <form action="{{ route('hotels.room-types.update', ['hotel' => $hotel->hotel_id, 'roomType' => $roomType->id]) }}" 
+                            <form action="{{ route('hotels.room-types.update', ['hotel' => $hotel->hotel_id, 'roomType' => $roomType->id])  }}" 
                                   method="POST" 
                                   enctype="multipart/form-data">
                                 @csrf

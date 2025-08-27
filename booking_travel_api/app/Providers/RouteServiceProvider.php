@@ -24,9 +24,16 @@ class RouteServiceProvider extends ServiceProvider
     {
         $this->configureRateLimiting();
 
+        // Explicit model binding for HotelMetadata
         Route::model('hotel', \App\Models\HotelMetadata::class);
         Route::bind('hotel', function ($value) {
             return \App\Models\HotelMetadata::where('hotel_id', $value)->firstOrFail();
+        });
+
+        // Explicit model binding for RoomType
+        Route::model('roomType', \App\Models\RoomType::class);
+        Route::bind('roomType', function ($value) {
+            return \App\Models\RoomType::findOrFail($value);
         });
 
         $this->routes(function () {

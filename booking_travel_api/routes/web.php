@@ -69,10 +69,14 @@ Route::prefix('hotels')->name('hotels.')->group(function () {
         Route::get('/room-types', [RoomTypeController::class, 'index'])->name('room-types.index');
         Route::get('/room-types/create', [RoomTypeController::class, 'create'])->name('room-types.create');
         Route::post('/room-types', [RoomTypeController::class, 'store'])->name('room-types.store');
-        Route::get('/room-types/{roomType}/edit', [RoomTypeController::class, 'edit'])->name('room-types.edit');
-        Route::put('/room-types/{roomType}', [RoomTypeController::class, 'update'])->name('room-types.update');
-        Route::delete('/room-types/{roomType}', [RoomTypeController::class, 'destroy'])->name('room-types.destroy');
-    })->where(['hotel' => '[0-9]+', 'roomType' => '[0-9]+']);
+        
+        // Explicitly define routes with parameters in correct order
+        Route::prefix('room-types/{roomType}')->group(function () {
+            Route::get('/edit', [RoomTypeController::class, 'edit'])->name('room-types.edit');
+            Route::put('/', [RoomTypeController::class, 'update'])->name('room-types.update');
+            Route::delete('/', [RoomTypeController::class, 'destroy'])->name('room-types.destroy');
+        });
+    })->where(['hotel' => '[0-9]+']);
     
 })->middleware(['auth']);
 

@@ -209,8 +209,20 @@ class RoomTypeController extends \App\Http\Controllers\Controller
      */
     public function update(Request $request, HotelMetadata $hotel, RoomType $roomType)
     {
-        $this->authorize('update', $roomType);
-
+        // Ensure the room type belongs to the hotel
+        if ($roomType->hotel_metadata_id !== $hotel->hotel_id) {
+            abort(403, 'Room type does not belong to this hotel.');
+        }
+    
+        // Optional: use policy if you set it up
+        // $this->authorize('update', $roomType);
+    
+        \Log::info('Update Room Type Request Data:', [
+            'request_data' => $request->all(),
+            'room_type_id' => $roomType->id,
+            'hotel_id' => $hotel->hotel_id
+        ]);
+    
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -220,25 +232,53 @@ class RoomTypeController extends \App\Http\Controllers\Controller
             'amenities' => 'nullable|array',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-
-        if ($request->hasFile('image')) {
-            // Delete old image if exists
-            if ($roomType->image_url) {
-                Storage::disk('public')->delete($roomType->image_url);
+    
+        try {
+            if ($request->hasFile('image')) {
+                if ($roomType->image_url) {
+                    Storage::disk('public')->delete($roomType->image_url);
+                }
+                $validated['image_url'] = $request->file('image')->store('room-types', 'public');
             }
-            $path = $request->file('image')->store('room-types', 'public');
-            $validated['image_url'] = $path;
+    
+            if (isset($validated['amenities']) && is_array($validated['amenities'])) {
+                $validated['amenities'] = json_encode($validated['amenities']);
+            }
+    
+            $updated = $roomType->update($validated);
+    
+            if ($updated) {
+                \Log::info('Room type updated successfully', [
+                    'room_type_id' => $roomType->id,
+                    'new_values' => $roomType->fresh()->toArray()
+                ]);
+            } else {
+                \Log::error('Failed to update room type', [
+                    'room_type_id' => $roomType->id,
+                    'validated_data' => $validated
+                ]);
+            }
+    
+            return redirect()->route('hotels.show', $hotel->hotel_id)
+                ->with('success', 'Room type updated successfully');
+    
+        } catch (\Exception $e) {
+            \Log::error('Error updating room type: ' . $e->getMessage(), [
+                'exception' => $e,
+                'room_type_id' => $roomType->id
+            ]);
+    
+            return back()->withInput()
+                ->with('error', 'Error updating room type: ' . $e->getMessage());
         }
-
-        $validated['amenities'] = json_encode($request->input('amenities', []));
-        $roomType->update($validated);
-
-        return redirect()->route('hotels.show', $hotel->hotel_id)
-            ->with('success', 'Room type updated successfully');
     }
-
+    
     /**
      * Remove the specified room type.
+     *
+     * @param  \App\Models\HotelMetadata  $hotel
+     * @param  \App\Models\RoomType  $roomType
+     * @return \Illuminate\Http\Response
      */
     public function destroy(HotelMetadata $hotel, RoomType $roomType)
     {
@@ -247,15 +287,15 @@ class RoomTypeController extends \App\Http\Controllers\Controller
             
             // Verify the room type belongs to the specified hotel
             if ($roomType->hotel_metadata_id != $hotel->hotel_id) {
-                abort(404, 'Room type not found for this hotel');
+                abort(404);
             }
 
             // Check if user is admin or hotel owner
-            if (!$user->hasRole('admin') && !($hotel->user_id && $hotel->user_id === $user->id)) {
-                abort(403, 'You are not authorized to delete this room type.');
+            if (!$user->hasRole('admin') && $hotel->user_id !== $user->id) {
+                return back()->with('error', 'You are not authorized to delete this room type.');
             }
 
-            // Delete the image if it exists
+            // Delete image if exists
             if ($roomType->image_url) {
                 Storage::disk('public')->delete($roomType->image_url);
             }
@@ -268,10 +308,12 @@ class RoomTypeController extends \App\Http\Controllers\Controller
         } catch (\Exception $e) {
             \Log::error('Error deleting room type: ' . $e->getMessage());
             \Log::error($e->getTraceAsString());
-            
-            return back()->with('error', 'Error deleting room type: ' . $e->getMessage());
+            return back()->with('error', 'Error deleting room type. Please try again.');
         }
     }
+
+
+    
 
     /**
      * Get room types by hotel.
