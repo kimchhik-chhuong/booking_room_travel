@@ -59,7 +59,7 @@
             </div>
 
             <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-                <form id="adventureForm" action="{{ route('adventures.update', $adventure) }}" method="POST" enctype="multipart/form-data" class="divide-y divide-gray-200">
+                <form id="adventureForm" action="{{ route('adventures.update', ['adventure' => $adventure->id]) }}" method="POST" enctype="multipart/form-data" class="divide-y divide-gray-200">
                     @csrf
                     @method('PUT')
                     

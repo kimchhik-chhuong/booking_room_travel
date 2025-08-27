@@ -151,21 +151,21 @@ Route::middleware('auth')->group(function () {
         Route::post('/', [\App\Http\Controllers\AdventureController::class, 'store'])->name('store');
         
         // Explicitly define routes with adventure parameter
-        Route::get('/{adventureId}', [\App\Http\Controllers\AdventureController::class, 'show'])
+        Route::get('/{adventure}', [\App\Http\Controllers\AdventureController::class, 'show'])
             ->name('show')
-            ->where('adventureId', '[0-9]+');
+            ->where('adventure', '[0-9]+');
             
-        Route::get('/{adventureId}/edit', [\App\Http\Controllers\AdventureController::class, 'edit'])
+        Route::get('/{adventure}/edit', [\App\Http\Controllers\AdventureController::class, 'edit'])
             ->name('edit')
-            ->where('adventureId', '[0-9]+');
+            ->where('adventure', '[0-9]+');
             
-        Route::put('/{adventureId}', [\App\Http\Controllers\AdventureController::class, 'update'])
+        Route::put('/{adventure}', [\App\Http\Controllers\AdventureController::class, 'update'])
             ->name('update')
-            ->where('adventureId', '[0-9]+');
+            ->where('adventure', '[0-9]+');
             
-        Route::delete('/{adventureId}', [\App\Http\Controllers\AdventureController::class, 'destroy'])
+        Route::delete('/{adventure}', [\App\Http\Controllers\AdventureController::class, 'destroy'])
             ->name('destroy')
-            ->where('adventureId', '[0-9]+');
+            ->where('adventure', '[0-9]+');
             
         // Province-based filtering
         Route::get('/province/{provinceId}', [\App\Http\Controllers\AdventureController::class, 'byProvince'])
