@@ -1,0 +1,48 @@
+
+  Migration name ...................... Batch / Status  
+  0001_01_01_000000_create_users_table ....... [1] Ran  
+  0001_01_01_000001_create_cache_table ....... [1] Ran  
+  0001_01_01_000002_create_jobs_table ........ [1] Ran  
+  2025_07_21_023702_create_restaurant_metadata_table  [1] Ran  
+  2025_07_21_023833_create_hotel_metadata_table  [1] Ran  
+  2025_07_21_023844_create_destinations_table  [1] Ran  
+  2025_07_25_005609_create_permission_tables . [1] Ran  
+  2025_07_28_030919_create_packages_table .... [1] Ran  
+  2025_07_28_031111_create_bookings_table .... [1] Ran  
+  2025_07_28_031302_create_payments_table .... [1] Ran  
+  2025_07_28_032214_create_notifications_table  [1] Ran  
+  2025_07_28_032359_create_travelers_table ... [1] Ran  
+  2025_07_28_032644_create_hotel_bookings_table  [1] Ran  
+  2025_07_28_033811_create_reviews_table ..... [1] Ran  
+  2025_07_28_033841_create_personal_access_tokens_table  [1] Ran  
+  2025_07_28_033923_add_role_to_users_table .. [1] Ran  
+  2025_08_06_032605_create_deals_table ....... [1] Ran  
+  2025_08_07_033420_create_messages_table .... [1] Ran  
+  2025_08_07_062234_create_provinces_table ... [1] Ran  
+  2025_08_07_062635_create_adventures_table .. [1] Ran  
+  2025_08_08_115845_update_packages_table_for_seeder  [1] Ran  
+  2025_08_08_120205_update_packages_table_add_missing_columns  [2] Ran  
+  2025_08_13_034510_add_status_to_packages_table  [2] Ran  
+  2025_08_15_000000_update_provinces_table ... [2] Ran  
+  2025_08_22_000000_add_user_id_to_hotel_metadata_table  [2] Ran  
+  2025_08_24_000000_make_package_id_nullable_in_bookings_table  [2] Ran  
+  2025_08_24_000000_modify_bookings_table_make_package_id_nullable  [2] Ran  
+  2025_08_24_000000_update_bookings_table_make_package_id_nullable  [2] Ran  
+  2025_08_24_000001_add_guest_columns_to_hotel_bookings  [2] Ran  
+  2025_08_24_085307_modify_bookings_table_make_package_id_nullable  [2] Ran  
+  2025_08_24_085442_make_package_id_nullable_in_bookings_table  [2] Ran  
+  2025_08_24_085625_update_bookings_table_make_package_id_nullable  [2] Ran  
+  2025_08_25_000000_add_status_to_travelers_table  [2] Ran  
+  2025_08_25_154400_add_nationality_to_hotel_bookings_table  [2] Ran  
+  2025_08_26_041313_create_room_types_table .. [2] Ran  
+  2025_08_26_041516_add_foreign_key_to_room_types  [2] Ran  
+  2025_08_28_000000_add_guest_columns_to_bookings_table  Pending  
+  2025_08_28_015214_add_guest_columns_to_bookings_table  Pending  
+  2025_12_20_000000_remove_days_from_hotel_metadata  [2] Ran  
+  2025_12_21_000000_rename_image_column_in_adventures_table  [2] Ran  
+  2025_12_22_000000_update_hotel_metadata_for_frontend  [2] Ran  
+  2025_12_22_000001_fix_hotel_bookings_room_type_reference  [2] Ran  
+  2025_12_31_000000_add_room_types_foreign_key  [2] Ran  
+  2025_12_31_235959_fix_room_foreign_key ..... [2] Ran  
+  2025_12_31_235959_fix_room_types_foreign_key  [2] Ran  
+

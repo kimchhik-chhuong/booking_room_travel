@@ -28,7 +28,12 @@ class Booking extends Model
         'total_amount',
         'currency',
         'status',
-        'payment_status'
+        'payment_status',
+        'guest_first_name',
+        'guest_last_name',
+        'guest_email',
+        'guest_phone',
+        'guest_nationality'
     ];
 
     protected $attributes = [

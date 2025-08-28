@@ -19,11 +19,7 @@ class HotelBooking extends Model
         'nationality',
         'price_per_night',
         'total_hotel_price',
-        'status',
-        'guest_name',
-        'guest_email',
-        'guest_phone',
-        'special_requests'
+        'status'
     ];
 
     protected $dates = [

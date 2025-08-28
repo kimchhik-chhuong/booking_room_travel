@@ -136,16 +136,18 @@ Route::middleware('auth')->group(function () {
 
     // Add booking routes
     Route::prefix('bookings')->name('bookings.')->group(function () {
-        Route::get('/{bookingId}', [\App\Http\Controllers\BookingController::class, 'show'])->name('show');
+        Route::get('/{booking}', [\App\Http\Controllers\BookingController::class, 'show'])
+            ->name('show')
+            ->where('booking', '[0-9]+');
         Route::get('/', [\App\Http\Controllers\BookingController::class, 'index'])->name('index');
         Route::get('/create', [\App\Http\Controllers\BookingController::class, 'create'])->name('create');
         Route::post('/', [\App\Http\Controllers\BookingController::class, 'store'])->name('store');
-        Route::patch('/{bookingId}/cancel', [\App\Http\Controllers\BookingController::class, 'cancel'])
+        Route::patch('/{booking}/cancel', [\App\Http\Controllers\BookingController::class, 'cancel'])
             ->name('cancel')
-            ->where('bookingId', '[0-9]+');
-        Route::patch('/{bookingId}/check-in', [\App\Http\Controllers\BookingController::class, 'checkIn'])
+            ->where('booking', '[0-9]+');
+        Route::patch('/{booking}/check-in', [\App\Http\Controllers\BookingController::class, 'checkIn'])
             ->name('check-in')
-            ->where('bookingId', '[0-9]+');
+            ->where('booking', '[0-9]+');
     });
 
     // Adventures Routes
@@ -182,9 +184,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [\App\Http\Controllers\BookingController::class, 'index'])->name('index');
         Route::get('/create', [\App\Http\Controllers\BookingController::class, 'create'])->name('create');
         Route::post('/', [\App\Http\Controllers\BookingController::class, 'store'])->name('store');
-        Route::get('/{bookingId}', [\App\Http\Controllers\BookingController::class, 'show'])
+        Route::get('/{booking}', [\App\Http\Controllers\BookingController::class, 'show'])
             ->name('show')
-            ->where('bookingId', '[0-9]+');
+            ->where('booking', '[0-9]+');
     });
 
     // Payment Routes

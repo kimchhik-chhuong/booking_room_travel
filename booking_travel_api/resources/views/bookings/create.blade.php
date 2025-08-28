@@ -60,16 +60,18 @@ use Illuminate\Support\Facades\Auth;
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                         <option value="">-- Select a Hotel --</option>
                         @foreach($hotels as $hotel)
-                            <option value="{{ $hotel->hotel_id }}">{{ $hotel->name }} - {{ $hotel->address }}</option>
+                            <option value="{{ $hotel->hotel_id }}" data-hotel-id="{{ $hotel->hotel_id }}">
+                                {{ $hotel->name }} - {{ $hotel->address }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
 
-                <!-- Room Type Selection (will be populated by JavaScript) -->
+                <!-- Room Type Selection -->
                 <div class="mb-6" id="roomTypeSection" style="display: none;">
                     <label for="room_type_id" class="block text-sm font-medium text-gray-700 mb-2">Select Room Type</label>
                     <div id="roomTypeOptions">
-                        <!-- Room types will be loaded here -->
+                        <!-- Room types will be loaded here by JavaScript -->
                     </div>
                     <div id="noRoomsMessage" class="text-red-500 text-sm mt-2" style="display: none;">
                         No available rooms for the selected hotel.
@@ -78,17 +80,19 @@ use Illuminate\Support\Facades\Auth;
 
                 <!-- Booking Details Section -->
                 <div class="p-6 border-b border-gray-200">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Booking Details</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Booking Dates</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label for="check_in" class="block text-sm font-medium text-gray-700">Check-in Date</label>
                             <input type="date" name="check_in" id="check_in_date" required
-                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                   class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                   min="{{ now()->format('Y-m-d') }}">
                         </div>
                         <div>
                             <label for="check_out" class="block text-sm font-medium text-gray-700">Check-out Date</label>
                             <input type="date" name="check_out" id="check_out_date" required
-                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                   class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                   min="{{ now()->addDay()->format('Y-m-d') }}">
                         </div>
                     </div>
                 </div>
