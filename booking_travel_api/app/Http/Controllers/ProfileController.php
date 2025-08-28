@@ -17,37 +17,23 @@ class ProfileController extends Controller
 
     // Show profile page
     public function show()
-    {
-        $user = Auth::user();
+{
+    $user = Auth::user(); // get logged-in user
 
-        // Total bookings
-        $totalBookings = Booking::where('user_id', $user->id)->count();
+    // Optional: recent bookings and stats
+    $recentBookings = $user->bookings()->latest()->take(5)->get();
+    $totalBookings = $user->bookings()->count();
+    $completedBookings = $user->bookings()->where('status', 'completed')->count();
+    $totalSpent = $user->bookings()->sum('total_amount');
+    $unreadMessages = $user->messages()->where('read', false)->count();
 
-        // Completed bookings
-        $completedBookings = Booking::where('user_id', $user->id)
-                                    ->where('status', 'confirmed')
-                                    ->count();
-
-        // Total spent
-        $totalSpent = Booking::where('user_id', $user->id)
-                             ->sum('total_amount');
-
-        // Recent bookings (latest 5)
-        $recentBookings = Booking::where('user_id', $user->id)
-                                 ->latest()
-                                 ->take(5)
-                                 ->get();
-
-        // Unread messages (if you have messages table)
-        $unreadMessages = 0; // Change this if you have messages functionality
-
-        return view('profile.show', compact(
-            'user', 
-            'totalBookings', 
-            'completedBookings', 
-            'totalSpent', 
-            'recentBookings',
-            'unreadMessages'
-        ));
-    }
+    return view('profile.show', compact(
+        'user', 
+        'recentBookings', 
+        'totalBookings', 
+        'completedBookings', 
+        'totalSpent', 
+        'unreadMessages'
+    ));
+}
 }
