@@ -15,13 +15,6 @@
             </div>
 
             <!-- Notifications -->
-            {{-- <div class="relative">
-                <button class="p-3 text-dark-600 hover:text-dark-800 hover:bg-white/50 rounded-xl transition-all relative">
-                    <i class="fas fa-bell text-xl"></i>
-                    <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center animate-pulse-slow">3</span>
-                </button>
-            </div> --}}
-
             <div class="relative">
                 <button
                     class="p-3 text-dark-600 hover:text-dark-800 hover:bg-white/50 rounded-xl transition-all relative"
@@ -33,8 +26,7 @@
             </div>
 
             <!-- User Profile -->
-            <div
-                class="flex items-center space-x-4 bg-white/50 rounded-2xl p-3 hover:bg-white/80 transition-all cursor-pointer">
+            <a href="{{ route('profile.show') }}" class="flex items-center space-x-4 bg-white/50 rounded-2xl p-3 hover:bg-white/80 transition-all cursor-pointer">
                 <img src="https://ui-avatars.com/api/?name={{ auth()->user()->name ?? 'Admin User' }}&background=0ea5e9&color=fff&size=48"
                     alt="Profile" class="w-12 h-12 rounded-xl shadow-md">
                 <div class="hidden md:block">
@@ -44,7 +36,7 @@
                 <button class="text-dark-600 hover:text-dark-800 ml-2">
                     <i class="fas fa-chevron-down text-sm"></i>
                 </button>
-            </div>
+            </a>
         </div>
     </div>
 </header>

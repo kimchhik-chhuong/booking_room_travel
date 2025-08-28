@@ -6,7 +6,6 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\DealController;
 use App\Http\Controllers\PackageController;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RoomTypeController;
 use App\Http\Controllers\TravelerController;
 
@@ -91,13 +90,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/home', fn() => redirect()->route('dashboard'))->name('home');
 
 
-    // Profile Management
-Route::prefix('profile')->name('profile.')->group(function () {
-    Route::get('/', [ProfileController::class, 'show'])->name('show');
-    Route::get('/edit', [ProfileController::class, 'edit'])->name('edit');
-    Route::put('/update', [ProfileController::class, 'update'])->name('update');
-    Route::post('/upload-avatar', [ProfileController::class, 'uploadAvatar'])->name('upload-avatar');
-});
+// Route::middleware(['auth'])->group(function () {
+//     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+// });
 
     /*
     |--------------------------------------------------------------------------
@@ -225,8 +220,8 @@ Route::prefix('profile')->name('profile.')->group(function () {
     | Guides
     |--------------------------------------------------------------------------
     */
-    Route::prefix('guides')->name('guides.')->group(function () {
-        Route::get('/', fn() => view('guides.index'))->name('index');
+    Route::prefix('profile')->name('profile.')->group(function () {
+        Route::get('/', fn() => view('profile.show'))->name('show');
     });
 
     /*
@@ -237,8 +232,6 @@ Route::prefix('profile')->name('profile.')->group(function () {
     Route::prefix('gallery')->name('gallery.')->group(function () {
         Route::get('/', fn() => view('gallery.index'))->name('index');
     });
-
-    
 
     /*
     |--------------------------------------------------------------------------
