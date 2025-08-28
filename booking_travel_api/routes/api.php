@@ -23,119 +23,137 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\AdventureController;
 
-// Authentication routes
-Route::post('/register', [AuthController::class, 'register'])->name('register');
-Route::post('/login', [AuthController::class, 'login'])->name('login');
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+// Group all API routes with CORS middleware
+Route::group(['middleware' => ['cors']], function () {
+    // Authentication routes
+    Route::post('/register', [AuthController::class, 'register'])->name('register');
+    Route::post('/login', [AuthController::class, 'login'])->name('login');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Public routes
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
-
-// Booking History Routes
-Route::get('/booking-history', [BookingHistoryController::class, 'index']); 
-Route::get('/booking-history/{id}', [BookingHistoryController::class, 'show']);  
-Route::get('/booking-history/statistics', [BookingHistoryController::class, 'statistics']); 
-
-// Province Routes
-Route::get('/provinces', [ProvinceController::class, 'index']);
-Route::post('/provinces', [ProvinceController::class, 'store']);
-Route::get('/provinces/{province}', [ProvinceController::class, 'show']);
-Route::put('/provinces/{province}', [ProvinceController::class, 'update']);
-Route::delete('/provinces/{province}', [ProvinceController::class, 'destroy']);
-Route::get('/provinces/{province}/adventures', [ProvinceController::class, 'getAdventures']);
-Route::get('/provinces/search', [ProvinceController::class, 'search']);
-
-// Adventure Routes
-Route::get('/adventures', [AdventureController::class, 'index']);
-Route::post('/adventures', [AdventureController::class, 'store']);
-Route::get('/adventures/{adventure}', [AdventureController::class, 'show']);
-Route::put('/adventures/{adventure}', [AdventureController::class, 'update']);
-Route::delete('/adventures/{adventure}', [AdventureController::class, 'destroy']);
-Route::get('/adventures/search', [AdventureController::class, 'search']);
-Route::get('/adventures/paginate', [AdventureController::class, 'paginate']);
-
-// Serve adventure images
-Route::get('/images/adventures/{filename}', function ($filename) {
-    $path = storage_path('app/public/adventures/' . $filename);
-    
-    if (!file_exists($path)) {
-        // Try with the 'adventures/' prefix for backward compatibility
-        $path = storage_path('app/public/' . $filename);
-        
-        if (!file_exists($path)) {
-            abort(404);
-        }
-    }
-    
-    return response()->file($path);
-})->where('filename', '.*');
-
-// Hotel Metadata Routes
-Route::apiResource('hotelmetadata', HotelMetadataController::class);
-Route::get('/hotelmetadata/search', [HotelMetadataController::class, 'search']);
-Route::get('/hotelmetadata/price-range', [HotelMetadataController::class, 'getByPriceRange']);
-Route::get('/hotelmetadata/top-rated', [HotelMetadataController::class, 'getTopRated']);
-Route::get('/hotelmetadata/paginate', [HotelMetadataController::class, 'paginate']);
-
-// Room Type Routes
-Route::apiResource('roomtypes', RoomTypeController::class);
-Route::get('/hotels/{hotel}/roomtypes', [RoomTypeController::class, 'getByHotel']);
-Route::post('/hotels/{hotel}/roomtypes', [RoomTypeController::class, 'store']);
-Route::post('/roomtypes/{roomType}/check-availability', [RoomTypeController::class, 'checkAvailability']);
-Route::patch('/roomtypes/{roomType}/availability', [RoomTypeController::class, 'updateAvailability']);
-
-// Resource routes
-Route::apiResource('booking', BookingController::class);
-Route::apiResource('destination', DestinationController::class);
-Route::apiResource('hotelbooking', HotelBookingController::class);
-Route::patch('/hotelbooking/{hotelBooking}/cancel', [HotelBookingController::class, 'cancel']);
-Route::get('/users/{userId}/hotelbookings', [HotelBookingController::class, 'getByUser']);
-
-// Travelers
-Route::get('/travelers', [TravelerController::class, 'index']);
-Route::get('/travelers/{id}', [TravelerController::class, 'show']);
-Route::post('/travelers', [TravelerController::class, 'store']);
-Route::put('/travelers/{id}', [TravelerController::class, 'update']);
-Route::delete('/travelers/{id}', [TravelerController::class, 'destroy']);
-
-// Deals
-Route::get('/deals', [DealController::class, 'index'])->name('deals.index');
-Route::post('/deals', [DealController::class, 'store'])->name('deals.store');
-Route::get('/deals/create', [DealController::class, 'create'])->name('deals.create');
-Route::get('/deals/{id}', [DealController::class, 'show'])->name('deals.show');
-Route::put('/deals/{id}', [DealController::class, 'update'])->name('deals.update');
-Route::delete('/deals/{id}', [DealController::class, 'destroy'])->name('deals.destroy');
-
-// Message routes
-Route::get('/messages', [MessageController::class, 'index']);
-Route::get('/messages/{id}', [MessageController::class, 'show']);
-Route::post('/messages/send', [MessageController::class, 'store']);
-
-//notification
-Route::get('/notifications/count', [NotificationController::class, 'count'])->middleware('auth:api');
-
-// Public API routes
-Route::get('/hotels/{hotel}/room-types', function (\App\Models\HotelMetadata $hotel) {
-    $roomTypes = \App\Models\RoomType::where('hotel_metadata_id', $hotel->hotel_id)
-        ->where('available_rooms', '>', 0)
-        ->get(['id', 'name', 'description', 'price', 'max_occupancy', 'available_rooms', 'amenities']);
-        
-    return response()->json($roomTypes ?: []);
-})->name('api.hotels.room-types');
-
-// Hotel room availability API
-Route::get('/hotels/{hotelId}/available-rooms', [\App\Http\Controllers\Api\RoomTypeController::class, 'getAvailableRooms'])
-    ->name('api.hotels.available-rooms')
-    ->where('hotelId', '[0-9]+');
-
-// Protected routes
-Route::middleware(['auth:sanctum'])->group(function () {
-    Route::resource('users', UserController::class);
-    Route::resource('roles', RoleController::class);
-
+    // Public routes
     Route::get('/user', function (Request $request) {
         return $request->user();
+    })->middleware('auth:sanctum');
+
+    // Booking History Routes
+    Route::get('/booking-history', [BookingHistoryController::class, 'index']); 
+    Route::get('/booking-history/{id}', [BookingHistoryController::class, 'show']);  
+    Route::get('/booking-history/statistics', [BookingHistoryController::class, 'statistics']); 
+
+    // Province Routes
+    Route::get('/provinces', [ProvinceController::class, 'index']);
+    Route::post('/provinces', [ProvinceController::class, 'store']);
+    Route::get('/provinces/{province}', [ProvinceController::class, 'show']);
+    Route::put('/provinces/{province}', [ProvinceController::class, 'update']);
+    Route::delete('/provinces/{province}', [ProvinceController::class, 'destroy']);
+    Route::get('/provinces/{province}/adventures', [ProvinceController::class, 'getAdventures']);
+    Route::get('/provinces/search', [ProvinceController::class, 'search']);
+
+    // Adventure Routes
+    Route::get('/adventures', [AdventureController::class, 'index']);
+    Route::post('/adventures', [AdventureController::class, 'store']);
+    Route::get('/adventures/{adventure}', [AdventureController::class, 'show']);
+    Route::put('/adventures/{adventure}', [AdventureController::class, 'update']);
+    Route::delete('/adventures/{adventure}', [AdventureController::class, 'destroy']);
+    Route::get('/adventures/search', [AdventureController::class, 'search']);
+    Route::get('/adventures/paginate', [AdventureController::class, 'paginate']);
+
+    // Serve adventure images
+    Route::get('/images/adventures/{filename}', function ($filename) {
+        $path = storage_path('app/public/adventures/' . $filename);
+        
+        if (!file_exists($path)) {
+            // Try with the 'adventures/' prefix for backward compatibility
+            $path = storage_path('app/public/' . $filename);
+            
+            if (!file_exists($path)) {
+                abort(404);
+            }
+        }
+        
+        return response()->file($path);
+    })->where('filename', '.*');
+
+    // Serve province images
+    Route::get('/storage/provinces/{filename}', function ($filename) {
+        $path = storage_path('app/public/provinces/' . $filename);
+        
+        if (!file_exists($path)) {
+            $path = storage_path('app/public/' . $filename);
+            
+            if (!file_exists($path)) {
+                abort(404);
+            }
+        }
+        
+        return response()->file($path);
+    })->where('filename', '.*');
+
+    // Hotel Metadata Routes
+    Route::apiResource('hotelmetadata', HotelMetadataController::class);
+    Route::get('/hotelmetadata/search', [HotelMetadataController::class, 'search']);
+    Route::get('/hotelmetadata/price-range', [HotelMetadataController::class, 'getByPriceRange']);
+    Route::get('/hotelmetadata/top-rated', [HotelMetadataController::class, 'getTopRated']);
+    Route::get('/hotelmetadata/paginate', [HotelMetadataController::class, 'paginate']);
+
+    // Room Type Routes
+    Route::apiResource('roomtypes', RoomTypeController::class);
+    Route::get('/hotels/{hotel}/roomtypes', [RoomTypeController::class, 'getByHotel']);
+    Route::post('/hotels/{hotel}/roomtypes', [RoomTypeController::class, 'store']);
+    Route::post('/roomtypes/{roomType}/check-availability', [RoomTypeController::class, 'checkAvailability']);
+    Route::patch('/roomtypes/{roomType}/availability', [RoomTypeController::class, 'updateAvailability']);
+
+    // Resource routes
+    Route::apiResource('booking', BookingController::class);
+    Route::apiResource('destination', DestinationController::class);
+    Route::apiResource('hotelbooking', HotelBookingController::class);
+    Route::patch('/hotelbooking/{hotelBooking}/cancel', [HotelBookingController::class, 'cancel']);
+    Route::get('/users/{userId}/hotelbookings', [HotelBookingController::class, 'getByUser']);
+
+    // Travelers
+    Route::get('/travelers', [TravelerController::class, 'index']);
+    Route::get('/travelers/{id}', [TravelerController::class, 'show']);
+    Route::post('/travelers', [TravelerController::class, 'store']);
+    Route::put('/travelers/{id}', [TravelerController::class, 'update']);
+    Route::delete('/travelers/{id}', [TravelerController::class, 'destroy']);
+
+    // Deals
+    Route::get('/deals', [DealController::class, 'index'])->name('deals.index');
+    Route::post('/deals', [DealController::class, 'store'])->name('deals.store');
+    Route::get('/deals/create', [DealController::class, 'create'])->name('deals.create');
+    Route::get('/deals/{id}', [DealController::class, 'show'])->name('deals.show');
+    Route::put('/deals/{id}', [DealController::class, 'update'])->name('deals.update');
+    Route::delete('/deals/{id}', [DealController::class, 'destroy'])->name('deals.destroy');
+
+    // Message routes
+    Route::get('/messages', [MessageController::class, 'index']);
+    Route::get('/messages/{id}', [MessageController::class, 'show']);
+    Route::post('/messages/send', [MessageController::class, 'store']);
+
+    // Notification
+    Route::get('/notifications/count', [NotificationController::class, 'count'])->middleware('auth:api');
+
+    // Public API routes
+    Route::get('/hotels/{hotel}/room-types', function (\App\Models\HotelMetadata $hotel) {
+        $roomTypes = \App\Models\RoomType::where('hotel_metadata_id', $hotel->hotel_id)
+            ->where('available_rooms', '>', 0)
+            ->get(['id', 'name', 'description', 'price', 'max_occupancy', 'available_rooms', 'amenities']);
+            
+        return response()->json($roomTypes ?: []);
+    })->name('api.hotels.room-types');
+
+    // Hotel room availability API
+    Route::get('/hotels/{hotelId}/available-rooms', [\App\Http\Controllers\Api\RoomTypeController::class, 'getAvailableRooms'])
+        ->name('api.hotels.available-rooms')
+        ->where('hotelId', '[0-9]+');
+
+    // Protected routes
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::resource('users', UserController::class);
+        Route::resource('roles', RoleController::class);
+
+        Route::get('/user', function (Request $request) {
+            return $request->user();
+        });
     });
-});
+}); // Close the CORS middleware group

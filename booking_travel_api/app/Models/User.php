@@ -62,7 +62,15 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'profile_picture_url',
     ];
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['image_url'];
 
     /**
      * Attribute casting

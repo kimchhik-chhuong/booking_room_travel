@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class CustomCors
 {
@@ -12,16 +13,21 @@ class CustomCors
      */
     public function handle(Request $request, Closure $next)
     {
+        // For preflight requests, return empty response with CORS headers
+        if ($request->isMethod('OPTIONS')) {
+            return response('', 200)
+                ->header('Access-Control-Allow-Origin', '*')
+                ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+                ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-CSRF-TOKEN');
+        }
+
         $response = $next($request);
 
+        // Add CORS headers to the response
         $response->headers->set('Access-Control-Allow-Origin', '*');
         $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-
-        if ($request->getMethod() === "OPTIONS") {
-            $response->setStatusCode(200);
-            return $response;
-        }
+        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, X-CSRF-TOKEN');
+        $response->headers->set('Access-Control-Expose-Headers', 'Authorization');
 
         return $response;
     }

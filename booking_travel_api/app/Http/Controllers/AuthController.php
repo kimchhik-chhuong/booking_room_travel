@@ -32,17 +32,21 @@ class AuthController extends Controller
 
             $token = $user->createToken('auth_token')->plainTextToken;
 
+            // Get fresh user data to ensure proper serialization
+            $userData = User::find($user->id);
+
             return response()->json([
                 'message'      => 'Registration successful',
                 'access_token' => $token,
                 'token_type'   => 'Bearer',
-                'user'         => $user,
-            ], 201);
+                'user'         => $userData->makeHidden(['password', 'remember_token']),
+            ], 201, [], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
         } catch (\Exception $e) {
             Log::error('Registration error: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Registration failed. Please try again later.',
-            ], 500);
+                'error'   => config('app.debug') ? $e->getMessage() : null
+            ], 500, [], JSON_UNESCAPED_SLASHES);
         }
     }
 
@@ -60,7 +64,7 @@ class AuthController extends Controller
 
         if (!$user || !Hash::check($credentials['password'], $user->password)) {
             return $request->wantsJson()
-                ? response()->json(['message' => 'Invalid credentials'], 401)
+                ? response()->json(['message' => 'Invalid credentials'], 401, [], JSON_UNESCAPED_SLASHES)
                 : back()->withErrors(['email' => 'Invalid credentials'])->withInput();
         }
 
@@ -83,6 +87,9 @@ class AuthController extends Controller
         $user->last_login = now();
         $user->save();
 
+        // Get fresh user data to ensure proper serialization
+        $userData = User::find($user->id);
+
         // Return API response
         if ($request->wantsJson()) {
             $token = $user->createToken('auth_token')->plainTextToken;
@@ -90,8 +97,8 @@ class AuthController extends Controller
                 'message'      => 'Login successful',
                 'access_token' => $token,
                 'token_type'   => 'Bearer',
-                'user'         => $user,
-            ], 200);
+                'user'         => $userData->makeHidden(['password', 'remember_token']),
+            ], 200, [], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
         }
 
         // Return web redirect
