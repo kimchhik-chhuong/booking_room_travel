@@ -10,7 +10,7 @@ class HotelBooking extends Model
     
     protected $fillable = [
         'booking_id',
-        'hotel_id',
+        'hotel_metadata_id',
         'room_type_id',
         'check_in_date',
         'check_out_date',
@@ -53,7 +53,7 @@ class HotelBooking extends Model
      */
     public function hotel()
     {
-        return $this->belongsTo(HotelMetadata::class, 'hotel_id', 'hotel_id');
+        return $this->belongsTo(HotelMetadata::class, 'hotel_metadata_id', 'hotel_id');
     }
 
     /**

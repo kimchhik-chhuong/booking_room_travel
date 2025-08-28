@@ -228,7 +228,7 @@ class BookingController extends Controller
             // Create the hotel booking record
             $hotelBooking = new HotelBooking();
             $hotelBooking->booking_id = $booking->id;
-            $hotelBooking->hotel_id = $validated['hotel_id'];
+            $hotelBooking->hotel_metadata_id = $validated['hotel_id'];
             $hotelBooking->room_type_id = $roomType->id;
             $hotelBooking->check_in_date = $checkIn;
             $hotelBooking->check_out_date = $checkOut;
@@ -331,7 +331,7 @@ class BookingController extends Controller
             abort(404, 'Hotel booking details not found.');
         }
         
-        $hotel = HotelMetadata::find($hotelBooking->hotel_id);
+        $hotel = HotelMetadata::find($hotelBooking->hotel_metadata_id);
         $roomType = RoomType::find($hotelBooking->room_type_id);
         
         // Calculate number of nights

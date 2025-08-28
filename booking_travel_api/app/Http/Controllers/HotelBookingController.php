@@ -29,7 +29,7 @@ class HotelBookingController extends Controller
 
         // Filter by hotel if provided
         if ($request->has('hotel_id') && $request->hotel_id) {
-            $query->where('hotel_id', $request->hotel_id);
+            $query->where('hotel_metadata_id', $request->hotel_id);
         }
 
         // Filter by status
@@ -179,7 +179,7 @@ class HotelBookingController extends Controller
                 // Create the hotel booking record
                 $hotelBooking = new HotelBooking([
                     'booking_id' => $booking->id,
-                    'hotel_id' => $hotel->hotel_id,  
+                    'hotel_metadata_id' => $hotel->hotel_id,  
                     'room_type_id' => $roomType->id,
                     'check_in_date' => $validated['check_in_date'],
                     'check_out_date' => $validated['check_out_date'],
@@ -223,7 +223,7 @@ class HotelBookingController extends Controller
         
         // Check if there are enough available rooms
         $bookedRooms = HotelBooking::where('room_type_id', $roomTypeId)
-            ->where('hotel_id', $hotelId)
+            ->where('hotel_metadata_id', $hotelId)
             ->where(function($query) use ($checkIn, $checkOut) {
                 $query->whereBetween('check_in_date', [$checkIn, $checkOut])
                       ->orWhereBetween('check_out_date', [$checkIn, $checkOut])
@@ -258,7 +258,7 @@ class HotelBookingController extends Controller
     {
         $validated = $request->validate([
             'booking_id' => 'sometimes|exists:bookings,id',
-            'hotel_id' => 'sometimes|exists:hotel_metadata,hotel_id',
+            'hotel_metadata_id' => 'sometimes|exists:hotel_metadata,hotel_id',
             'check_in_date' => 'sometimes|date|after_or_equal:today',
             'check_out_date' => 'sometimes|date|after:check_in_date',
             'room_type_id' => 'sometimes|exists:room_types,id',
