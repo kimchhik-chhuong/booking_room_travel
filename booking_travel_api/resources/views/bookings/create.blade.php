@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Auth;
     <!-- Main Content -->
     <div class="ml-72 p-8">
         <div class="bg-white rounded-lg shadow overflow-hidden">
-            <form action="{{ route('bookings.store') }}" method="POST">
+            <form action="{{ $hotel ? route('hotels.bookings.store', $hotel->hotel_id) : route('bookings.store') }}" method="POST" id="bookingForm" onsubmit="return validateForm()">
                 @csrf
                 
                 <!-- Guest Information Section -->

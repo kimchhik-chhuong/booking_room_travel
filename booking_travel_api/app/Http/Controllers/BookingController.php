@@ -139,15 +139,21 @@ class BookingController extends Controller
     /**
      * Show the form for creating a new booking.
      */
-    public function create()
+    public function create($hotelId = null)
     {
         $hotels = \App\Models\HotelMetadata::select('hotel_id', 'name', 'address')
             ->where('status', 'active')
             ->orderBy('name')
             ->get();
 
+        $hotel = null;
+        if ($hotelId) {
+            $hotel = \App\Models\HotelMetadata::find($hotelId);
+        }
+
         return view('bookings.create', [
             'hotels' => $hotels,
+            'hotel' => $hotel,
             'defaultCheckIn' => now()->format('Y-m-d'),
             'defaultCheckOut' => now()->addDays(1)->format('Y-m-d')
         ]);
@@ -175,7 +181,7 @@ class BookingController extends Controller
             'adults' => 'required|integer|min:1',
             'children' => 'required|integer|min:0',
             'special_requests' => 'nullable|string|max:1000',
-            'payment_method' => 'required|in:credit_card,paypal,pay_at_hotel',
+            'payment_method' => 'required|in:credit_card,paypal,pay_at_hotel,bank_transfer',
         ]);
 
         // Start database transaction
@@ -196,7 +202,7 @@ class BookingController extends Controller
             $nights = $checkIn->diffInDays($checkOut);
             $totalPrice = $roomType->price * $nights;
 
-            // Create the booking
+            // Create the booking with guest information
             $booking = new Booking();
             $booking->user_id = auth()->id() ?? 1; // Fallback to admin user if not logged in
             $booking->package_id = null; 
@@ -207,13 +213,21 @@ class BookingController extends Controller
             $booking->total_amount = $totalPrice;
             $booking->status = 'pending';
             $booking->payment_status = $validated['payment_method'] === 'pay_at_hotel' ? 'pending' : 'paid';
+            
+            // Set guest information directly on booking
+            $booking->guest_first_name = $validated['first_name'];
+            $booking->guest_last_name = $validated['last_name'];
+            $booking->guest_email = $validated['email'];
+            $booking->guest_phone = $validated['phone'];
+            $booking->guest_nationality = $validated['nationality'];
+            
             $booking->save();
 
             // Create hotel booking
             $hotelBooking = new HotelBooking();
             $hotelBooking->booking_id = $booking->id;
             $hotelBooking->hotel_id = $validated['hotel_id'];
-            $hotelBooking->room_type_id = $validated['room_type_id']; // Use room_type_id foreign key
+            $hotelBooking->room_type_id = $validated['room_type_id'];
             $hotelBooking->check_in_date = $checkIn;
             $hotelBooking->check_out_date = $checkOut;
             $hotelBooking->num_rooms = 1; // Default to 1 room, adjust as needed
@@ -222,16 +236,6 @@ class BookingController extends Controller
             $hotelBooking->total_hotel_price = $totalPrice;
             $hotelBooking->status = 'confirmed';
             $hotelBooking->save();
-
-            // Create traveler information
-            $traveler = new Traveler();
-            $traveler->booking_id = $booking->id;
-            $traveler->first_name = $validated['first_name'];
-            $traveler->last_name = $validated['last_name'];
-            $traveler->email = $validated['email'];
-            $traveler->phone = $validated['phone'];
-            $traveler->nationality = $validated['nationality'];
-            $traveler->save();
 
             DB::commit();
 

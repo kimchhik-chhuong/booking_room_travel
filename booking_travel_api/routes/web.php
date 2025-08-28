@@ -63,6 +63,9 @@ Route::prefix('hotels')->name('hotels.')->group(function () {
     Route::get('/{hotel}/book', [\App\Http\Controllers\HotelBookingController::class, 'create'])
         ->name('book')
         ->where('hotel', '[0-9]+');
+    Route::post('/{hotel}/bookings', [\App\Http\Controllers\HotelBookingController::class, 'store'])
+        ->name('bookings.store')
+        ->where('hotel', '[0-9]+');
     
     // Room Type routes
     Route::prefix('{hotel}')->group(function () {

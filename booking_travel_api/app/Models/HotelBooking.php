@@ -16,10 +16,26 @@ class HotelBooking extends Model
         'check_out_date',
         'num_rooms',
         'num_guests',
+        'num_adults',
+        'num_children',
+        'children_ages',
         'nationality',
         'price_per_night',
         'total_hotel_price',
+        'special_requests',
+        'payment_method',
+        'payment_status',
         'status'
+    ];
+    
+    protected $casts = [
+        'price_per_night' => 'decimal:2',
+        'total_hotel_price' => 'decimal:2',
+        'num_rooms' => 'integer',
+        'num_guests' => 'integer',
+        'num_adults' => 'integer',
+        'num_children' => 'integer',
+        'children_ages' => 'array',
     ];
 
     protected $dates = [
@@ -29,12 +45,6 @@ class HotelBooking extends Model
         'updated_at'
     ];
 
-    protected $casts = [
-        'price_per_night' => 'decimal:2',
-        'total_hotel_price' => 'decimal:2',
-        'num_rooms' => 'integer',
-        'num_guests' => 'integer',
-    ];
 
     /**
      * Get the booking that owns the hotel booking.

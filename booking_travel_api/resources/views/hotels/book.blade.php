@@ -9,7 +9,7 @@
                     <h4 class="mb-0">Book {{ $hotel->name }}</h4>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('hotels.book.store', $hotel->id) }}" method="POST" id="bookingForm">
+                    <form action="{{ route('hotel.bookings.store', $hotel->id) }}" method="POST" id="bookingForm" novalidate>
                         @csrf
                         
                         <!-- Hotel Info -->
@@ -32,9 +32,9 @@
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="check_in">Check-in Date</label>
+                                    <label for="check_in_date">Check-in Date</label>
                                     <input type="date" class="form-control @error('check_in_date') is-invalid @enderror" 
-                                           id="check_in" name="check_in_date" 
+                                           id="check_in_date" name="check_in_date" 
                                            value="{{ old('check_in_date') }}" required>
                                     @error('check_in_date')
                                         <span class="invalid-feedback" role="alert">
@@ -45,9 +45,9 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="check_out">Check-out Date</label>
+                                    <label for="check_out_date">Check-out Date</label>
                                     <input type="date" class="form-control @error('check_out_date') is-invalid @enderror" 
-                                           id="check_out" name="check_out_date" 
+                                           id="check_out_date" name="check_out_date" 
                                            value="{{ old('check_out_date') }}" required>
                                     @error('check_out_date')
                                         <span class="invalid-feedback" role="alert">
@@ -199,12 +199,22 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const checkInInput = document.getElementById('check_in');
-        const checkOutInput = document.getElementById('check_out');
+        const form = document.getElementById('bookingForm');
+        const checkInInput = document.getElementById('check_in_date');
+        const checkOutInput = document.getElementById('check_out_date');
         const guestsSelect = document.getElementById('guests');
         const numRoomsSelect = document.getElementById('num_rooms');
         const roomTypeRadios = document.querySelectorAll('.room-type-radio');
         
+        // Prevent form submission if validation fails
+        form.addEventListener('submit', function(e) {
+            if (!form.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        });
+
         // Set minimum date to tomorrow
         const today = new Date();
         const tomorrow = new Date(today);
