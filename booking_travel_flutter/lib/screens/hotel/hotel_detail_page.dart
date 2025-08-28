@@ -18,6 +18,101 @@ class HotelDetailPage extends StatefulWidget {
 }
 
 class _HotelDetailPageState extends State<HotelDetailPage> {
+  int _currentImageIndex = 0;
+  final PageController _pageController = PageController();
+
+  Widget _buildHotelImage() {
+    final hotel = widget.hotel;
+    final images = hotel.images ?? [];
+    
+    // If we have multiple images, show a PageView
+    if (images.isNotEmpty) {
+      return Stack(
+        children: [
+          // Main image carousel
+          SizedBox(
+            height: double.infinity,
+            child: PageView.builder(
+              controller: _pageController,
+              itemCount: images.length,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentImageIndex = index;
+                });
+              },
+              itemBuilder: (context, index) {
+                return _buildNetworkImage(images[index]);
+              },
+            ),
+          ),
+          
+          // Page indicator
+          if (images.length > 1)
+            Positioned(
+              bottom: 16,
+              left: 0,
+              right: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  images.length,
+                  (index) => Container(
+                    width: 8,
+                    height: 8,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: _currentImageIndex == index 
+                          ? Colors.white 
+                          : Colors.white.withOpacity(0.5),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      );
+    }
+    
+    // Fallback to single image or placeholder
+    if (hotel.image != null && hotel.image!.isNotEmpty) {
+      return _buildNetworkImage(hotel.image!);
+    }
+    
+    // Default placeholder
+    return Container(
+      color: Colors.grey[300],
+      child: const Icon(Icons.hotel, size: 100, color: Colors.grey),
+    );
+  }
+  
+  Widget _buildNetworkImage(String imageUrl) {
+    // Handle relative URLs by checking if it starts with http
+    final fullImageUrl = imageUrl.startsWith('http')
+        ? imageUrl
+        : 'https://your-api-base-url${imageUrl.startsWith('/') ? '' : '/'}$imageUrl';
+        
+    return Image.network(
+      fullImageUrl,
+      fit: BoxFit.cover,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Center(
+          child: CircularProgressIndicator(
+            value: loadingProgress.expectedTotalBytes != null
+                ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                : null,
+          ),
+        );
+      },
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          color: Colors.grey[300],
+          child: const Icon(Icons.broken_image, size: 60, color: Colors.grey),
+        );
+      },
+    );
+  }
   List<RoomType> roomTypes = [];
   bool isLoadingRooms = true;
   DateTime? checkInDate;
@@ -197,21 +292,7 @@ class _HotelDetailPageState extends State<HotelDetailPage> {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  widget.hotel.image != null
-                      ? Image.network(
-                          widget.hotel.image!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Colors.grey[300],
-                              child: const Icon(Icons.hotel, size: 100),
-                            );
-                          },
-                        )
-                      : Container(
-                          color: Colors.grey[300],
-                          child: const Icon(Icons.hotel, size: 100),
-                        ),
+                  _buildHotelImage(),
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(

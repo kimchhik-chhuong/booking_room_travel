@@ -14,30 +14,25 @@ class Traveler extends Model
         'last_name',
         'email',
         'phone',
+        'date_of_birth',
         'nationality',
-        'status'
+        'passport_number',
+        'passport_expiry',
+        'user_id' // If you're associating travelers with users
     ];
 
-    // Relationships
+    protected $casts = [
+        'date_of_birth' => 'date',
+        'passport_expiry' => 'date',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function bookings()
     {
         return $this->hasMany(Booking::class);
     }
-
-    public function latestBooking()
-    {
-        return $this->hasOne(Booking::class)->latest();
-    }
-
-    public function messages()
-    {
-        return $this->hasMany(Message::class);
-    }
-
-    // Accessor for full name
-    public function getFullNameAttribute()
-    {
-        return "{$this->first_name} {$this->last_name}";
-    }
-
 }
