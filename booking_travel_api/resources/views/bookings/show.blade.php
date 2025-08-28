@@ -230,22 +230,22 @@
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
                                             <p class="text-sm text-gray-500">Full Name</p>
-                                            <p class="font-medium">{{ $hotelBooking-> guest_name }}</p>
+                                            <p class="font-medium">{{ $booking->guest_first_name }} {{ $booking->guest_last_name }}</p>
                                         </div>
                                         <div>
                                             <p class="text-sm text-gray-500">Email</p>
-                                            <p class="font-medium">{{ $hotelBooking->guest_email }}</p>
+                                            <p class="font-medium">{{ $booking->guest_email }}</p>
                                         </div>
-                                        @if($hotelBooking->guest_phone)
+                                        @if($booking->guest_phone)
                                         <div>
                                             <p class="text-sm text-gray-500">Phone</p>
-                                            <p class="font-medium">{{ $hotelBooking->guest_phone }}</p>
+                                            <p class="font-medium">{{ $booking->guest_phone }}</p>
                                         </div>
                                         @endif
-                                        @if(!empty($hotelBooking->nationality))
+                                        @if(!empty($booking->guest_nationality))
                                         <div>
                                             <p class="text-sm text-gray-500">Nationality</p>
-                                            <p class="font-medium">{{ $hotelBooking->nationality }}</p>
+                                            <p class="font-medium">{{ $booking->guest_nationality }}</p>
                                         </div>
                                         @endif
                                         <div class="md:col-span-2">
