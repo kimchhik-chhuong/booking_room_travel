@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class RoomType {
   final int id;
   final int hotelMetadataId;
@@ -10,6 +12,10 @@ class RoomType {
   final String? imageUrl;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final bool isAvailable;
+
+  // Base URL from your Laravel API
+  static const String _baseUrl = 'http://localhost:8000/storage/';
 
   RoomType({
     required this.id,
@@ -20,10 +26,15 @@ class RoomType {
     required this.maxOccupancy,
     required this.availableRooms,
     this.amenities,
-    this.imageUrl,
+    String? imageUrl,
     this.createdAt,
     this.updatedAt,
-  });
+    this.isAvailable = true,
+  }) : imageUrl = imageUrl != null && imageUrl.isNotEmpty
+            ? (imageUrl.startsWith('http') 
+                ? imageUrl 
+                : '$_baseUrl${imageUrl.replaceAll('storage/', '')}')
+            : null;
 
   factory RoomType.fromJson(Map<String, dynamic> json) {
     return RoomType(
@@ -31,13 +42,16 @@ class RoomType {
       hotelMetadataId: json['hotel_metadata_id'] ?? 0,
       name: json['name'] ?? '',
       description: json['description'],
-      price: double.tryParse(json['price'].toString()) ?? 0.0,
+      price: (json['price'] is num) ? (json['price'] as num).toDouble() : 0.0,
       maxOccupancy: json['max_occupancy'] ?? 2,
       availableRooms: json['available_rooms'] ?? 0,
-      amenities: json['amenities'] != null 
-          ? List<String>.from(json['amenities'])
-          : null,
+      amenities: json['amenities'] is String 
+          ? List<String>.from(jsonDecode(json['amenities']))
+          : json['amenities'] != null 
+              ? List<String>.from(json['amenities'])
+              : null,
       imageUrl: json['image_url'],
+      isAvailable: json['is_available'] ?? true,
       createdAt: json['created_at'] != null 
           ? DateTime.tryParse(json['created_at'])
           : null,
@@ -58,12 +72,11 @@ class RoomType {
       'available_rooms': availableRooms,
       'amenities': amenities,
       'image_url': imageUrl,
+      'is_available': isAvailable,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
     };
   }
 
   String get formattedPrice => '\$${price.toStringAsFixed(2)}';
-  
-  bool get isAvailable => availableRooms > 0;
 }

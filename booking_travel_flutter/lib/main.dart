@@ -1,34 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:provider/provider.dart';
 
 import 'screens/register.dart';
 import 'screens/login.dart';
 import 'screens/onboarding.dart';
 import 'screens/home_screen.dart';
 import 'screens/payment_screen.dart';
-// import 'screens/search_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/message_screen.dart';
+import 'screens/splash_screen.dart';
 import 'services/user_service.dart';
+import 'providers/auth_provider.dart'; // 👈 your AuthProvider
 
-void main() async {
-  // Ensure Flutter binding is initialized
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Load environment variables
   await dotenv.load(fileName: ".env");
-  
-  // Initialize services
+
+  // Initialize UserService
   await UserService.init();
-  
-  // Set preferred orientations
+
+  // Lock screen orientation
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
 
-  runApp(const TravelBookingApp());
+  // Run app wrapped in providers
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()), 
+        // ChangeNotifierProvider(create: (_) => HotelProvider()),
+      ],
+      child: const TravelBookingApp(),
+    ),
+  );
 }
 
 class TravelBookingApp extends StatelessWidget {
@@ -49,7 +59,7 @@ class TravelBookingApp extends StatelessWidget {
           systemOverlayStyle: SystemUiOverlayStyle.light,
         ),
       ),
-      home: const SplashScreen(),
+      home: const SplashScreen(), // 👈 your starting screen
       routes: {
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
@@ -57,12 +67,12 @@ class TravelBookingApp extends StatelessWidget {
         '/home': (context) => HomeScreen(),
         '/payment': (context) => PaymentScreen(),
         '/message': (context) => MessageScreen(),
-        // '/search': (context) => SearchScreen(),
         '/profile': (context) => ProfileScreen(),
       },
     );
   }
 }
+
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

@@ -199,18 +199,86 @@ class BookingService {
       };
     }
   }
-}
 
-Map<String, dynamic> _safeDecode(String body) {
-  try {
-    final data = json.decode(body);
-    if (data is Map<String, dynamic>) return data;
-    return {'data': data};
-  } catch (_) {
-    return {'message': body};
+  Future<Map<String, dynamic>> createBooking(Map<String, dynamic> bookingData) async {
+    try {
+      print('Starting booking creation with data: $bookingData');
+      
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      
+      if (token == null) {
+        final error = 'Authentication token not found. User is not logged in.';
+        print(error);
+        throw Exception(error);
+      }
+
+      final paymentMethod = bookingData['payment_method']?.toString() ?? 'credit_card';
+      final isPayAtHotel = paymentMethod == 'pay_at_hotel';
+
+      // Validate required fields
+      if (bookingData['hotel_id'] == null || bookingData['room_type_id'] == null) {
+        final error = 'Missing required booking information';
+        print('$error. Data: $bookingData');
+        throw Exception(error);
+      }
+
+      // Prepare booking payload
+      final payload = {
+        'hotel_id': bookingData['hotel_id'],
+        'room_type_id': bookingData['room_type_id'],
+        'user_id': bookingData['user_id'],
+        'check_in_date': bookingData['check_in_date'],
+        'check_out_date': bookingData['check_out_date'],
+        'adults': bookingData['adults'] ?? 1,
+        'children': bookingData['children'] ?? 0,
+        'rooms': bookingData['rooms'] ?? 1,
+        'total_price': bookingData['total_price']?.toString(),
+        'payment_method': paymentMethod,
+        'status': isPayAtHotel ? 'pending_payment' : 'confirmed',
+        'payment_status': isPayAtHotel ? 'pending' : 'paid',
+        'special_requests': bookingData['special_requests']?.toString() ?? '',
+      };
+
+      print('Sending booking payload: $payload');
+
+      // For demo purposes - in a real app, this would make an API call
+      await Future.delayed(const Duration(seconds: 1));
+      
+      // Simulate a successful booking response
+      final response = {
+        'success': true,
+        'booking_reference': 'BK-${DateTime.now().millisecondsSinceEpoch}',
+        'booking_id': DateTime.now().millisecondsSinceEpoch.toString(),
+        'message': isPayAtHotel 
+            ? 'Booking successful! Please pay at the hotel upon arrival.' 
+            : 'Booking and payment successful!',
+        'payment_status': isPayAtHotel ? 'pending' : 'paid',
+        'status': isPayAtHotel ? 'pending_payment' : 'confirmed',
+      };
+
+      print('Booking successful: $response');
+      return response;
+      
+    } catch (e) {
+      print('Error in createBooking: $e');
+      rethrow;
+    }
   }
-}
 
-String _formatYmd(DateTime dt) {
-  return '${dt.year.toString().padLeft(4, '0')}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+  // Helper method to safely decode JSON responses
+  static Map<String, dynamic> _safeDecode(String body) {
+    try {
+      final data = json.decode(body);
+      if (data is Map<String, dynamic>) return data;
+      return {'data': data};
+    } catch (_) {
+      return {'message': body};
+    }
+  }
+
+  // Helper method to format dates as YYYY-MM-DD
+  static String _formatYmd(DateTime dt) {
+    return '${dt.year.toString().padLeft(4, '0')}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+  }
 }

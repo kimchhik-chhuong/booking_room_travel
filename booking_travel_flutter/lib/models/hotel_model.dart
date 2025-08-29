@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:booking_travel/models/room_type_model.dart';
 
 class Hotel {
   final int id;
@@ -19,6 +20,7 @@ class Hotel {
   final int? provinceId;
   final String? provinceName;
   final String status;
+  final List<RoomType>? roomTypes;
 
   Hotel({
     required this.id,
@@ -39,6 +41,7 @@ class Hotel {
     this.provinceId,
     this.provinceName,
     this.status = 'active',
+    this.roomTypes,
   });
 
   factory Hotel.fromJson(Map<String, dynamic> json) {
@@ -48,31 +51,29 @@ class Hotel {
       
       if (amenitiesData is String) {
         try {
-          // Try to parse the string as JSON
-          if (amenitiesData.startsWith('[') && amenitiesData.endsWith(']')) {
-            // Remove the square brackets and split by comma
-            final cleanString = amenitiesData.substring(1, amenitiesData.length - 1);
-            return cleanString
-                .split(',')
-                .map((e) => e.trim().replaceAll('"', '').replaceAll("'", ''))
-                .where((e) => e.isNotEmpty)
-                .toList();
+          final parsed = jsonDecode(amenitiesData);
+          if (parsed is List) {
+            return List<String>.from(parsed);
           }
-          // If it's not in JSON array format, try to split by comma
-          return amenitiesData
-              .split(',')
-              .map((e) => e.trim().replaceAll('"', '').replaceAll("'", ''))
-              .where((e) => e.isNotEmpty)
-              .toList();
-        } catch (e) {
-          // If anything fails, return an empty list
           return [];
+        } catch (e) {
+          return [amenitiesData];
         }
       } else if (amenitiesData is List) {
-        // If it's already a list, convert each item to String
-        return amenitiesData.map((e) => e.toString()).toList();
+        return List<String>.from(amenitiesData);
       }
       return [];
+    }
+
+    // Parse room types if they exist in the JSON
+    List<RoomType>? parseRoomTypes(dynamic roomTypesData) {
+      if (roomTypesData == null) return null;
+      if (roomTypesData is List) {
+        return roomTypesData
+            .map((rt) => rt is RoomType ? rt : RoomType.fromJson(rt))
+            .toList();
+      }
+      return null;
     }
 
     return Hotel(
@@ -92,7 +93,7 @@ class Hotel {
       rating: json['star_rating'] != null
           ? double.tryParse(json['star_rating'].toString())
           : null,
-      amenities: _parseAmenities(json['amenities']),
+      amenities: parseAmenities(json['amenities']),
       phone: json['contact_phone'] ?? json['phone'],
       email: json['email'],
       website: json['website_url'] ?? json['website'],
@@ -101,6 +102,7 @@ class Hotel {
       provinceId: json['province_id'],
       provinceName: json['province_name'] ?? json['province']?['name'],
       status: json['status'] ?? 'active',
+      roomTypes: parseRoomTypes(json['room_types']),
     );
   }
 
@@ -124,6 +126,7 @@ class Hotel {
       'province_id': provinceId,
       'province_name': provinceName,
       'status': status,
+      'room_types': roomTypes?.map((rt) => rt.toJson()).toList(),
     };
   }
 
