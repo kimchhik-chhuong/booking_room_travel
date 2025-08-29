@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/user_service.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -71,7 +73,6 @@ class _LoginScreenState extends State<LoginScreen>
       _formController.forward();
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -200,7 +201,6 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-
   Widget _buildForm() {
     return AnimatedBuilder(
       animation: _formAnimation,
@@ -266,7 +266,6 @@ class _LoginScreenState extends State<LoginScreen>
       },
     );
   }
-
 
   Widget _buildAnimatedTextField({
     required TextEditingController controller,
@@ -349,7 +348,7 @@ class _LoginScreenState extends State<LoginScreen>
           ],
         ),
         child: ElevatedButton(
-          onPressed: _isLoading ? null : _handleLogin,
+          onPressed: _isLoading ? null : _login,
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent,
@@ -379,7 +378,6 @@ class _LoginScreenState extends State<LoginScreen>
       ),
     );
   }
-
 
   Widget _buildSignUpLink() {
     return Row(
@@ -415,86 +413,42 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  void _handleLogin() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+  Future<void> _login() async {
+    if (_formKey.currentState?.validate() != true) return;
 
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
-    _buttonController.forward();
-
     try {
-      final user = await UserService.loginUser(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final success = await authProvider.login(
+        _emailController.text.trim(),
+        _passwordController.text,
       );
 
-      if (user != null) {
-        // Check user role
-        if (user['role'] == 'user' || user['role'] == 'admin' || user['role'] == 'employee') {
-          // Login successful for allowed roles
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Login Successful!'),
-              backgroundColor: Colors.green,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-          );
-
-          Navigator.pushReplacementNamed(context, '/home');
-        } else {
-          setState(() {
-            _errorMessage = 'Access denied: Unauthorized role.';
-          });
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(_errorMessage!),
-              backgroundColor: Colors.red,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-          );
-        }
-      } else {
-        setState(() {
-          _errorMessage = 'Login failed or access denied.';
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_errorMessage!),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          ),
+      if (success && mounted) {
+        // Navigate to home screen and remove all previous routes
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/home',
+          (route) => false, // This removes all previous routes
         );
+      } else if (!success && mounted) {
+        setState(() {
+          _errorMessage = authProvider.error ?? 'Login failed. Please try again.';
+        });
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'An error occurred during login.';
+        _errorMessage = 'An error occurred during login. Please try again.';
       });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_errorMessage!),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
-      );
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
-      _buttonController.reverse();
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 

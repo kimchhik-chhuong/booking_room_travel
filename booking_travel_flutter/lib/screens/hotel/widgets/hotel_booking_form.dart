@@ -27,15 +27,21 @@ class HotelBookingForm extends StatefulWidget {
     required RoomType roomType,
     required Function() onBookNow,
   }) {
+    // Get the AuthProvider before showing the bottom sheet
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => HotelBookingForm(
-        hotel: hotel,
-        roomType: roomType,
-        onBookingSuccess: onBookNow,
-      ),
+builder: (context) => ChangeNotifierProvider<AuthProvider>.value(
+  value: authProvider,
+  child: HotelBookingForm(
+    hotel: hotel,
+    roomType: roomType,
+    onBookingSuccess: onBookNow,
+  ),
+),
     );
   }
 
@@ -65,97 +71,133 @@ class _HotelBookingFormState extends State<HotelBookingForm> {
     _checkOutDate = now.add(const Duration(days: 2));
   }
 
-  Future<void> _submitBooking() async {
-    if (_formKey.currentState?.validate() != true) return;
+Future<void> _submitBooking() async {
+  if (_formKey.currentState?.validate() != true) return;
 
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
+  setState(() {
+    _isLoading = true;
+    _error = null;
+  });
 
-    try {
-      print('Starting booking submission...');
-      
-      // Get the user from AuthProvider using the current context
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final user = authProvider.user;
-      
-      if (user == null) {
-        throw Exception('You must be logged in to book a hotel');
-      }
-
-      final totalPrice = _calculateTotalPrice();
-      print('Calculated total price: $totalPrice');
-      
-      final booking = {
-  'hotel_id': widget.hotel.id,
-  'room_type_id': widget.roomType.id,
-  'first_name': user.name.split(' ').first, // or collect from form
-  'last_name': user.name.split(' ').last,   // or collect from form
-  'email': user.email,
-  'phone': '1234567890', // add input field in form
-  'nationality': 'Cambodian', // add input field in form
-  'check_in': DateFormat('yyyy-MM-dd').format(_checkInDate), // 👈 match Laravel
-  'check_out': DateFormat('yyyy-MM-dd').format(_checkOutDate), // 👈 match Laravel
-  'adults': _adults,
-  'children': _children,
-  'special_requests': '',
-  'payment_method': _selectedPaymentMethod.toString().split('.').last,
-};
-
-
-      print('Attempting to create booking with data: $booking');
-      
-      // Call the booking service
-      final result = await _bookingService.createBooking(booking);
-      
-      print('Booking service response: $result');
-      
-      if (!mounted) return;
-      
-      Navigator.of(context).pop();
-      
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message'] ?? 'Booking successful!'),
-          backgroundColor: Colors.green,
-          duration: const Duration(seconds: 5),
-        ),
+  try {
+    print('Starting booking submission...');
+    
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
+    // If not authenticated, redirect to login and return
+    if (!authProvider.isAuthenticated) {
+      print('User not authenticated, redirecting to login...');
+      final result = await Navigator.pushNamed(
+        context,
+        '/login',
+        arguments: {
+          'returnRoute': ModalRoute.of(context)?.settings.name,
+          'showBackButton': true,
+        },
       );
       
-      // Call the success callback if provided
-      if (widget.onBookingSuccess != null) {
-        widget.onBookingSuccess!();
+      // If login was not successful, stop the booking process
+      if (result != true) {
+        setState(() => _isLoading = false);
+        return;
       }
       
-    } catch (e) {
-      print('Error in _submitBooking: $e');
-      final errorMessage = e.toString().replaceAll('Exception: ', '');
+      // After successful login, refresh the auth provider state
+      await authProvider.initialize();
       
-      if (mounted) {
+      // If still not authenticated after login, show error
+      if (!authProvider.isAuthenticated) {
+        throw Exception('Authentication failed. Please try again.');
+      }
+      
+      // Close the login screen and return to the booking form
+      Navigator.of(context).pop();
+      return;
+    }
+    
+    // At this point, we should be authenticated
+    final user = authProvider.user;
+    if (user == null) {
+      throw Exception('User information not available. Please try logging in again.');
+    }
+
+    print('User authenticated, proceeding with booking...');
+    
+    // Prepare booking data
+    final totalPrice = _calculateTotalPrice();
+    final Map<String, String> guestInfo = {
+      'name': user.name,
+      'email': user.email,
+    };
+
+    // Process payment and create booking
+    print('Creating booking with payment...');
+    final result = await BookingService.createBookingWithPayment(
+      hotelId: widget.hotel.id,
+      roomTypeId: widget.roomType.id,
+      checkInDate: _checkInDate,
+      checkOutDate: _checkOutDate,
+      numberOfGuests: _adults + _children,
+      numberOfRooms: _rooms,
+      totalAmount: totalPrice,
+      paymentMethod: _selectedPaymentMethod.toString().split('.').last,
+      guestInfo: guestInfo,
+      cardDetails: _selectedPaymentMethod == PaymentMethod.creditCard 
+          ? _paymentDetails 
+          : null,
+    );
+
+    print('Booking result: $result');
+
+    if (mounted) {
+      if (result['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Booking successful!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Close the booking form
+        Navigator.of(context).pop();
+
+        // Notify parent widget about successful booking
+        if (widget.onBookingSuccess != null) {
+          widget.onBookingSuccess!();
+        }
+      } else {
         setState(() {
-          _error = errorMessage;
-          _isLoading = false;
+          _error = result['message'] ?? 'Failed to complete booking';
         });
-        
-        // Show error message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Booking failed: $errorMessage'),
+            content: Text(_error!),
             backgroundColor: Colors.red,
-            duration: const Duration(seconds: 5),
           ),
         );
       }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+    }
+  } catch (e) {
+    print('Error in _submitBooking: $e');
+    if (mounted) {
+      setState(() {
+        _error = e.toString();
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  } finally {
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
+}
 
   double _calculateTotalPrice() {
     final nights = _checkOutDate.difference(_checkInDate).inDays;
