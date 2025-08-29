@@ -13,7 +13,7 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.2
   http: ^1.1.0
-  shared_preferences: ^2.0.20  # Use older stable version
+  shared_preferences: ^2.0.20
   url_launcher: ^6.3.2
   path_provider: ^2.1.5
   permission_handler: ^12.0.1
@@ -22,6 +22,7 @@ dependencies:
   cached_network_image: ^3.3.0
   provider: ^6.1.5
   lucide_icons: ^0.257.0
+  image_picker: ^0.8.7+5   # <-- correctly added
 
 dev_dependencies:
   flutter_test:
@@ -36,7 +37,7 @@ flutter:
     - assets/f3.png
     - assets/room1.png
     - assets/room2.jpg
-# province
+    # Province images
     - assets/images/phnompenh.jpg
     - assets/images/bantaymeanchey.jpg
     - assets/images/batambong.jpg

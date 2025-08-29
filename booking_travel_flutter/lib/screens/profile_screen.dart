@@ -1,16 +1,37 @@
+import 'dart:io';
+import 'dart:typed_data';
+import 'dart:convert';
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import '../services/user_service.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+/// Fake user data (frontend only)
+Map<String, dynamic> fakeUser = {
+  "name": "John Doe",
+  "email": "johndoe@example.com",
+  "profile_image_url": "https://via.placeholder.com/150",
+  "created_at": DateTime.now().toIso8601String(),
+};
 
 class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({super.key});
+
   @override
-  _ProfileScreenState createState() => _ProfileScreenState();
+  State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
   Map<String, dynamic>? _currentUser;
   Map<String, dynamic>? _originalUser;
-  bool _isLoading = true;
   bool _hasChanges = false;
+
+  File? _profileImageFile; // Mobile
+  Uint8List? _profileImageBytes; // Web
+  String? _profileImageFileName;
+
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -19,459 +40,214 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadUserData() async {
-    try {
-      Map<String, dynamic>? user = await UserService.getCurrentUser();
+    final prefs = await SharedPreferences.getInstance();
+    final userData = prefs.getString('user');
 
+    if (userData != null) {
       setState(() {
-        _currentUser = user;
-        _originalUser = Map.from(user ?? {});
-        _isLoading = false;
-        _hasChanges = false; // Reset changes when loading new data
+        _currentUser = Map<String, dynamic>.from(jsonDecode(userData));
+        _originalUser = Map.from(_currentUser!);
+        _hasChanges = false;
       });
-
-      if (user == null) {
-        Navigator.pushReplacementNamed(context, '/login');
-      }
-    } catch (e) {
+    } else {
       setState(() {
-        _isLoading = false;
+        _currentUser = Map.from(fakeUser);
+        _originalUser = Map.from(fakeUser);
+        _hasChanges = false;
       });
-      print('Error loading user data: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error loading profile data'),
-          backgroundColor: Colors.red,
-        ),
-      );
     }
   }
 
   void _checkForChanges() {
     setState(() {
-      _hasChanges = _originalUser.toString() != _currentUser.toString();
+      _hasChanges = _originalUser.toString() != _currentUser.toString() ||
+          _profileImageFile != null ||
+          _profileImageBytes != null;
     });
+  }
+
+  // --- Convert image to base64 ---
+  String? _imageToBase64() {
+    if (_profileImageBytes != null) {
+      return base64Encode(_profileImageBytes!); // Web
+    } else if (_profileImageFile != null) {
+      return base64Encode(_profileImageFile!.readAsBytesSync()); // Mobile
+    }
+    return null;
+  }
+
+  // --- Get image provider (from memory, file, base64, or url) ---
+  ImageProvider _getProfileImage() {
+    if (_profileImageBytes != null) {
+      return MemoryImage(_profileImageBytes!);
+    } else if (_profileImageFile != null) {
+      return FileImage(_profileImageFile!);
+    } else if (_currentUser?['profile_image_base64'] != null) {
+      return MemoryImage(base64Decode(_currentUser!['profile_image_base64']));
+    } else {
+      return NetworkImage(
+        _currentUser?['profile_image_url'] ?? 'https://via.placeholder.com/150',
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return Scaffold(
-        body: Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: NetworkImage(
-                  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80'),
-              fit: BoxFit.cover,
-            ),
-          ),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(color: Colors.white),
-                SizedBox(height: 16),
-                Text(
-                  'Loading profile...',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
     if (_currentUser == null) {
-      return Scaffold(
-        body: Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: NetworkImage(
-                  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80'),
-              fit: BoxFit.cover,
-            ),
-          ),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.error, size: 64, color: Colors.white),
-                SizedBox(height: 16),
-                Text(
-                  'No user data found',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Please login again',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
-                ),
-                SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushReplacementNamed(context, '/login');
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.purple,
-                  ),
-                  child: Text('Login'),
-                ),
-              ],
-            ),
-          ),
-        ),
+      return const Scaffold(
+        body: Center(child: Text("No user found")),
       );
     }
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: NetworkImage(
-                'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80'),
-            fit: BoxFit.cover,
+      appBar: AppBar(
+        title: const Text("My Profile"),
+        backgroundColor: Colors.blueAccent,
+        actions: [
+          IconButton(
+            onPressed: () => _showLogoutDialog(context),
+            icon: const Icon(Icons.logout),
           ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.all(20),
-                        child: Column(
-                          children: [
-                            MouseRegion(
-                              cursor: SystemMouseCursors.click,
-                              child: GestureDetector(
-                                onTap: () {
-                                  _showImageUrlDialog(context);
-                                },
-                                child: Stack(
-                                  children: [
-                                    Container(
-                                      width: 100,
-                                      height: 100,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: Colors.white,
-                                          width: 3,
-                                        ),
-                                      ),
-                                      child: ClipOval(
-                                        child: Image.network(
-                                          _currentUser!['profile_image_url'] ??
-                                              _currentUser!['avatar'] ??
-                                              '',
-                                          fit: BoxFit.cover,
-                                          errorBuilder:
-                                              (context, error, stackTrace) {
-                                            return Container(
-                                              color: Colors.grey[300],
-                                              child: Icon(
-                                                Icons.person,
-                                                size: 50,
-                                                color: Colors.grey[600],
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    ),
-                                    Positioned(
-                                      bottom: 0,
-                                      right: 0,
-                                      child: Container(
-                                        width: 30,
-                                        height: 30,
-                                        decoration: BoxDecoration(
-                                          color: Colors.blue,
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: Colors.white,
-                                            width: 2,
-                                          ),
-                                        ),
-                                        child: Icon(
-                                          Icons.camera_alt,
-                                          color: Colors.white,
-                                          size: 16,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: 16),
-                            MouseRegion(
-                              cursor: SystemMouseCursors.click,
-                              child: GestureDetector(
-                                onTap: () {
-                                  _showEditNameDialog(context);
-                                },
-                                child: Text(
-                                  _currentUser!['name'] ?? 'Unknown User',
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: 16),
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.3),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: Colors.white.withOpacity(0.5),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.verified_user,
-                                    size: 16,
-                                    color: Colors.white,
-                                  ),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    'Verified User',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        width: double.infinity,
-                        constraints: BoxConstraints(
-                          minHeight: MediaQuery.of(context).size.height * 0.5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.9),
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(30),
-                            topRight: Radius.circular(30),
-                          ),
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.all(20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'About',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                  MouseRegion(
-                                    cursor: SystemMouseCursors.click,
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        _showEditProfileDialog(context);
-                                      },
-                                      child: Text(
-                                        'Edit Profile',
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.blue,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 20),
-                              MouseRegion(
-                                cursor: SystemMouseCursors.click,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    _showEditNameDialog(context);
-                                  },
-                                  child: _buildInfoField('Full Name:',
-                                      _currentUser!['name'] ?? 'Not set'),
-                                ),
-                              ),
-                              SizedBox(height: 16),
-                              MouseRegion(
-                                cursor: SystemMouseCursors.click,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    _showEditEmailDialog(context);
-                                  },
-                                  child: _buildInfoField('Email:',
-                                      _currentUser!['email'] ?? 'Not set'),
-                                ),
-                              ),
-                              SizedBox(height: 16),
-                              _buildInfoField('User ID:',
-                                  _currentUser!['id']?.toString() ?? 'Unknown'),
-                              SizedBox(height: 16),
-                              if (_currentUser!['created_at'] != null) ...[
-                                _buildInfoField('Member Since:',
-                                    _formatDate(_currentUser!['created_at'])),
-                                SizedBox(height: 16),
-                              ],
-                              SizedBox(height: 8),
-                              _buildSettingsOption(
-                                icon: Icons.logout,
-                                title: 'Logout',
-                                onTap: () {
-                                  _showLogoutDialog(context);
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(
+          children: [
+            const SizedBox(height: 24),
+            _buildProfileSection(),
+            const SizedBox(height: 24),
+            _buildInfoCards(),
+            const SizedBox(height: 24),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: ElevatedButton(
+                onPressed: _hasChanges ? _saveChanges : null,
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 52),
+                  backgroundColor:
+                      _hasChanges ? Colors.green : Colors.grey.shade400,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
+                ),
+                child: const Text(
+                  "Save Changes",
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                 ),
               ),
-              // Update Button at the bottom
-              Container(
-                padding: EdgeInsets.all(16),
-                color: Colors.white.withOpacity(0.9),
-                child: ElevatedButton(
-                  onPressed: _hasChanges
-                      ? () async {
-                          try {
-                            await UserService.updateUser(
-                                _currentUser); // Call to save changes
-                            setState(() {
-                              _originalUser = Map.from(_currentUser!);
-                              _hasChanges = false;
-                            });
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Profile updated successfully!'),
-                                backgroundColor: Colors.green,
-                              ),
-                            );
-                          } catch (e) {
-                            print('Error updating profile: $e');
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Failed to update profile'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        }
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: Size(double.infinity, 50),
-                    backgroundColor: _hasChanges ? Colors.green : Colors.grey,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: Text('Update'),
-                ),
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 32),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildInfoField(String label, String value) {
+  Widget _buildProfileSection() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.black54,
-            fontWeight: FontWeight.w500,
+        Stack(
+          children: [
+            CircleAvatar(
+              radius: 64,
+              backgroundColor: Colors.grey[200],
+              child: ClipOval(
+                child: Image(
+                  image: _getProfileImage(),
+                  width: 128,
+                  height: 128,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: 0,
+              right: 4,
+              child: GestureDetector(
+                onTap: () => _pickImageDialog(context),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.blueAccent, width: 2),
+                  ),
+                  padding: const EdgeInsets.all(6),
+                  child: const Icon(Icons.camera_alt,
+                      color: Colors.blueAccent, size: 20),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        GestureDetector(
+          onTap: () => _showEditNameDialog(context),
+          child: Text(
+            _currentUser!['name'] ?? "Unknown User",
+            style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87),
           ),
         ),
-        SizedBox(height: 4),
+        const SizedBox(height: 4),
         Text(
-          value,
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.black87,
-            fontWeight: FontWeight.w400,
-          ),
+          _currentUser!['email'] ?? "No email",
+          style: const TextStyle(color: Colors.black54, fontSize: 16),
         ),
       ],
     );
   }
 
-  Widget _buildSettingsOption({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-    Color? textColor,
-  }) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 12),
-          child: Row(
-            children: [
-              Icon(
-                icon,
-                size: 20,
-                color: textColor ?? Colors.black54,
-              ),
-              SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: textColor ?? Colors.black87,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ),
-              Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: Colors.black26,
-              ),
-            ],
+  Widget _buildInfoCards() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        children: [
+          _buildInfoCard(
+            icon: Icons.person,
+            label: "Full Name",
+            value: _currentUser!['name'] ?? "Not set",
+            onTap: () => _showEditNameDialog(context),
           ),
-        ),
+          _buildInfoCard(
+            icon: Icons.email,
+            label: "Email",
+            value: _currentUser!['email'] ?? "Not set",
+            onTap: () => _showEditEmailDialog(context),
+          ),
+          if (_currentUser!['created_at'] != null)
+            _buildInfoCard(
+              icon: Icons.calendar_today,
+              label: "Member Since",
+              value: _formatDate(_currentUser!['created_at']),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoCard({
+    required IconData icon,
+    required String label,
+    required String value,
+    VoidCallback? onTap,
+  }) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 14),
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        leading: Icon(icon, color: Colors.blueAccent, size: 28),
+        title: Text(label,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+        subtitle: Text(value,
+            style: const TextStyle(fontSize: 15, color: Colors.black87)),
+        trailing: onTap != null
+            ? const Icon(Icons.edit, size: 22, color: Colors.blueAccent)
+            : null,
+        onTap: onTap,
       ),
     );
   }
@@ -479,279 +255,160 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _formatDate(String dateString) {
     try {
       final date = DateTime.parse(dateString);
-      return '${date.day}/${date.month}/${date.year}';
+      return "${date.day}/${date.month}/${date.year}";
     } catch (e) {
       return dateString;
     }
   }
 
-  void _showImageUrlDialog(BuildContext context) {
-    TextEditingController urlController = TextEditingController(
-      text: _currentUser!['profile_image_url'] ?? _currentUser!['avatar'] ?? '',
-    );
-
+  // --- Image Picker ---
+  void _pickImageDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Change Profile Photo'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: urlController,
-                decoration: InputDecoration(
-                  labelText: 'Image URL',
-                  hintText: 'https://example.com/image.jpg',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Note: This will only change the display locally. To save permanently, use the Update button.',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
-              ),
-            ],
+      builder: (_) => AlertDialog(
+        title: const Text("Update Profile Photo"),
+        content: const Text("Choose an option to update your profile photo."),
+        actions: [
+          TextButton(
+            onPressed: () {
+              _pickImage(ImageSource.gallery);
+              Navigator.pop(context);
+            },
+            child: const Text("Select from Gallery"),
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                if (urlController.text.isNotEmpty) {
-                  setState(() {
-                    _currentUser!['profile_image_url'] = urlController.text;
-                    _checkForChanges();
-                  });
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Profile photo updated locally!'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                }
-              },
-              child: Text('Update'),
-            ),
-          ],
-        );
-      },
+          TextButton(
+            onPressed: () {
+              _pickImage(ImageSource.camera);
+              Navigator.pop(context);
+            },
+            child: const Text("Take a Photo"),
+          ),
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel")),
+        ],
+      ),
     );
   }
 
-  void _showEditNameDialog(BuildContext context) {
-    TextEditingController nameController = TextEditingController(
-      text: _currentUser!['name'] ?? '',
-    );
+  Future<void> _pickImage(ImageSource source) async {
+    final picked = await _picker.pickImage(source: source, maxWidth: 600);
+    if (picked != null) {
+      if (kIsWeb) {
+        final bytes = await picked.readAsBytes();
+        setState(() {
+          _profileImageBytes = bytes;
+          _profileImageFileName = picked.name;
+          _checkForChanges();
+        });
+      } else {
+        setState(() {
+          _profileImageFile = File(picked.path);
+          _checkForChanges();
+        });
+      }
+    }
+  }
 
+  void _showEditNameDialog(BuildContext context) {
+    final controller = TextEditingController(text: _currentUser!['name'] ?? '');
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Edit Name'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: InputDecoration(
-                  labelText: 'Full Name',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Note: This will only change the display locally. To save permanently, use the Update button.',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
-              ),
-            ],
+      builder: (_) => AlertDialog(
+        title: const Text("Edit Name"),
+        content: TextField(controller: controller),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel")),
+          TextButton(
+            onPressed: () {
+              setState(() {
+                _currentUser!['name'] = controller.text;
+                _checkForChanges();
+              });
+              Navigator.pop(context);
+            },
+            child: const Text("Save"),
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                if (nameController.text.isNotEmpty) {
-                  setState(() {
-                    _currentUser!['name'] = nameController.text;
-                    _checkForChanges();
-                  });
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Name updated locally!'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                }
-              },
-              child: Text('Update'),
-            ),
-          ],
-        );
-      },
+        ],
+      ),
     );
   }
 
   void _showEditEmailDialog(BuildContext context) {
-    TextEditingController emailController = TextEditingController(
-      text: _currentUser!['email'] ?? '',
-    );
-
+    final controller = TextEditingController(text: _currentUser!['email'] ?? '');
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Edit Email'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: emailController,
-                decoration: InputDecoration(
-                  labelText: 'Email Address',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.emailAddress,
-              ),
-              SizedBox(height: 16),
-              Text(
-                'Note: This will only change the display locally. To save permanently, use the Update button.',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
-              ),
-            ],
+      builder: (_) => AlertDialog(
+        title: const Text("Edit Email"),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.emailAddress,
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel")),
+          TextButton(
+            onPressed: () {
+              setState(() {
+                _currentUser!['email'] = controller.text;
+                _checkForChanges();
+              });
+              Navigator.pop(context);
+            },
+            child: const Text("Save"),
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                if (emailController.text.isNotEmpty) {
-                  setState(() {
-                    _currentUser!['email'] = emailController.text;
-                    _checkForChanges();
-                  });
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Email updated locally!'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                }
-              },
-              child: Text('Update'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _showEditProfileDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Edit Profile'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: Icon(Icons.person),
-                title: Text('Edit Name'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  _showEditNameDialog(context);
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.email),
-                title: Text('Edit Email'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  _showEditEmailDialog(context);
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.camera_alt),
-                title: Text('Change Photo'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  _showImageUrlDialog(context);
-                },
-              ),
-            ],
-          ),
-        );
-      },
+        ],
+      ),
     );
   }
 
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Logout'),
-          content: Text('Are you sure you want to logout?'),
-          actions: [
-            // Cancel Button (unchanged)
-            MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text('Cancel'),
-              ),
-            ),
-            // Logout Button (now in red)
-            MouseRegion(
-              cursor: SystemMouseCursors.click,
-              child: TextButton(
-                style: ButtonStyle(
-                  foregroundColor: WidgetStateProperty.all(Colors.red),
-                ),
-                onPressed: () async {
-                  await UserService.logoutUser();
-                  Navigator.of(context).pop();
-                  Navigator.pushReplacementNamed(context, '/login');
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Logged out successfully'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                },
-                child: Text('Logout'),
-              ),
-            ),
-          ],
-        );
-      },
+      builder: (_) => AlertDialog(
+        title: const Text("Logout"),
+        content: const Text("Are you sure you want to logout?"),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel")),
+          TextButton(
+            onPressed: () {
+              Navigator.pushReplacementNamed(context, '/login');
+            },
+            child: const Text("Logout"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _saveChanges() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      final base64Image = _imageToBase64();
+      if (base64Image != null) {
+        _currentUser!['profile_image_base64'] = base64Image;
+      }
+
+      _originalUser = Map.from(_currentUser!);
+      _profileImageBytes = null;
+      _profileImageFile = null;
+      _profileImageFileName = null;
+      _hasChanges = false;
+    });
+
+    await prefs.setString('user', jsonEncode(_currentUser));
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Profile updated (saved locally with image)'),
+        backgroundColor: Colors.green,
+      ),
     );
   }
 }

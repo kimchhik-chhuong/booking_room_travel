@@ -1,7 +1,13 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http_parser/http_parser.dart';
+import 'package:path/path.dart' as path;
 
 class UserService {
   static const String _currentUserKey = 'current_user';
@@ -10,15 +16,14 @@ class UserService {
   static final String baseUrl =
       dotenv.env['API_URL'] ?? 'http://localhost:8000/api';
 
-  // Cached SharedPreferences instance
   static late SharedPreferences _prefs;
 
-  /// Initialize SharedPreferences once before using the service
+  // --- Initialize SharedPreferences ---
   static Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
   }
 
-  /// Register a new user
+  // --- Register User ---
   static Future<bool> registerUser({
     required String name,
     required String email,
@@ -54,7 +59,7 @@ class UserService {
     }
   }
 
-  /// Login user
+  // --- Login User ---
   static Future<Map<String, dynamic>?> loginUser({
     required String email,
     required String password,
@@ -68,9 +73,6 @@ class UserService {
         },
         body: jsonEncode({'email': email, 'password': password}),
       );
-
-      print("Login status: ${response.statusCode}");
-      print("Login body: ${response.body}");
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -88,7 +90,7 @@ class UserService {
     }
   }
 
-  /// Get current logged-in user info
+  // --- Get current user ---
   static Future<Map<String, dynamic>?> getCurrentUser() async {
     final userJson = _prefs.getString(_currentUserKey);
     if (userJson != null) {
@@ -97,37 +99,73 @@ class UserService {
     return null;
   }
 
-  /// Get stored access token
   static Future<String?> getAccessToken() async {
     return _prefs.getString(_accessTokenKey);
   }
 
-  /// Logout user by clearing stored data
   static Future<void> logoutUser() async {
     await _prefs.remove(_currentUserKey);
     await _prefs.remove(_accessTokenKey);
   }
 
-  /// Check if user is logged in
   static Future<bool> isLoggedIn() async {
     final user = await getCurrentUser();
     return user != null;
   }
 
-  /// Placeholder for updating user profile (not implemented)
-  static Future<void> updateUserProfile({
-    required String name,
-    required String email,
-    String? profileImageUrl,
-    int? followingCount,
+  // --- Update user profile (supports File for mobile & Uint8List for web) ---
+  static Future<void> updateUser(
+    Map<String, dynamic>? currentUser, {
+    File? imageFile,
+    Uint8List? imageBytes,
+    String? imageFileName,
   }) async {
-    print("Update profile (not implemented yet)");
-  }
+    if (currentUser == null) return;
 
-  /// Save updated user data locally
-  static Future<void> updateUser(Map<String, dynamic>? currentUser) async {
-    if (currentUser != null) {
-      await _prefs.setString(_currentUserKey, jsonEncode(currentUser));
+    final token = await getAccessToken();
+    if (token == null) throw Exception("No access token found");
+
+    var uri = Uri.parse("$baseUrl/profile/update"); // update your backend route
+    var request = http.MultipartRequest('POST', uri);
+
+    // Add user fields
+    currentUser.forEach((key, value) {
+      request.fields[key] = value.toString();
+    });
+
+    // Add image
+    if (imageFile != null && !kIsWeb) {
+      // Mobile: File
+      var multipartFile = await http.MultipartFile.fromPath(
+        'profile_image',
+        imageFile.path,
+      );
+      request.files.add(multipartFile);
+    } else if (imageBytes != null && kIsWeb && imageFileName != null) {
+      // Web: Uint8List
+      var multipartFile = http.MultipartFile.fromBytes(
+        'profile_image',
+        imageBytes,
+        filename: imageFileName,
+        contentType: MediaType('image', path.extension(imageFileName).replaceAll('.', '')),
+      );
+      request.files.add(multipartFile);
+    }
+
+    // Add headers
+    request.headers['Authorization'] = 'Bearer $token';
+    request.headers['Accept'] = 'application/json';
+
+    // Send request
+    var response = await request.send();
+    if (response.statusCode == 200) {
+      var respStr = await response.stream.bytesToString();
+      var data = jsonDecode(respStr);
+      await _prefs.setString(_currentUserKey, jsonEncode(data['user']));
+    } else {
+      var respStr = await response.stream.bytesToString();
+      print('Update profile failed: $respStr');
+      throw Exception('Failed to update profile');
     }
   }
 }
