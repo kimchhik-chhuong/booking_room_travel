@@ -138,4 +138,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
+
+    // Check-in route
+    Route::post('/bookings/{bookingId}/check-in', [BookingController::class, 'checkIn'])->name('bookings.check-in');
 });

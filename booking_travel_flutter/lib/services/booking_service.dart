@@ -266,6 +266,41 @@ class BookingService {
     }
   }
 
+  Future<Map<String, dynamic>> checkInBooking(String bookingId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      
+      if (token == null) {
+        throw Exception('Authentication required. Please log in again.');
+      }
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/bookings/$bookingId/check-in'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      final responseData = _safeDecode(response.body);
+      
+      if (response.statusCode == 200 && responseData['success'] == true) {
+        return {
+          'success': true,
+          'message': responseData['message'] ?? 'Check-in successful!',
+          'data': responseData['data'],
+        };
+      } else {
+        throw Exception(responseData['message'] ?? 'Failed to process check-in');
+      }
+    } catch (e) {
+      print('Check-in error: $e');
+      rethrow;
+    }
+  }
+
   // Helper method to safely decode JSON responses
   static Map<String, dynamic> _safeDecode(String body) {
     try {

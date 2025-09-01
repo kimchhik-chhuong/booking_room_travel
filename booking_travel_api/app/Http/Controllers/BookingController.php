@@ -552,28 +552,41 @@ class BookingController extends Controller
 
     /**
      * Process check-in for a booking.
+     * 
+     * @param  string  $bookingId
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function checkIn(Booking $booking)
+    public function checkIn($bookingId)
     {
         try {
+            // Find the booking
+            $booking = Booking::with(['user', 'hotelBookings', 'hotelBookings.hotel', 'hotelBookings.roomType'])
+                ->findOrFail($bookingId);
+
             // Verify the booking belongs to the authenticated user
-            if ($booking->user_id !== Auth::id()) {
-                abort(403, 'Unauthorized action.');
+            if ($booking->user_id !== auth('sanctum')->id()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized action.'
+                ], 403);
             }
 
             // Check if check-in is allowed (for pending bookings)
             if ($booking->status !== 'pending') {
-                return back()->with('error', 'Only pending bookings can be checked in.');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Only pending bookings can be checked in.'
+                ], 400);
             }
 
-            \Illuminate\Support\Facades\DB::beginTransaction();
+            \DB::beginTransaction();
 
             try {
                 // Update booking status to confirmed
                 $booking->update([
-                    'status' => 'confirmed',  // Changed from 'checked_in' to 'confirmed'
+                    'status' => 'confirmed',
                     'checked_in_at' => now(),
-                    'checked_in_by' => Auth::id()
+                    'checked_in_by' => auth('sanctum')->id()
                 ]);
 
                 // Update related hotel bookings
@@ -581,19 +594,31 @@ class BookingController extends Controller
                     $booking->hotelBookings()->update(['status' => 'confirmed']);
                 }
 
-                \Illuminate\Support\Facades\DB::commit();
+                \DB::commit();
 
-                return redirect()
-                    ->route('bookings.index')
-                    ->with('success', 'Successfully checked in for booking #' . $booking->id);
+                return redirect()->route('bookings.index')
+                    ->with('success', 'Booking has been checked in successfully.');
+                    
+
             } catch (\Exception $e) {
-                \Illuminate\Support\Facades\DB::rollBack();
-                \Illuminate\Support\Facades\Log::error('Failed to process check-in: ' . $e->getMessage());
+                \DB::rollBack();
+                \Log::error('Failed to process check-in: ' . $e->getMessage());
+                \Log::error($e->getTraceAsString());
                 throw $e;
             }
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Booking not found.'
+            ], 404);
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Check-in error: ' . $e->getMessage());
-            return back()->with('error', 'Failed to process check-in. Please try again or contact support.');
+            \Log::error('Check-in error: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to process check-in. Please try again or contact support.',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
         }
     }
 
