@@ -90,8 +90,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
     // Dashboard
-    Route::get('/dashboard', fn() => view('dashboard'))->name('dashboard');
-    Route::get('/home', fn() => redirect()->route('dashboard'))->name('home');
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
+
+    // Travelers Resource
+    Route::resource('travelers', TravelerController::class);
 
     // Bookings
     Route::resource('bookings', BookingController::class);
@@ -210,19 +214,15 @@ Route::middleware('auth')->group(function () {
     */
     Route::get('/calendar', fn() => view('calendar'))->name('calendar');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Travelers CRUD
-    |--------------------------------------------------------------------------
-    */
-    Route::prefix('travelers')->name('travelers.')->group(function () {
+    // Traveler Management Routes
+    Route::middleware('auth')->prefix('travelers')->name('travelers.')->group(function () {
         Route::get('/', [TravelerController::class, 'index'])->name('index');
         Route::get('/create', [TravelerController::class, 'create'])->name('create');
         Route::post('/', [TravelerController::class, 'store'])->name('store');
-        Route::get('/{travelerId}', [TravelerController::class, 'show'])->name('show');
-        Route::get('/{travelerId}/edit', [TravelerController::class, 'edit'])->name('edit');
-        Route::put('/{travelerId}', [TravelerController::class, 'update'])->name('update');
-        Route::delete('/{travelerId}', [TravelerController::class, 'destroy'])->name('destroy');
+        Route::get('/{traveler}', [TravelerController::class, 'show'])->name('show');
+        Route::get('/{traveler}/edit', [TravelerController::class, 'edit'])->name('edit');
+        Route::put('/{traveler}', [TravelerController::class, 'update'])->name('update');
+        Route::delete('/{traveler}', [TravelerController::class, 'destroy'])->name('destroy');
     });
 
     /*

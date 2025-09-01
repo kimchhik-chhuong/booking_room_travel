@@ -2,37 +2,51 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 class Traveler extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
+        'booking_id',
         'first_name',
         'last_name',
         'email',
         'phone',
-        'date_of_birth',
         'nationality',
-        'passport_number',
-        'passport_expiry',
-        'user_id' // If you're associating travelers with users
+        'status',
+    ];
+
+    protected $attributes = [
+        'status' => 'active',
     ];
 
     protected $casts = [
-        'date_of_birth' => 'date',
-        'passport_expiry' => 'date',
+        'status' => 'string',
     ];
 
-    public function user()
+    /**
+     * Get the booking that owns the traveler.
+     */
+    public function booking(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Booking::class);
     }
 
-    public function bookings()
+    /**
+     * Get the user that owns the traveler.
+     */
+    public function user(): HasOneThrough
     {
-        return $this->hasMany(Booking::class);
+        return $this->hasOneThrough(
+            User::class,
+            Booking::class,
+            'id', // Foreign key on bookings table
+            'id', // Foreign key on users table
+            'booking_id', // Local key on travelers table
+            'user_id' // Local key on bookings table
+        );
     }
 }
