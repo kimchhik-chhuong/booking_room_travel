@@ -160,15 +160,32 @@
                                 @if(isset($hotel) && $hotel)
                                 <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
                                     <div class="flex flex-col md:flex-row gap-6">
-                                        @if(isset($hotel->images) && !empty($hotel->images))
-                                            @php
-                                                $images = is_string($hotel->images) ? json_decode($hotel->images, true) : $hotel->images;
-                                                $firstImage = is_array($images) ? (is_array($images[0] ?? null) ? ($images[0]['url'] ?? '') : $images[0]) : '';
-                                            @endphp
-                                            @if($firstImage)
-                                                <img src="{{ $firstImage }}" alt="{{ $hotel->name }}" class="hotel-image w-full md:w-1/3">
-                                            @endif
-                                        @endif
+                                    @if(isset($hotel->images) && !empty($hotel->images))
+    @php
+        // Decode JSON if needed
+        $images = is_string($hotel->images) ? json_decode($hotel->images, true) : $hotel->images;
+
+        // Get the first image
+        $firstImage = '';
+        if(is_array($images) && count($images) > 0) {
+            if(is_array($images[0]) && isset($images[0]['url'])) {
+                $firstImage = $images[0]['url'];
+            } else {
+                $firstImage = $images[0];
+            }
+        }
+
+        // Ensure it points to the public storage folder
+        if($firstImage) {
+            $firstImage = asset('storage/' . ltrim($firstImage, '/'));
+        }
+    @endphp
+
+    @if($firstImage)
+        <img src="{{ $firstImage }}" alt="{{ $hotel->name }}" class="hotel-image w-full md:w-1/3">
+    @endif
+@endif
+
                                         <div class="flex-1">
                                             <h3 class="text-xl font-semibold mb-2">{{ $hotel->name }}</h3>
                                             @if(!empty($hotel->address))

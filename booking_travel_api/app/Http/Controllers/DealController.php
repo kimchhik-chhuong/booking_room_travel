@@ -9,8 +9,8 @@ class DealController extends Controller
 {
     public function index()
     {
-        $deals = Deal::all();
-        return response()->json(['success' => true, 'data' => $deals], 200);
+        $deals = Deal::latest()->paginate(10);
+        return view('deals.index', compact('deals'));
     }
 
     public function create()
@@ -22,10 +22,20 @@ class DealController extends Controller
             'code' => ['label' => 'Promo Code', 'type' => 'text', 'placeholder' => 'e.g., KHMER2025', 'required' => true],
             'valid_until' => ['label' => 'Valid Until', 'type' => 'date', 'required' => true],
             'limit' => ['label' => 'Usage Limit', 'type' => 'number', 'placeholder' => 'e.g., 400', 'required' => true],
-            'status' => ['label' => 'Status', 'type' => 'select', 'options' => ['Active', 'Scheduled', 'Expired'], 'required' => true],
-            'color' => ['label' => 'Gradient Color', 'type' => 'select', 'options' => ['from-orange-400 to-pink-500', 'from-blue-400 to-purple-500', 'from-emerald-400 to-blue-500'], 'required' => true],
+            'status' => ['label' => 'Status', 'type' => 'select', 'options' => ['Active' => 'Active', 'Scheduled' => 'Scheduled', 'Expired' => 'Expired'], 'required' => true],
+            'color' => ['label' => 'Gradient Color', 'type' => 'select', 'options' => [
+                'from-orange-400 to-pink-500' => 'Orange to Pink', 
+                'from-blue-400 to-purple-500' => 'Blue to Purple', 
+                'from-emerald-400 to-blue-500' => 'Emerald to Blue'
+            ], 'required' => true],
         ];
-        return response()->json(['success' => true, 'form' => $formData], 200);
+        
+        return view('deals.form', [
+            'formData' => $formData,
+            'action' => route('deals.store'),
+            'method' => 'POST',
+            'title' => 'Create New Deal'
+        ]);
     }
 
     public function store(Request $request)
@@ -43,30 +53,43 @@ class DealController extends Controller
 
         $deal = Deal::create($validated);
 
-        return response()->json(['success' => true, 'message' => 'Deal created', 'data' => $deal], 201);
+        return redirect()->route('deals.index')
+            ->with('success', 'Deal created successfully.');
     }
 
-    public function show($id)
+    public function edit(Deal $deal)
     {
-        $deal = Deal::find($id);
-        if ($deal) {
-            return response()->json(['success' => true, 'data' => $deal], 200);
-        }
-        return response()->json(['success' => false, 'message' => 'Deal not found'], 404);
+        $formData = [
+            'title' => ['label' => 'Deal Name', 'type' => 'text', 'placeholder' => 'Enter deal name', 'required' => true],
+            'discount' => ['label' => 'Discount', 'type' => 'text', 'placeholder' => 'e.g., 50% Off or $200 Off', 'required' => true],
+            'description' => ['label' => 'Description', 'type' => 'textarea', 'placeholder' => 'Enter deal description', 'required' => true],
+            'code' => ['label' => 'Promo Code', 'type' => 'text', 'placeholder' => 'e.g., KHMER2025', 'required' => true],
+            'valid_until' => ['label' => 'Valid Until', 'type' => 'date', 'required' => true],
+            'limit' => ['label' => 'Usage Limit', 'type' => 'number', 'placeholder' => 'e.g., 400', 'required' => true],
+            'status' => ['label' => 'Status', 'type' => 'select', 'options' => ['Active' => 'Active', 'Scheduled' => 'Scheduled', 'Expired' => 'Expired'], 'required' => true],
+            'color' => ['label' => 'Gradient Color', 'type' => 'select', 'options' => [
+                'from-orange-400 to-pink-500' => 'Orange to Pink', 
+                'from-blue-400 to-purple-500' => 'Blue to Purple', 
+                'from-emerald-400 to-blue-500' => 'Emerald to Blue'
+            ], 'required' => true],
+        ];
+        
+        return view('deals.form', [
+            'deal' => $deal,
+            'formData' => $formData,
+            'action' => route('deals.update', $deal->id),
+            'method' => 'PUT',
+            'title' => 'Edit Deal'
+        ]);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, Deal $deal)
     {
-        $deal = Deal::find($id);
-        if (!$deal) {
-            return response()->json(['success' => false, 'message' => 'Deal not found'], 404);
-        }
-
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'discount' => 'required|string|max:50',
             'description' => 'required|string',
-            'code' => 'required|string|max:50|unique:deals,code,' . $id,
+            'code' => 'required|string|max:50|unique:deals,code,' . $deal->id,
             'valid_until' => 'required|date|after:today',
             'limit' => 'required|integer|min:1',
             'status' => 'required|in:Active,Scheduled,Expired',
@@ -75,16 +98,14 @@ class DealController extends Controller
 
         $deal->update($validated);
 
-        return response()->json(['success' => true, 'message' => 'Deal updated', 'data' => $deal], 200);
+        return redirect()->route('deals.index')
+            ->with('success', 'Deal updated successfully');
     }
 
-    public function destroy($id)
+    public function destroy(Deal $deal)
     {
-        $deal = Deal::find($id);
-        if ($deal) {
-            $deal->delete();
-            return response()->json(['success' => true, 'message' => 'Deal deleted'], 200);
-        }
-        return response()->json(['success' => false, 'message' => 'Deal not found'], 404);
+        $deal->delete();
+        return redirect()->route('deals.index')
+            ->with('success', 'Deal deleted successfully');
     }
 }

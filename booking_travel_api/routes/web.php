@@ -157,6 +157,16 @@ Route::middleware('auth')->group(function () {
             ->where('booking', '[0-9]+');
     });
 
+    // Deals Routes
+    Route::prefix('deals')->name('deals.')->group(function () {
+        Route::get('/', [DealController::class, 'index'])->name('index');
+        Route::get('/create', [DealController::class, 'create'])->name('create');
+        Route::post('/', [DealController::class, 'store'])->name('store');
+        Route::get('/{deal}/edit', [DealController::class, 'edit'])->name('edit');
+        Route::put('/{deal}', [DealController::class, 'update'])->name('update');
+        Route::delete('/{deal}', [DealController::class, 'destroy'])->name('destroy');
+    });
+
     // Adventures Routes
     Route::prefix('adventures')->name('adventures.')->group(function () {
         Route::get('/', [\App\Http\Controllers\AdventureController::class, 'index'])->name('index');
@@ -250,15 +260,6 @@ Route::middleware('auth')->group(function () {
     */
     Route::prefix('messages')->name('messages.')->group(function () {
         Route::get('/', fn() => view('messages.index'))->name('index');
-    });
-
-    /*
-    |--------------------------------------------------------------------------
-    | Deals
-    |--------------------------------------------------------------------------
-    */
-    Route::prefix('deals')->name('deals.')->group(function () {
-        Route::get('/', fn() => view('deals.index'))->name('index');
     });
 
     /*
