@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import '../services/user_service.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -18,31 +20,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _loadUserData();
   }
 
-  Future<void> _loadUserData() async {
-    try {
-      Map<String, dynamic>? user = await UserService.getCurrentUser();
-
-      setState(() {
-        _currentUser = user;
-        _originalUser = Map.from(user ?? {});
-        _isLoading = false;
-        _hasChanges = false; // Reset changes when loading new data
+  void _loadUserData() {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
+    if (!authProvider.isInitialized) {
+      authProvider.initialize().then((_) {
+        _updateUserData(authProvider);
       });
+    } else {
+      _updateUserData(authProvider);
+    }
+  }
 
-      if (user == null) {
-        Navigator.pushReplacementNamed(context, '/login');
-      }
-    } catch (e) {
+  void _updateUserData(AuthProvider authProvider) {
+    if (authProvider.isAuthenticated && authProvider.user != null) {
       setState(() {
+        _currentUser = {
+          'id': authProvider.user!.id,
+          'name': authProvider.user!.name,
+          'email': authProvider.user!.email,
+        };
+        _originalUser = Map.from(_currentUser ?? {});
         _isLoading = false;
+        _hasChanges = false;
       });
-      print('Error loading user data: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error loading profile data'),
-          backgroundColor: Colors.red,
-        ),
-      );
+    } else {
+      Navigator.pushReplacementNamed(context, '/login');
     }
   }
 
@@ -54,6 +57,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    
     if (_isLoading) {
       return Scaffold(
         body: Container(
@@ -98,34 +103,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.error, size: 64, color: Colors.white),
-                SizedBox(height: 16),
                 Text(
-                  'No user data found',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  'Not authenticated',
+                  style: TextStyle(color: Colors.white, fontSize: 18),
                 ),
-                SizedBox(height: 8),
-                Text(
-                  'Please login again',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 14,
-                  ),
-                ),
-                SizedBox(height: 24),
+                SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
                     Navigator.pushReplacementNamed(context, '/login');
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.purple,
-                  ),
-                  child: Text('Login'),
+                  child: Text('Go to Login'),
                 ),
               ],
             ),
